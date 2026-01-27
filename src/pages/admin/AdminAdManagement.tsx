@@ -1,10 +1,32 @@
 import * as React from "react";
 import { Area, AreaChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import { Plus, Settings2 } from "lucide-react";
+import {
+  BadgeDollarSign,
+  BarChart3,
+  Copy,
+  Eye,
+  LayoutPanelTop,
+  List,
+  Megaphone,
+  PanelBottom,
+  Plus,
+  Settings2,
+  Sidebar as SidebarIcon,
+} from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { toast } from "sonner";
 
 type MetricCardProps = {
   title: string;
@@ -42,7 +64,86 @@ const chartData = [
   { week: "Semana 4", clicks: 18, views: 320 },
 ];
 
+type InventoryItem = {
+  title: string;
+  subtitle: string;
+  meta: string;
+  statusLabel: string;
+  statusTone: "secondary" | "destructive";
+  rightMeta?: string;
+  icon: React.ReactNode;
+  iconBgClassName: string;
+};
+
+const inventory: InventoryItem[] = [
+  {
+    title: "Topo Home",
+    subtitle: "728x90px • Desktop",
+    meta: "",
+    statusLabel: "Ocupado",
+    statusTone: "destructive",
+    rightMeta: "Fila: 2",
+    icon: <LayoutPanelTop className="h-5 w-5" aria-hidden="true" />,
+    iconBgClassName: "bg-muted",
+  },
+  {
+    title: "Lateral Notícias",
+    subtitle: "300x250px • Responsivo",
+    meta: "",
+    statusLabel: "Disponível",
+    statusTone: "secondary",
+    rightMeta: "R$ 450/mês",
+    icon: <SidebarIcon className="h-5 w-5" aria-hidden="true" />,
+    iconBgClassName: "bg-muted",
+  },
+  {
+    title: "In-Feed (Lista)",
+    subtitle: "Nativo • Mobile",
+    meta: "",
+    statusLabel: "Ocupado",
+    statusTone: "destructive",
+    rightMeta: "Fila: 0",
+    icon: <List className="h-5 w-5" aria-hidden="true" />,
+    iconBgClassName: "bg-muted",
+  },
+  {
+    title: "Rodapé",
+    subtitle: "970x250px • Desktop",
+    meta: "",
+    statusLabel: "Disponível",
+    statusTone: "secondary",
+    rightMeta: "R$ 300/mês",
+    icon: <PanelBottom className="h-5 w-5" aria-hidden="true" />,
+    iconBgClassName: "bg-muted",
+  },
+];
+
+type CampaignRow = {
+  ad: string;
+  placement: string;
+  client: string;
+  status: "Ativo" | "Pausado";
+  date: string;
+};
+
+const campaigns: CampaignRow[] = [
+  { ad: "Ofertas Semanais", placement: "Topo Home", client: "Supermercado Bom Preço", status: "Ativo", date: "Até 12/11/2023" },
+  { ad: "Festival de Inverno", placement: "Lateral Notícias", client: "Farmácias São João", status: "Pausado", date: "Até 30/11/2023" },
+  { ad: "Vestibular de Verão", placement: "Topo Home", client: "Universidade UPF", status: "Ativo", date: "Até 15/12/2023" },
+];
+
 export default function AdminAdManagement() {
+  const [autoAds, setAutoAds] = React.useState(true);
+
+  const onCopyPublisherId = async () => {
+    try {
+      await navigator.clipboard.writeText("pub-849201948201923");
+      toast.success("Copiado", { description: "Publisher ID copiado para a área de transferência." });
+    } catch {
+      toast.error("Não foi possível copiar", { description: "Copie manualmente o código." });
+    }
+  };
+
   return (
     <div className="p-6 space-y-6">
       <div className="text-sm text-muted-foreground">
@@ -64,10 +165,34 @@ export default function AdminAdManagement() {
       </div>
 
       <section className="grid grid-cols-1 gap-4 lg:grid-cols-4">
-        <MetricCard title="ESPAÇOS ATIVOS" value="12/15" badgeText="+2.5%" badgeTone="secondary" />
-        <MetricCard title="IMPRESSÕES (MÊS)" value="45.2k" badgeText="+12%" badgeTone="secondary" />
-        <MetricCard title="RECEITA ESTIMADA" value="R$ 3.2k" badgeText="+5%" badgeTone="secondary" />
-        <MetricCard title="OCUPAÇÃO" value="80%" badgeText="Estável" badgeTone="outline" />
+        <MetricCard
+          title="ESPAÇOS ATIVOS"
+          value="12/15"
+          badgeText="+2.5%"
+          badgeTone="secondary"
+          icon={<Megaphone className="h-4 w-4 text-primary" aria-hidden="true" />}
+        />
+        <MetricCard
+          title="IMPRESSÕES (MÊS)"
+          value="45.2k"
+          badgeText="+12%"
+          badgeTone="secondary"
+          icon={<Eye className="h-4 w-4 text-primary" aria-hidden="true" />}
+        />
+        <MetricCard
+          title="RECEITA ESTIMADA"
+          value="R$ 3.2k"
+          badgeText="+5%"
+          badgeTone="secondary"
+          icon={<BadgeDollarSign className="h-4 w-4 text-primary" aria-hidden="true" />}
+        />
+        <MetricCard
+          title="OCUPAÇÃO"
+          value="80%"
+          badgeText="Estável"
+          badgeTone="outline"
+          icon={<BarChart3 className="h-4 w-4 text-primary" aria-hidden="true" />}
+        />
       </section>
 
       <section className="grid grid-cols-1 gap-4 xl:grid-cols-3">
@@ -121,21 +246,26 @@ export default function AdminAdManagement() {
               </div>
             </CardHeader>
             <CardContent className="space-y-3">
-              <div className="flex items-start justify-between gap-3 rounded-lg border bg-card p-4">
-                <div>
-                  <div className="font-medium">Topo Home</div>
-                  <div className="text-xs text-muted-foreground">728x90px • Desktop</div>
-                </div>
-                <Badge variant="destructive" className="rounded-full">Ocupado</Badge>
-              </div>
+              {inventory.map((item) => (
+                <div key={item.title} className="flex items-start justify-between gap-3 rounded-lg border bg-card p-4">
+                  <div className="flex items-start gap-3">
+                    <div className={`h-10 w-10 rounded-lg ${item.iconBgClassName} grid place-items-center`}>
+                      {item.icon}
+                    </div>
+                    <div>
+                      <div className="font-medium">{item.title}</div>
+                      <div className="text-xs text-muted-foreground">{item.subtitle}</div>
+                    </div>
+                  </div>
 
-              <div className="flex items-start justify-between gap-3 rounded-lg border bg-card p-4">
-                <div>
-                  <div className="font-medium">Lateral Notícias</div>
-                  <div className="text-xs text-muted-foreground">300x250px • Responsivo</div>
+                  <div className="text-right">
+                    <Badge variant={item.statusTone} className="rounded-full">
+                      {item.statusLabel}
+                    </Badge>
+                    {item.rightMeta ? <div className="mt-1 text-xs text-muted-foreground">{item.rightMeta}</div> : null}
+                  </div>
                 </div>
-                <Badge variant="secondary" className="rounded-full">Disponível</Badge>
-              </div>
+              ))}
             </CardContent>
           </Card>
 
@@ -144,9 +274,22 @@ export default function AdminAdManagement() {
               <CardTitle className="text-base">Google Adsense</CardTitle>
               <p className="text-sm text-muted-foreground">Gerencie a integração automática.</p>
             </CardHeader>
-            <CardContent className="space-y-3">
+            <CardContent className="space-y-4">
               <div className="text-xs text-muted-foreground">PUBLISHER ID</div>
-              <div className="rounded-lg border bg-card px-3 py-2 font-mono text-sm">pub-849201948201923</div>
+              <div className="flex items-center gap-2">
+                <div className="flex-1 rounded-lg border bg-card px-3 py-2 font-mono text-sm">pub-849201948201923</div>
+                <Button variant="outline" size="icon" aria-label="Copiar Publisher ID" onClick={onCopyPublisherId}>
+                  <Copy className="h-4 w-4" aria-hidden="true" />
+                </Button>
+              </div>
+
+              <div className="flex items-center justify-between gap-4">
+                <div>
+                  <div className="text-sm font-medium">Anúncios Automáticos</div>
+                </div>
+                <Switch checked={autoAds} onCheckedChange={setAutoAds} />
+              </div>
+
               <Button variant="outline" className="w-full">
                 Acessar Relatório Completo
               </Button>
@@ -159,11 +302,43 @@ export default function AdminAdManagement() {
         <CardHeader className="pb-2">
           <div className="flex items-center justify-between gap-4">
             <CardTitle className="text-base">Campanhas Ativas</CardTitle>
-            <Button variant="ghost">Ver Todos</Button>
+            <Button variant="ghost" className="text-primary">
+              Ver Todos
+            </Button>
           </div>
         </CardHeader>
-        <CardContent>
-          <div className="text-sm text-muted-foreground">(Tabela de campanhas será conectada ao banco quando você enviar o HTML/estrutura final.)</div>
+        <CardContent className="p-0">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>ANÚNCIO</TableHead>
+                <TableHead>LOCALIZAÇÃO</TableHead>
+                <TableHead>CLIENTE</TableHead>
+                <TableHead>STATUS</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {campaigns.map((row) => (
+                <TableRow key={`${row.ad}-${row.client}`}>
+                  <TableCell>
+                    <div className="font-medium">{row.ad}</div>
+                    <div className="text-xs text-muted-foreground">{row.date}</div>
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant="outline" className="rounded-full">
+                      {row.placement}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>{row.client}</TableCell>
+                  <TableCell>
+                    <Badge variant={row.status === "Ativo" ? "secondary" : "outline"} className="rounded-full">
+                      {row.status}
+                    </Badge>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
         </CardContent>
       </Card>
     </div>
