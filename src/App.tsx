@@ -15,6 +15,8 @@ import SearchResults from "./pages/SearchResults";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfUse from "./pages/TermsOfUse";
 import Agenda from "./pages/Agenda";
+import Galleries from "./pages/Galleries";
+import GalleryDetails from "./pages/GalleryDetails";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -39,6 +41,8 @@ const App = () => (
           <Route path="/politica-de-privacidade" element={<PrivacyPolicy />} />
           <Route path="/termos-de-uso" element={<TermsOfUse />} />
           <Route path="/agenda" element={<Agenda />} />
+          <Route path="/galerias" element={<Galleries />} />
+          <Route path="/galerias/:slug" element={<GalleryDetails />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
