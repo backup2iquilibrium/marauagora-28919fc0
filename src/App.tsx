@@ -25,6 +25,7 @@ import Horoscope from "./pages/Horoscope";
 import NotFound from "./pages/NotFound";
 
 import AdminLogin from "./pages/admin/AdminLogin";
+import AdminForgotPassword from "./pages/admin/AdminForgotPassword";
 import AdminLayout from "./pages/admin/AdminLayout";
 import AdminClassifieds from "./pages/admin/AdminClassifieds";
 import AdminAdManagement from "./pages/admin/AdminAdManagement";
@@ -62,6 +63,7 @@ const App = () => (
 
             {/* Admin */}
             <Route path="/admin/login" element={<AdminLogin />} />
+            <Route path="/admin/recuperar-senha" element={<AdminForgotPassword />} />
             <Route path="/admin/redefinir-senha" element={<AdminResetPassword />} />
             <Route
               path="/admin"

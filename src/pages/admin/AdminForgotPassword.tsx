@@ -1,45 +1,43 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { z } from "zod";
-import * as React from "react";
-import { Eye, EyeOff, Lock } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 const schema = z.object({
-  email: z.string().trim().email("E-mail inválido"),
-  password: z.string().min(6, "Mínimo 6 caracteres"),
+  email: z.string().trim().email("Informe um e-mail válido").max(255),
 });
 
 type Values = z.infer<typeof schema>;
 
-export default function AdminLogin() {
-  const navigate = useNavigate();
-  const location = useLocation();
-  const from = (location.state as any)?.from?.pathname ?? "/admin/classificados";
-  const [showPassword, setShowPassword] = React.useState(false);
-
+export default function AdminForgotPassword() {
   const form = useForm<Values>({
     resolver: zodResolver(schema),
-    defaultValues: { email: "", password: "" },
+    defaultValues: { email: "" },
     mode: "onSubmit",
   });
 
   const onSubmit = async (values: Values) => {
-    const { error } = await supabase.auth.signInWithPassword({
-      email: values.email,
-      password: values.password,
+    const parsed = schema.safeParse(values);
+    if (!parsed.success) return;
+
+    const { error } = await supabase.auth.resetPasswordForEmail(parsed.data.email, {
+      redirectTo: `${window.location.origin}/admin/redefinir-senha`,
     });
+
     if (error) {
-      form.setError("email", { message: "Não foi possível entrar. Verifique suas credenciais." });
+      toast.error("Não foi possível enviar", { description: "Verifique o e-mail e tente novamente." });
       return;
     }
-    navigate(from, { replace: true });
+
+    toast.success("Link enviado", { description: "Verifique seu e-mail para continuar." });
+    form.reset();
   };
 
   return (
@@ -72,13 +70,15 @@ export default function AdminLogin() {
         {/* Form */}
         <main className="p-8 md:p-10">
           <div className="max-w-md">
-            <h1 className="text-3xl font-semibold tracking-tight">Acesso Administrativo</h1>
-            <p className="mt-2 text-muted-foreground">Bem-vindo de volta. Insira suas credenciais.</p>
+            <h1 className="text-3xl font-semibold tracking-tight">Recuperar Senha</h1>
+            <p className="mt-2 text-muted-foreground">
+              Informe o e-mail associado à sua conta para receber o link de redefinição.
+            </p>
           </div>
 
           <Card className="mt-8 max-w-md">
             <CardHeader>
-              <CardTitle className="text-base">Entrar</CardTitle>
+              <CardTitle className="text-base">Enviar link</CardTitle>
             </CardHeader>
             <CardContent>
               <Form {...form}>
@@ -90,55 +90,17 @@ export default function AdminLogin() {
                       <FormItem>
                         <FormLabel>E-mail</FormLabel>
                         <FormControl>
-                          <Input autoComplete="email" type="email" placeholder="admin@marauagora.com.br" {...field} />
+                          <Input autoComplete="email" inputMode="email" type="email" placeholder="admin@marauagora.com.br" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
-
-                  <FormField
-                    control={form.control}
-                    name="password"
-                    render={({ field }) => (
-                      <FormItem>
-                        <div className="flex items-center justify-between gap-4">
-                          <FormLabel>Senha</FormLabel>
-                          <Link className="text-sm text-primary hover:underline" to="/admin/recuperar-senha">
-                            Esqueci minha senha
-                          </Link>
-                        </div>
-                        <FormControl>
-                          <div className="relative">
-                            <Input
-                              autoComplete="current-password"
-                              type={showPassword ? "text" : "password"}
-                              placeholder="Digite sua senha"
-                              {...field}
-                              className="pr-10"
-                            />
-                            <button
-                              type="button"
-                              onClick={() => setShowPassword((v) => !v)}
-                              className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                              aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
-                            >
-                              {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                            </button>
-                          </div>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <Button type="submit" className="w-full">
-                    Acessar Painel
-                  </Button>
+                  <Button type="submit" className="w-full">Enviar Link de Recuperação</Button>
 
                   <div className="pt-2 text-center text-sm">
-                    <Link className="text-muted-foreground hover:text-primary transition-colors" to="/">
-                      ← Voltar ao site
+                    <Link className="text-muted-foreground hover:text-primary transition-colors" to="/admin/login">
+                      ← Voltar ao Login
                     </Link>
                   </div>
                 </form>
@@ -147,7 +109,7 @@ export default function AdminLogin() {
           </Card>
 
           <div className="mt-10 text-xs text-muted-foreground flex items-center gap-2">
-            <Lock className="h-4 w-4 text-primary" aria-hidden="true" />
+            <span className="text-primary">🔒</span>
             Área segura e monitorada.
           </div>
         </main>
