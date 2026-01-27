@@ -107,12 +107,95 @@ export type Database = {
         }
         Relationships: []
       }
-      events: {
+      event_submission_rate_limits: {
         Row: {
+          count: number
+          id: string
+          key: string
+          updated_at: string
+          window_start: string
+        }
+        Insert: {
+          count?: number
+          id?: string
+          key: string
+          updated_at?: string
+          window_start?: string
+        }
+        Update: {
+          count?: number
+          id?: string
+          key?: string
+          updated_at?: string
+          window_start?: string
+        }
+        Relationships: []
+      }
+      event_submissions: {
+        Row: {
+          category: string | null
+          city: string
           created_at: string
           description: string | null
           ends_at: string | null
           id: string
+          is_free: boolean
+          notes: string | null
+          organizer_contact: string
+          organizer_name: string
+          starts_at: string
+          status: string
+          title: string
+          updated_at: string
+          venue: string | null
+        }
+        Insert: {
+          category?: string | null
+          city?: string
+          created_at?: string
+          description?: string | null
+          ends_at?: string | null
+          id?: string
+          is_free?: boolean
+          notes?: string | null
+          organizer_contact: string
+          organizer_name: string
+          starts_at: string
+          status?: string
+          title: string
+          updated_at?: string
+          venue?: string | null
+        }
+        Update: {
+          category?: string | null
+          city?: string
+          created_at?: string
+          description?: string | null
+          ends_at?: string | null
+          id?: string
+          is_free?: boolean
+          notes?: string | null
+          organizer_contact?: string
+          organizer_name?: string
+          starts_at?: string
+          status?: string
+          title?: string
+          updated_at?: string
+          venue?: string | null
+        }
+        Relationships: []
+      }
+      events: {
+        Row: {
+          category: string | null
+          city: string
+          created_at: string
+          description: string | null
+          ends_at: string | null
+          id: string
+          image_url: string | null
+          is_featured_week: boolean
+          is_free: boolean
           search_vector: unknown
           slug: string
           starts_at: string
@@ -121,10 +204,15 @@ export type Database = {
           venue: string | null
         }
         Insert: {
+          category?: string | null
+          city?: string
           created_at?: string
           description?: string | null
           ends_at?: string | null
           id?: string
+          image_url?: string | null
+          is_featured_week?: boolean
+          is_free?: boolean
           search_vector?: unknown
           slug: string
           starts_at: string
@@ -133,10 +221,15 @@ export type Database = {
           venue?: string | null
         }
         Update: {
+          category?: string | null
+          city?: string
           created_at?: string
           description?: string | null
           ends_at?: string | null
           id?: string
+          image_url?: string | null
+          is_featured_week?: boolean
+          is_free?: boolean
           search_vector?: unknown
           slug?: string
           starts_at?: string
