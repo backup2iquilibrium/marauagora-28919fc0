@@ -8,6 +8,7 @@ import NewsDetails from "./pages/NewsDetails";
 import CategoryNews from "./pages/CategoryNews";
 import Jobs from "./pages/Jobs";
 import JobDetails from "./pages/JobDetails";
+import CityPoints from "./pages/CityPoints";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -24,6 +25,8 @@ const App = () => (
           <Route path="/categoria/:slug" element={<CategoryNews />} />
           <Route path="/vagas" element={<Jobs />} />
           <Route path="/vagas/:id" element={<JobDetails />} />
+          <Route path="/pontos" element={<CityPoints />} />
+          <Route path="/points" element={<CityPoints />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
