@@ -1,4 +1,4 @@
-import { LogOut, Newspaper, Tag, Settings, Users } from "lucide-react";
+import { LogOut, Newspaper, Tag, Settings, Users, Megaphone, FileText } from "lucide-react";
 import { Outlet, NavLink as RRNavLink } from "react-router-dom";
 
 import { Button } from "@/components/ui/button";
@@ -7,6 +7,8 @@ import { cn } from "@/lib/utils";
 
 const navItems = [
   { to: "/admin", label: "Dashboard", icon: Newspaper },
+  { to: "/admin/publicidade", label: "Publicidade", icon: Megaphone },
+  { to: "/admin/conteudo", label: "Conteúdo", icon: FileText },
   { to: "/admin/classificados", label: "Classificados", icon: Tag },
   { to: "/admin/usuarios", label: "Usuários", icon: Users },
   { to: "/admin/configuracoes", label: "Configurações", icon: Settings },
