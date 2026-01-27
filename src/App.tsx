@@ -27,6 +27,7 @@ import NotFound from "./pages/NotFound";
 import AdminLogin from "./pages/admin/AdminLogin";
 import AdminLayout from "./pages/admin/AdminLayout";
 import AdminClassifieds from "./pages/admin/AdminClassifieds";
+import AdminAdManagement from "./pages/admin/AdminAdManagement";
 import AdvertiserClassifiedsDashboard from "./pages/advertiser/AdvertiserClassifiedsDashboard";
 
 const queryClient = new QueryClient();
@@ -67,8 +68,10 @@ const App = () => (
                 </RequireAdmin>
               }
             >
+              <Route path="publicidade" element={<AdminAdManagement />} />
               <Route path="classificados" element={<AdminClassifieds />} />
               <Route index element={<div className="p-6 text-muted-foreground">Dashboard (em breve)</div>} />
+              <Route path="conteudo" element={<div className="p-6 text-muted-foreground">Conteúdo (em breve)</div>} />
               <Route path="usuarios" element={<div className="p-6 text-muted-foreground">Usuários (em breve)</div>} />
               <Route path="configuracoes" element={<div className="p-6 text-muted-foreground">Configurações (em breve)</div>} />
             </Route>
