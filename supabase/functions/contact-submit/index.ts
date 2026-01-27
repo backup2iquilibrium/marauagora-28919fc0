@@ -15,6 +15,15 @@ const payloadSchema = z.object({
   message: z.string().trim().min(5).max(4000),
 });
 
+const RATE_WINDOW_MS = 10 * 60 * 1000; // 10 min
+const RATE_MAX = 5; // 5 envios por janela
+
+function getClientIp(req: Request) {
+  const xff = req.headers.get("x-forwarded-for");
+  if (xff) return xff.split(",")[0].trim();
+  return req.headers.get("x-real-ip") ?? "unknown";
+}
+
 serve(async (req: Request) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
   if (req.method !== "POST") {
@@ -36,6 +45,8 @@ serve(async (req: Request) => {
 
     const { name, email, subject, message } = parsed.data;
 
+    const ip = getClientIp(req);
+
     // Se existir auth header, tenta extrair o user_id (opcional)
     const authHeader = req.headers.get("Authorization") ?? "";
     let userId: string | null = null;
@@ -55,6 +66,48 @@ serve(async (req: Request) => {
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
     );
+
+    // Rate limit simples (por IP + email): evita spam/DoS
+    const rateKey = `${ip}:${email.toLowerCase()}`;
+    const now = Date.now();
+    const { data: rlRow, error: rlReadErr } = await admin
+      .from("contact_message_rate_limits")
+      .select("key, window_start, count")
+      .eq("key", rateKey)
+      .maybeSingle();
+
+    if (rlReadErr) throw rlReadErr;
+
+    if (!rlRow) {
+      const { error: rlInsertErr } = await admin.from("contact_message_rate_limits").insert({
+        key: rateKey,
+        window_start: new Date(now).toISOString(),
+        count: 1,
+        updated_at: new Date(now).toISOString(),
+      });
+      if (rlInsertErr) throw rlInsertErr;
+    } else {
+      const windowStart = new Date(rlRow.window_start).getTime();
+      const inWindow = now - windowStart <= RATE_WINDOW_MS;
+      const nextCount = inWindow ? (rlRow.count ?? 0) + 1 : 1;
+
+      if (inWindow && nextCount > RATE_MAX) {
+        return new Response(JSON.stringify({ error: "Rate limited" }), {
+          status: 429,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      const { error: rlUpErr } = await admin
+        .from("contact_message_rate_limits")
+        .update({
+          count: nextCount,
+          window_start: inWindow ? rlRow.window_start : new Date(now).toISOString(),
+          updated_at: new Date(now).toISOString(),
+        })
+        .eq("key", rateKey);
+      if (rlUpErr) throw rlUpErr;
+    }
 
     const { error } = await admin.from("contact_messages").insert({
       name,
