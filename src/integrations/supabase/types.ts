@@ -14,6 +14,30 @@ export type Database = {
   }
   public: {
     Tables: {
+      contact_message_rate_limits: {
+        Row: {
+          count: number
+          id: string
+          key: string
+          updated_at: string
+          window_start: string
+        }
+        Insert: {
+          count?: number
+          id?: string
+          key: string
+          updated_at?: string
+          window_start?: string
+        }
+        Update: {
+          count?: number
+          id?: string
+          key?: string
+          updated_at?: string
+          window_start?: string
+        }
+        Relationships: []
+      }
       contact_messages: {
         Row: {
           created_at: string
