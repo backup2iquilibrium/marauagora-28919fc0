@@ -50,6 +50,83 @@ export type Database = {
         }
         Relationships: []
       }
+      classified_ads: {
+        Row: {
+          advertiser_email: string
+          advertiser_name: string
+          category_slug: string
+          created_at: string
+          id: string
+          owner_user_id: string | null
+          published_at: string | null
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          advertiser_email: string
+          advertiser_name: string
+          category_slug: string
+          created_at?: string
+          id?: string
+          owner_user_id?: string | null
+          published_at?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          advertiser_email?: string
+          advertiser_name?: string
+          category_slug?: string
+          created_at?: string
+          id?: string
+          owner_user_id?: string | null
+          published_at?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "classified_ads_category_slug_fkey"
+            columns: ["category_slug"]
+            isOneToOne: false
+            referencedRelation: "classified_categories"
+            referencedColumns: ["slug"]
+          },
+        ]
+      }
+      classified_categories: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean
+          name: string
+          slug: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name: string
+          slug: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          slug?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       contact_message_rate_limits: {
         Row: {
           count: number
@@ -441,6 +518,36 @@ export type Database = {
           search_vector?: unknown
           slug?: string
           title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          company_name: string | null
+          created_at: string
+          display_name: string | null
+          id: string
+          is_verified: boolean
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          company_name?: string | null
+          created_at?: string
+          display_name?: string | null
+          id: string
+          is_verified?: boolean
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          company_name?: string | null
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          is_verified?: boolean
           updated_at?: string
         }
         Relationships: []
