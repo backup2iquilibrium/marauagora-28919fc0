@@ -51,6 +51,11 @@ export function Footer({ logoUrl }: { logoUrl: string }) {
           <div>
             <h4 className="font-bold text-lg mb-4 text-secondary">Institucional</h4>
             <ul className="space-y-2 text-sm text-primary-foreground/80">
+              <li>
+                <Link className="hover:text-primary-foreground transition-colors" to="/servicos">
+                  Serviços Públicos
+                </Link>
+              </li>
               {["Quem Somos", "Expediente", "Anuncie Conosco", "Política de Privacidade", "Fale Conosco"].map((l) => (
                 <li key={l}>
                   <a className="hover:text-primary-foreground transition-colors" href="#">
