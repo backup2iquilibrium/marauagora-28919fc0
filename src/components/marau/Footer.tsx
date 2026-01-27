@@ -38,6 +38,11 @@ export function Footer({ logoUrl }: { logoUrl: string }) {
                   Agenda Cultural
                 </Link>
               </li>
+              <li>
+                <Link className="hover:text-primary-foreground transition-colors" to="/horoscopo">
+                  Horóscopo
+                </Link>
+              </li>
               {["Política", "Segurança", "Esporte", "Agronegócio", "Variedades"].map((l) => (
                 <li key={l}>
                   <a className="hover:text-primary-foreground transition-colors" href="#">

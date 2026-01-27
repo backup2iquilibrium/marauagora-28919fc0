@@ -18,6 +18,7 @@ import Agenda from "./pages/Agenda";
 import Galleries from "./pages/Galleries";
 import GalleryDetails from "./pages/GalleryDetails";
 import Services from "./pages/Services";
+import Horoscope from "./pages/Horoscope";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -45,6 +46,7 @@ const App = () => (
           <Route path="/galerias" element={<Galleries />} />
           <Route path="/galerias/:slug" element={<GalleryDetails />} />
           <Route path="/servicos" element={<Services />} />
+          <Route path="/horoscopo" element={<Horoscope />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
