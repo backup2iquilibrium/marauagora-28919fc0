@@ -1,116 +1,56 @@
 
-## Plano de implementação — Portal de Notícias “Marau Agora” (Lovable)
+Objetivo
+- Sim, entendido. A partir de agora você vai enviar as páginas em HTML nessa sequência, e eu vou transformar cada HTML na página equivalente em React (Vite + TS + Tailwind), mantendo o padrão visual já criado na Home, extraindo componentes reutilizáveis e integrando tudo via rotas.
+- Vou seguir a metodologia “HTML como fonte da verdade”: o HTML mais recente manda quando houver conflito de layout/estilo.
 
-### 1) Alinhamento rápido (o que falta você confirmar)
-Para eu executar com segurança sem retrabalho, preciso só destas definições (pode responder em texto mesmo):
-- **MVP começa só com layout + dados de exemplo**, ou **já com backend** para cadastrar notícias/vagas/anúncios?
-- Você quer **área administrativa agora** (simples) ou **deixar para uma fase 2**?
-- As primeiras páginas além da Home serão quais: **Notícia (detalhe)**, **Categoria**, **Vagas**, **Ao Vivo**?
+Como vamos trabalhar (processo por arquivo HTML)
+1) Você envia o HTML da próxima página (ex.: “2 - New Details”) e, se houver, os assets (imagens, ícones, fontes) usados nele.
+2) Eu:
+   - Recrio a página fiel ao HTML no frontend (estrutura, espaçamento, tipografia, responsividade).
+   - Identifico blocos repetíveis e extraio componentes reutilizáveis (ex.: CardNoticia, ListaNoticias, Breadcrumb, BlocoRelacionadas, etc.).
+   - Integro a página na navegação (react-router-dom) e atualizo links do header/menu/rodapé para as rotas corretas.
+   - Mantenho o tema (cores, fontes, sombras, bordas) consistente com a Home.
+3) Validamos visualmente no preview e ajustamos detalhes (principalmente mobile).
 
-> Se você ainda não decidiu, o plano abaixo já prevê começar com layout + conteúdo “mock” e depois ligar o backend.
+Sequência de implementação (mapeamento para rotas)
+- 2) New Details  -> /noticia/:slug  (detalhe da notícia)
+- 3) Esportes     -> /categoria/esportes (ou /categoria/:slug com slug=esportes)
+- 4) Emprego      -> /vagas
+- 5) Points       -> preciso ver o HTML para definir a rota (ex.: /points ou /pontos)
+- 6) Fale Conosco -> /contato
+- 7) Sobre Nós    -> /quem-somos
+- 8) Resultados da Busca -> /busca?q=...
+- 9) Política de Privacidade -> /politica-de-privacidade
+- 10) Termos de Uso -> /termos-de-uso
+- 11) Agenda -> /agenda
+- 12) Galeria -> /galeria
+- 13) Classificados -> /classificados
+- 14) Serviços Públicos -> /servicos-publicos
+- 15) Horóscopo -> /horoscopo
+- 16) Área Administrativa -> /admin (subrotas: /admin/noticias, /admin/categorias, /admin/vagas, etc.)
 
----
+Dados e backend (como vamos encaixar o Supabase sem travar o layout)
+- Enquanto você envia os HTMLs, as páginas podem iniciar com “mock data” para ficar tudo navegável e visualmente perfeito.
+- Em paralelo (ou após as primeiras páginas críticas), eu conecto os dados reais via Supabase:
+  - Tabelas planejadas: profiles, user_roles, categorias, noticias, vagas, patrocinadores/anuncios (conforme necessidade).
+  - RLS obrigatório.
+  - Admin: login email/senha + roles via tabela user_roles, com checagem segura (server-side/RLS + função has_role security definer).
 
-### 2) Fase 1 — “Home” fiel ao HTML (fonte da verdade)
-Objetivo: recriar a Home do HTML enviado com o mesmo visual/estrutura e comportamento responsivo.
+Ponto importante de segurança/qualidade já identificado
+- Existe um arquivo .env recente com variáveis VITE_*; neste projeto isso não deve ser usado. O frontend já possui o client Supabase com URL e anon key fixos em src/integrations/supabase/client.ts. Quando voltarmos a implementar (modo edição), vou remover/ignorar esse .env para evitar inconsistências e seguir a regra do projeto.
 
-**Entregas na Home**
-- **Top Bar** com data e indicadores (USD/Soja/Milho) em formato de “chips”.
-- **Header** com logomarca, ícones sociais e **busca**.
-- **Menu de navegação** com as categorias e item “Ao Vivo” destacado.
-- **Bloco clima/tempo** (banner superior) com dados estáticos no MVP.
-- **Destaque principal** com carrossel (3 slides), com título, resumo e categoria.
-- **Cards secundários** (2 cards à direita do carrossel).
-- **Últimas Notícias** (lista de cards com imagem + categoria + tempo + título + resumo).
-- **Espaço publicitário** (placeholder bem identificado).
-- **Vagas de Emprego** (grid de cards com cargo/empresa/local/tipo + link “Detalhes”).
-- **Guia da Cidade** (atalhos circulares com imagem).
-- **Sidebar** com patrocinadores/“Anuncie aqui”, Telefones Úteis, Mais Lidas, Newsletter.
-- **Rodapé** com colunas (Sobre, Editorial, Institucional, Contato).
+O que eu preciso de você agora (para começar a etapa 2)
+- Envie o HTML da página “2 - New Details”.
+- Se essa página depender de:
+  - CSS externo, JS externo, imagens (logos/banners), ou fontes,
+  envie também os arquivos ou links usados (ou um .zip com assets), e me diga se eu devo baixar/substituir por placeholders quando não houver o asset.
 
-**Regra de ouro aplicada**
-- Este HTML vira o **padrão visual global**: cores, tipografia, espaçamentos, cartões, estilos de botão e hierarquia.
+Critérios de pronto (para cada página)
+- Layout fiel ao HTML
+- Responsivo (mobile primeiro)
+- Links do header/menu/rodapé funcionando
+- Componentes reutilizáveis extraídos quando fizer sentido
+- Sem regressões na Home
 
----
-
-### 3) Fase 2 — Componentização (para escalar rápido)
-Objetivo: transformar blocos em componentes reutilizáveis, mantendo o padrão.
-
-**Componentes principais**
-- Card de notícia (variações: destaque, lista, “mais lidas”)
-- Carrossel de destaque
-- Card de vaga
-- Card de patrocinador + bloco “Anuncie Aqui”
-- Barra de busca
-- Bloco newsletter
-- Seções (título + “ver todas”) para padronizar
-
-Resultado: quando você mandar o próximo HTML, a gente reaproveita e adapta sem “quebrar” o estilo.
-
----
-
-### 4) Fase 3 — Páginas e navegação (estrutura do portal)
-Objetivo: sair de “uma página” e virar portal navegável.
-
-**Rotas/páginas sugeridas para o MVP**
-- **/ (Home)**
-- **/categoria/:slug** (lista de notícias por editoria)
-- **/noticia/:slug** (página individual da notícia)
-- **/vagas** (lista)
-- **/vagas/:id** (detalhe)
-- **/ao-vivo** (página simples inicial, pronta para evoluir)
-- **/contato**, **/politica-de-privacidade**, **/quem-somos** (páginas institucionais básicas)
-
----
-
-### 5) Fase 4 — Conteúdo (mock agora, backend depois)
-Objetivo: o site funcionar com conteúdo realista desde o início.
-
-**Opção A (recomendada para começar): Mock**
-- Popular notícias/vagas/patrocinadores com dados de exemplo.
-- Busca filtra esses itens localmente (boa para validar UX).
-
-**Opção B: Backend já no MVP**
-- Cadastrar notícias, categorias, vagas, patrocinadores e anúncios em uma base.
-- Exibir na Home com ordenação e destaque manual.
-
----
-
-### 6) Fase 5 — Monetização (anúncios) e governança editorial
-Objetivo: manter espaços publicitários controláveis.
-
-**MVP**
-- Zonas de anúncio com placeholders e rótulo “Publicidade”.
-- Estrutura pronta para trocar por imagens/links reais depois.
-
-**Evolução**
-- Patrocínios fixos e rotativos
-- Regras simples: “master”, “apoio local”, “sidebar slots”
-
----
-
-### 7) Fase 6 — Qualidade (responsividade, dark mode e performance)
-Objetivo: experiência consistente em mobile/desktop e carregamento rápido.
-
-- Ajustes finos de responsividade (colunas → empilhado no mobile; menu com rolagem horizontal)
-- Dark mode consistente com o padrão do HTML
-- Otimizações básicas de imagens e hierarquia de leitura
-
----
-
-### 8) Como trabalharemos com os próximos HTMLs (seu processo guiado)
-Para cada novo arquivo HTML que você enviar:
-1) analisar a página/bloco novo  
-2) reproduzir fielmente  
-3) extrair componentes reutilizáveis  
-4) integrar na navegação e manter padrão global  
-
----
-
-## Próximo passo prático
-Você me responde 3 coisas (bem curto):
-1) **Layout apenas ou já com backend?**  
-2) **Admin agora ou depois?**  
-3) **Quais páginas entram no MVP além da Home?**  
-
-Com isso, eu fecho o escopo do MVP e a ordem exata de implementação (sem desperdício).
+Próxima execução
+- Assim que você mandar o HTML “2 - New Details”, eu implemento /noticia/:slug e ajusto a navegação para apontar para essa rota.
