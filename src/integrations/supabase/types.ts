@@ -239,6 +239,101 @@ export type Database = {
         }
         Relationships: []
       }
+      galleries: {
+        Row: {
+          category: string | null
+          city: string
+          cover_image_url: string | null
+          created_at: string
+          excerpt: string | null
+          id: string
+          is_featured: boolean
+          is_published: boolean
+          media_kind: string
+          published_at: string
+          slug: string
+          title: string
+          updated_at: string
+          views_count: number
+        }
+        Insert: {
+          category?: string | null
+          city?: string
+          cover_image_url?: string | null
+          created_at?: string
+          excerpt?: string | null
+          id?: string
+          is_featured?: boolean
+          is_published?: boolean
+          media_kind?: string
+          published_at?: string
+          slug: string
+          title: string
+          updated_at?: string
+          views_count?: number
+        }
+        Update: {
+          category?: string | null
+          city?: string
+          cover_image_url?: string | null
+          created_at?: string
+          excerpt?: string | null
+          id?: string
+          is_featured?: boolean
+          is_published?: boolean
+          media_kind?: string
+          published_at?: string
+          slug?: string
+          title?: string
+          updated_at?: string
+          views_count?: number
+        }
+        Relationships: []
+      }
+      gallery_items: {
+        Row: {
+          created_at: string
+          duration_seconds: number | null
+          gallery_id: string
+          id: string
+          kind: string
+          media_url: string
+          sort_order: number
+          thumbnail_url: string | null
+          title: string | null
+        }
+        Insert: {
+          created_at?: string
+          duration_seconds?: number | null
+          gallery_id: string
+          id?: string
+          kind?: string
+          media_url: string
+          sort_order?: number
+          thumbnail_url?: string | null
+          title?: string | null
+        }
+        Update: {
+          created_at?: string
+          duration_seconds?: number | null
+          gallery_id?: string
+          id?: string
+          kind?: string
+          media_url?: string
+          sort_order?: number
+          thumbnail_url?: string | null
+          title?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "gallery_items_gallery_id_fkey"
+            columns: ["gallery_id"]
+            isOneToOne: false
+            referencedRelation: "galleries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       jobs: {
         Row: {
           company: string | null
