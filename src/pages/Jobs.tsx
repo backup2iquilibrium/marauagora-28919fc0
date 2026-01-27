@@ -1,5 +1,5 @@
-import { useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
+import { Link, useSearchParams } from "react-router-dom";
 
 import { TopBar } from "@/components/marau/TopBar";
 import { SiteHeader } from "@/components/marau/SiteHeader";
@@ -28,22 +28,7 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination";
 
-import {
-  ArrowRight,
-  Briefcase,
-  Building2,
-  Code,
-  Factory,
-  Home,
-  Mail,
-  MapPin,
-  Megaphone,
-  Search,
-  Stethoscope,
-  Store,
-  Timer,
-  Wallet,
-} from "lucide-react";
+import { ArrowRight, Briefcase, Code, Factory, Mail, MapPin, Megaphone, Search, Stethoscope, Store, Timer, Wallet } from "lucide-react";
 
 const LOGO_URL =
   "https://lh3.googleusercontent.com/aida-public/AB6AXuAxrvhZIsLpFBhL4Fdg88ttSHjhIb-frJZQZlaxm8GNQc7IW4mGb6BEqX2FQHmaj5bWS_a_MAl-WrKOfqZv531UtiOEoVWECnv_zEkdUgFQPP4xOUlX1yLx1i1OZJ8scM7yIzgQ_kxoKeircZhd3n99pbXddvrZNxvVJ0LngrGdOEY6Erpyltdl5OirCSp02ao8a-6h_Tq9XGEvnDmkDVa-vtppe-1SASqAQ2YWNx6p66Oa5ofAncc0fEvxM9h_FbKYN9e7c07h";
@@ -142,8 +127,39 @@ function JobCard({ job }: { job: Job }) {
 }
 
 export default function Jobs() {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [city, setCity] = useState<string>("Marau - RS");
   const [sort, setSort] = useState<string>("recentes");
+
+  const [selectedSector, setSelectedSector] = useState<string | null>(() => searchParams.get("setor"));
+  const [selectedRegion, setSelectedRegion] = useState<string | null>(() => searchParams.get("bairro"));
+  const [selectedType, setSelectedType] = useState<string | null>(() => searchParams.get("tipo"));
+
+  // Mantém estado sincronizado se o usuário editar a URL manualmente.
+  useEffect(() => {
+    setSelectedSector(searchParams.get("setor"));
+    setSelectedRegion(searchParams.get("bairro"));
+    setSelectedType(searchParams.get("tipo"));
+  }, [searchParams]);
+
+  const updateParam = (key: "setor" | "bairro" | "tipo", value: string | null) => {
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      if (!value) next.delete(key);
+      else next.set(key, value);
+      return next;
+    });
+  };
+
+  const clearFilters = () => {
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      next.delete("setor");
+      next.delete("bairro");
+      next.delete("tipo");
+      return next;
+    });
+  };
 
   const cities = useMemo(() => ["Marau - RS", "Passo Fundo - RS", "Vila Maria - RS"], []);
   const jobs = useMemo<Job[]>(
@@ -224,6 +240,35 @@ export default function Jobs() {
   const regions = useMemo(() => ["Centro", "Distrito Industrial", "Borghetti"], []);
   const types = useMemo(() => ["Qualquer tipo", "Efetivo (CLT)", "Estágio"], []);
 
+  const filteredJobs = useMemo(() => {
+    const normalize = (s: string) => s.toLowerCase().normalize("NFD").replace(/\p{Diacritic}/gu, "");
+
+    return jobs.filter((job) => {
+      // mantém os cards de anúncio sempre visíveis
+      if (job.featuredLabel === "Anúncio") return true;
+
+      const tags = job.tags.map(normalize);
+      const location = job.bullets.find((b) => b.icon === "location")?.label ?? "";
+      const locationNorm = normalize(location);
+
+      const sectorOk =
+        !selectedSector ||
+        tags.some((t) => t.includes(normalize(selectedSector))) ||
+        // compatibilidade com "Comércio / Varejo" -> tag "Comércio"
+        (normalize(selectedSector).includes("comercio") && tags.some((t) => t.includes("comercio")));
+
+      const regionOk = !selectedRegion || locationNorm.includes(normalize(selectedRegion));
+
+      // mock: ainda não temos o tipo no dataset, então só filtramos quando houver match explícito
+      const typeOk =
+        !selectedType ||
+        selectedType === "Qualquer tipo" ||
+        job.bullets.some((b) => normalize(b.label).includes(normalize(selectedType)));
+
+      return sectorOk && regionOk && typeOk;
+    });
+  }, [jobs, selectedSector, selectedRegion, selectedType]);
+
   return (
     <div className="min-h-screen bg-background text-foreground font-manrope">
       <TopBar />
@@ -280,7 +325,13 @@ export default function Jobs() {
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between gap-3">
                   <CardTitle className="text-base">Filtros</CardTitle>
-                  <Button type="button" variant="ghost" size="sm" className="text-muted-foreground">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="text-muted-foreground"
+                    onClick={clearFilters}
+                  >
                     Limpar tudo
                   </Button>
                 </div>
@@ -293,7 +344,16 @@ export default function Jobs() {
                       <button
                         key={s.label}
                         type="button"
-                        className="w-full rounded-md border bg-card px-3 py-2 text-left text-sm transition-colors hover:bg-accent"
+                        aria-pressed={selectedSector === s.label}
+                        onClick={() => {
+                          const next = selectedSector === s.label ? null : s.label;
+                          updateParam("setor", next);
+                        }}
+                        className={
+                          selectedSector === s.label
+                            ? "w-full rounded-md border bg-accent px-3 py-2 text-left text-sm transition-colors"
+                            : "w-full rounded-md border bg-card px-3 py-2 text-left text-sm transition-colors hover:bg-accent"
+                        }
                       >
                         <span className="flex items-center justify-between">
                           <span>{s.label}</span>
@@ -308,9 +368,22 @@ export default function Jobs() {
                   <p className="text-sm font-medium">Bairro / Região</p>
                   <div className="mt-3 flex flex-wrap gap-2">
                     {regions.map((r) => (
-                      <Badge key={r} variant="outline" className="rounded-full px-3 py-1">
-                        {r}
-                      </Badge>
+                      <button
+                        key={r}
+                        type="button"
+                        onClick={() => {
+                          const next = selectedRegion === r ? null : r;
+                          updateParam("bairro", next);
+                        }}
+                        aria-pressed={selectedRegion === r}
+                      >
+                        <Badge
+                          variant={selectedRegion === r ? "secondary" : "outline"}
+                          className="rounded-full px-3 py-1 hover:bg-accent"
+                        >
+                          {r}
+                        </Badge>
+                      </button>
                     ))}
                   </div>
                 </div>
@@ -319,13 +392,23 @@ export default function Jobs() {
                   <p className="text-sm font-medium">Tipo de Vaga</p>
                   <div className="mt-3 space-y-2">
                     {types.map((t, idx) => (
-                      <Badge
+                      <button
                         key={t}
-                        variant={idx === 0 ? "secondary" : "outline"}
-                        className="w-fit rounded-full px-3 py-1"
+                        type="button"
+                        onClick={() => {
+                          const next = t === "Qualquer tipo" ? null : t;
+                          updateParam("tipo", next);
+                        }}
+                        aria-pressed={selectedType === t || (!selectedType && idx === 0)}
+                        className="block"
                       >
-                        {t}
-                      </Badge>
+                        <Badge
+                          variant={selectedType === t || (!selectedType && idx === 0) ? "secondary" : "outline"}
+                          className="w-fit rounded-full px-3 py-1 hover:bg-accent"
+                        >
+                          {t}
+                        </Badge>
+                      </button>
                     ))}
                   </div>
                 </div>
@@ -370,7 +453,7 @@ export default function Jobs() {
 
             <div className="mt-6 space-y-4">
               <AdSlot />
-              {jobs.map((job) =>
+              {filteredJobs.map((job) =>
                 job.featuredLabel === "Anúncio" ? (
                   <Card key={job.id} className="border-dashed">
                     <CardContent className="p-6">
