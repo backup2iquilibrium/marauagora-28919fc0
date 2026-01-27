@@ -124,9 +124,21 @@ serve(async (req: Request) => {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (err: any) {
-    return new Response(JSON.stringify({ error: err?.message ?? "Unknown error" }), {
-      status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    // Log full error server-side only (avoid leaking database/schema details to clients)
+    console.error("contact-submit error", {
+      message: err?.message,
+      stack: err?.stack,
+      cause: err?.cause,
     });
+
+    return new Response(
+      JSON.stringify({
+        error: "Não foi possível enviar sua mensagem agora. Tente novamente em instantes.",
+      }),
+      {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      },
+    );
   }
 });
