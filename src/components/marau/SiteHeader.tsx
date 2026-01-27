@@ -14,7 +14,7 @@ const defaultNav: NavItem[] = [
   { label: "Política", href: "/categoria/politica" },
   { label: "Esportes", href: "/categoria/esportes" },
   { label: "Agronegócio", href: "/categoria/agronegocio" },
-  { label: "Eventos", href: "/categoria/eventos" },
+  { label: "Agenda", href: "/agenda" },
   { label: "Classificados", href: "/categoria/classificados" },
   { label: "Ao Vivo", href: "/ao-vivo", accent: true },
 ];
