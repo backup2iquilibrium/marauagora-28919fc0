@@ -273,6 +273,10 @@ export type Database = {
           isSetofReturn: true
         }
       }
+      search_portal_counts: {
+        Args: { category?: string; q: string }
+        Returns: Json
+      }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"

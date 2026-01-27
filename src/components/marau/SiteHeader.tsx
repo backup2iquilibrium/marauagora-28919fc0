@@ -1,4 +1,6 @@
 import { Facebook, Instagram, Mail, Search, Youtube } from "lucide-react";
+import * as React from "react";
+import { useNavigate } from "react-router-dom";
 
 import { Input } from "@/components/ui/input";
 import { NavLink } from "@/components/NavLink";
@@ -24,6 +26,14 @@ export function SiteHeader({
   logoUrl: string;
   navItems?: NavItem[];
 }) {
+  const navigate = useNavigate();
+  const [q, setQ] = React.useState("");
+
+  const submitSearch = () => {
+    const trimmed = q.trim();
+    navigate(`/busca?q=${encodeURIComponent(trimmed)}`);
+  };
+
   return (
     <header className="bg-card shadow-sm sticky top-0 z-40">
       <div className="container px-4 py-4">
@@ -57,6 +67,11 @@ export function SiteHeader({
               <Input
                 placeholder="Buscar notícias, vagas, serviços..."
                 className="h-11 rounded-full pl-5 pr-12 bg-muted focus-visible:ring-ring"
+                value={q}
+                onChange={(e) => setQ(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") submitSearch();
+                }}
               />
               <Button
                 type="button"
@@ -64,6 +79,7 @@ export function SiteHeader({
                 size="icon"
                 className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-primary"
                 aria-label="Buscar"
+                onClick={submitSearch}
               >
                 <Search className="h-5 w-5" />
               </Button>
