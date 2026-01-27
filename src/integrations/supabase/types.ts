@@ -14,6 +14,98 @@ export type Database = {
   }
   public: {
     Tables: {
+      ad_campaigns: {
+        Row: {
+          clicks: number
+          client_name: string
+          created_at: string
+          ends_at: string | null
+          id: string
+          impressions: number
+          notes: string | null
+          space_id: string
+          starts_at: string | null
+          status: Database["public"]["Enums"]["ad_campaign_status"]
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          clicks?: number
+          client_name: string
+          created_at?: string
+          ends_at?: string | null
+          id?: string
+          impressions?: number
+          notes?: string | null
+          space_id: string
+          starts_at?: string | null
+          status?: Database["public"]["Enums"]["ad_campaign_status"]
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          clicks?: number
+          client_name?: string
+          created_at?: string
+          ends_at?: string | null
+          id?: string
+          impressions?: number
+          notes?: string | null
+          space_id?: string
+          starts_at?: string | null
+          status?: Database["public"]["Enums"]["ad_campaign_status"]
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ad_campaigns_space_id_fkey"
+            columns: ["space_id"]
+            isOneToOne: false
+            referencedRelation: "ad_spaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ad_spaces: {
+        Row: {
+          created_at: string
+          device_label: string
+          id: string
+          is_active: boolean
+          monthly_price_cents: number | null
+          name: string
+          size_label: string
+          slug: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          device_label: string
+          id?: string
+          is_active?: boolean
+          monthly_price_cents?: number | null
+          name: string
+          size_label: string
+          slug: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          device_label?: string
+          id?: string
+          is_active?: boolean
+          monthly_price_cents?: number | null
+          name?: string
+          size_label?: string
+          slug?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       city_points: {
         Row: {
           category: string | null
@@ -857,6 +949,7 @@ export type Database = {
       }
     }
     Enums: {
+      ad_campaign_status: "draft" | "active" | "paused" | "ended"
       app_role: "admin" | "moderator" | "user"
     }
     CompositeTypes: {
@@ -993,6 +1086,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      ad_campaign_status: ["draft", "active", "paused", "ended"],
       app_role: ["admin", "moderator", "user"],
     },
   },
