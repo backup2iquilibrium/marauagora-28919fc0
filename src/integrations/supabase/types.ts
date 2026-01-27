@@ -444,6 +444,39 @@ export type Database = {
           },
         ]
       }
+      horoscopes: {
+        Row: {
+          content: string
+          created_at: string
+          for_date: string
+          id: string
+          is_published: boolean
+          period: string
+          sign_slug: string
+          updated_at: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          for_date: string
+          id?: string
+          is_published?: boolean
+          period?: string
+          sign_slug: string
+          updated_at?: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          for_date?: string
+          id?: string
+          is_published?: boolean
+          period?: string
+          sign_slug?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       jobs: {
         Row: {
           company: string | null
@@ -739,6 +772,54 @@ export type Database = {
           id?: string
           role?: Database["public"]["Enums"]["app_role"]
           user_id?: string
+        }
+        Relationships: []
+      }
+      zodiac_sign_profiles: {
+        Row: {
+          career: string | null
+          created_at: string
+          date_range: string | null
+          health: string | null
+          icon: string | null
+          id: string
+          is_published: boolean
+          love: string | null
+          overview: string | null
+          sign_name: string
+          sign_slug: string
+          traits: Json
+          updated_at: string
+        }
+        Insert: {
+          career?: string | null
+          created_at?: string
+          date_range?: string | null
+          health?: string | null
+          icon?: string | null
+          id?: string
+          is_published?: boolean
+          love?: string | null
+          overview?: string | null
+          sign_name: string
+          sign_slug: string
+          traits?: Json
+          updated_at?: string
+        }
+        Update: {
+          career?: string | null
+          created_at?: string
+          date_range?: string | null
+          health?: string | null
+          icon?: string | null
+          id?: string
+          is_published?: boolean
+          love?: string | null
+          overview?: string | null
+          sign_name?: string
+          sign_slug?: string
+          traits?: Json
+          updated_at?: string
         }
         Relationships: []
       }
