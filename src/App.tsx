@@ -12,6 +12,7 @@ import CityPoints from "./pages/CityPoints";
 import Contact from "./pages/Contact";
 import QuemSomos from "./pages/QuemSomos";
 import SearchResults from "./pages/SearchResults";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -33,6 +34,7 @@ const App = () => (
           <Route path="/contato" element={<Contact />} />
           <Route path="/quem-somos" element={<QuemSomos />} />
           <Route path="/busca" element={<SearchResults />} />
+          <Route path="/politica-de-privacidade" element={<PrivacyPolicy />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
