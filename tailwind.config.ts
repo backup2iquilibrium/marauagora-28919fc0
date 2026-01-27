@@ -23,6 +23,7 @@ export default {
           DEFAULT: "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))",
         },
+        "primary-glow": "hsl(var(--primary-glow))",
         secondary: {
           DEFAULT: "hsl(var(--secondary))",
           foreground: "hsl(var(--secondary-foreground))",
@@ -80,10 +81,27 @@ export default {
             height: "0",
           },
         },
+        "carousel-slide-1": {
+          "0%, 28%": { opacity: "1" },
+          "33%, 100%": { opacity: "0" },
+        },
+        "carousel-slide-2": {
+          "0%, 28%": { opacity: "0" },
+          "33%, 61%": { opacity: "1" },
+          "66%, 100%": { opacity: "0" },
+        },
+        "carousel-slide-3": {
+          "0%, 61%": { opacity: "0" },
+          "66%, 95%": { opacity: "1" },
+          "100%": { opacity: "0" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+        "carousel-1": "carousel-slide-1 12s infinite",
+        "carousel-2": "carousel-slide-2 12s infinite",
+        "carousel-3": "carousel-slide-3 12s infinite",
       },
     },
   },
