@@ -17,6 +17,7 @@ import TermsOfUse from "./pages/TermsOfUse";
 import Agenda from "./pages/Agenda";
 import Galleries from "./pages/Galleries";
 import GalleryDetails from "./pages/GalleryDetails";
+import Services from "./pages/Services";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -43,6 +44,7 @@ const App = () => (
           <Route path="/agenda" element={<Agenda />} />
           <Route path="/galerias" element={<Galleries />} />
           <Route path="/galerias/:slug" element={<GalleryDetails />} />
+          <Route path="/servicos" element={<Services />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

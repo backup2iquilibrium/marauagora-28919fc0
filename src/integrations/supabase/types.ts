@@ -107,6 +107,39 @@ export type Database = {
         }
         Relationships: []
       }
+      emergency_numbers: {
+        Row: {
+          created_at: string
+          icon: string | null
+          id: string
+          is_published: boolean
+          label: string
+          number: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          icon?: string | null
+          id?: string
+          is_published?: boolean
+          label: string
+          number: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          icon?: string | null
+          id?: string
+          is_published?: boolean
+          label?: string
+          number?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       event_submission_rate_limits: {
         Row: {
           count: number
@@ -411,6 +444,175 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      public_service_actions: {
+        Row: {
+          created_at: string
+          href: string
+          icon: string | null
+          id: string
+          label: string
+          service_id: string
+          sort_order: number
+        }
+        Insert: {
+          created_at?: string
+          href: string
+          icon?: string | null
+          id?: string
+          label: string
+          service_id: string
+          sort_order?: number
+        }
+        Update: {
+          created_at?: string
+          href?: string
+          icon?: string | null
+          id?: string
+          label?: string
+          service_id?: string
+          sort_order?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "public_service_actions_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "public_services"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      public_service_categories: {
+        Row: {
+          created_at: string
+          icon: string | null
+          id: string
+          name: string
+          slug: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          icon?: string | null
+          id?: string
+          name: string
+          slug: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          icon?: string | null
+          id?: string
+          name?: string
+          slug?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      public_service_links: {
+        Row: {
+          created_at: string
+          href: string
+          icon: string | null
+          id: string
+          is_published: boolean
+          label: string
+          slug: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          href: string
+          icon?: string | null
+          id?: string
+          is_published?: boolean
+          label: string
+          slug: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          href?: string
+          icon?: string | null
+          id?: string
+          is_published?: boolean
+          label?: string
+          slug?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      public_services: {
+        Row: {
+          address: string | null
+          category_slug: string | null
+          created_at: string
+          details: string | null
+          hours_label: string | null
+          id: string
+          is_featured: boolean
+          is_published: boolean
+          phone: string | null
+          slug: string
+          sort_order: number
+          status_badge: string | null
+          summary: string | null
+          title: string
+          updated_at: string
+          views_count: number
+        }
+        Insert: {
+          address?: string | null
+          category_slug?: string | null
+          created_at?: string
+          details?: string | null
+          hours_label?: string | null
+          id?: string
+          is_featured?: boolean
+          is_published?: boolean
+          phone?: string | null
+          slug: string
+          sort_order?: number
+          status_badge?: string | null
+          summary?: string | null
+          title: string
+          updated_at?: string
+          views_count?: number
+        }
+        Update: {
+          address?: string | null
+          category_slug?: string | null
+          created_at?: string
+          details?: string | null
+          hours_label?: string | null
+          id?: string
+          is_featured?: boolean
+          is_published?: boolean
+          phone?: string | null
+          slug?: string
+          sort_order?: number
+          status_badge?: string | null
+          summary?: string | null
+          title?: string
+          updated_at?: string
+          views_count?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "public_services_category_slug_fkey"
+            columns: ["category_slug"]
+            isOneToOne: false
+            referencedRelation: "public_service_categories"
+            referencedColumns: ["slug"]
+          },
+        ]
       }
       user_roles: {
         Row: {
