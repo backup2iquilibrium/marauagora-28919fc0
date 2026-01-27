@@ -1,4 +1,5 @@
 import { Facebook, Instagram, MapPin, Phone, Youtube } from "lucide-react";
+import { Link } from "react-router-dom";
 
 export function Footer({ logoUrl }: { logoUrl: string }) {
   return (
@@ -32,6 +33,11 @@ export function Footer({ logoUrl }: { logoUrl: string }) {
           <div>
             <h4 className="font-bold text-lg mb-4 text-secondary">Editorial</h4>
             <ul className="space-y-2 text-sm text-primary-foreground/80">
+              <li>
+                <Link className="hover:text-primary-foreground transition-colors" to="/agenda">
+                  Agenda Cultural
+                </Link>
+              </li>
               {["Política", "Segurança", "Esporte", "Agronegócio", "Variedades"].map((l) => (
                 <li key={l}>
                   <a className="hover:text-primary-foreground transition-colors" href="#">
