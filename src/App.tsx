@@ -29,6 +29,7 @@ import AdminLayout from "./pages/admin/AdminLayout";
 import AdminClassifieds from "./pages/admin/AdminClassifieds";
 import AdminAdManagement from "./pages/admin/AdminAdManagement";
 import AdminDashboard from "./pages/admin/AdminDashboard";
+import AdminResetPassword from "./pages/admin/AdminResetPassword";
 import AdvertiserClassifiedsDashboard from "./pages/advertiser/AdvertiserClassifiedsDashboard";
 
 const queryClient = new QueryClient();
@@ -61,6 +62,7 @@ const App = () => (
 
             {/* Admin */}
             <Route path="/admin/login" element={<AdminLogin />} />
+            <Route path="/admin/redefinir-senha" element={<AdminResetPassword />} />
             <Route
               path="/admin"
               element={
