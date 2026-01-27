@@ -13,6 +13,7 @@ import Contact from "./pages/Contact";
 import QuemSomos from "./pages/QuemSomos";
 import SearchResults from "./pages/SearchResults";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
+import TermsOfUse from "./pages/TermsOfUse";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -35,6 +36,7 @@ const App = () => (
           <Route path="/quem-somos" element={<QuemSomos />} />
           <Route path="/busca" element={<SearchResults />} />
           <Route path="/politica-de-privacidade" element={<PrivacyPolicy />} />
+          <Route path="/termos-de-uso" element={<TermsOfUse />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
