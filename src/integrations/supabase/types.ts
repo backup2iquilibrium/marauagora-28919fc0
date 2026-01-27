@@ -14,6 +14,42 @@ export type Database = {
   }
   public: {
     Tables: {
+      city_points: {
+        Row: {
+          category: string | null
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          search_vector: unknown
+          slug: string
+          tags: string[]
+          updated_at: string
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          search_vector?: unknown
+          slug: string
+          tags?: string[]
+          updated_at?: string
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          search_vector?: unknown
+          slug?: string
+          tags?: string[]
+          updated_at?: string
+        }
+        Relationships: []
+      }
       contact_message_rate_limits: {
         Row: {
           count: number
@@ -71,6 +107,123 @@ export type Database = {
         }
         Relationships: []
       }
+      events: {
+        Row: {
+          created_at: string
+          description: string | null
+          ends_at: string | null
+          id: string
+          search_vector: unknown
+          slug: string
+          starts_at: string
+          title: string
+          updated_at: string
+          venue: string | null
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          ends_at?: string | null
+          id?: string
+          search_vector?: unknown
+          slug: string
+          starts_at: string
+          title: string
+          updated_at?: string
+          venue?: string | null
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          ends_at?: string | null
+          id?: string
+          search_vector?: unknown
+          slug?: string
+          starts_at?: string
+          title?: string
+          updated_at?: string
+          venue?: string | null
+        }
+        Relationships: []
+      }
+      jobs: {
+        Row: {
+          company: string | null
+          created_at: string
+          description: string | null
+          employment_type: string | null
+          id: string
+          location: string | null
+          posted_at: string
+          search_vector: unknown
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          company?: string | null
+          created_at?: string
+          description?: string | null
+          employment_type?: string | null
+          id?: string
+          location?: string | null
+          posted_at?: string
+          search_vector?: unknown
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          company?: string | null
+          created_at?: string
+          description?: string | null
+          employment_type?: string | null
+          id?: string
+          location?: string | null
+          posted_at?: string
+          search_vector?: unknown
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      news: {
+        Row: {
+          body: string | null
+          category_slug: string
+          created_at: string
+          excerpt: string | null
+          id: string
+          published_at: string
+          search_vector: unknown
+          slug: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          body?: string | null
+          category_slug?: string
+          created_at?: string
+          excerpt?: string | null
+          id?: string
+          published_at?: string
+          search_vector?: unknown
+          slug: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          body?: string | null
+          category_slug?: string
+          created_at?: string
+          excerpt?: string | null
+          id?: string
+          published_at?: string
+          search_vector?: unknown
+          slug?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -104,12 +257,36 @@ export type Database = {
         }
         Returns: boolean
       }
+      search_portal: {
+        Args: {
+          category?: string
+          page_offset?: number
+          page_size?: number
+          q: string
+          sort?: string
+        }
+        Returns: Database["public"]["CompositeTypes"]["portal_search_result"][]
+        SetofOptions: {
+          from: "*"
+          to: "portal_search_result"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"
     }
     CompositeTypes: {
-      [_ in never]: never
+      portal_search_result: {
+        item_type: string | null
+        item_id: string | null
+        title: string | null
+        excerpt: string | null
+        route: string | null
+        published_at: string | null
+        rank: number | null
+      }
     }
   }
 }
