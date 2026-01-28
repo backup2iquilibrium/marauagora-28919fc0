@@ -1,10 +1,10 @@
 import * as React from "react";
 import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
-import { CalendarIcon, CheckCircle2, MoreVertical, Search, XCircle } from "lucide-react";
+import { CalendarIcon, CheckCircle2, Eye, MoreVertical, Pencil, RefreshCw, Search, SlidersHorizontal, Trash2, XCircle } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -63,7 +63,11 @@ async function fetchAds(params: {
 
   if (params.status !== "all") query = query.eq("status", params.status);
   if (params.category !== "all") query = query.eq("category_slug", params.category);
-  if (params.q.trim()) query = query.ilike("title", `%${params.q.trim()}%`);
+  if (params.q.trim()) {
+    const q = params.q.trim();
+    // title OR advertiser fields OR uuid partial
+    query = query.or(`title.ilike.%${q}%,advertiser_name.ilike.%${q}%,advertiser_email.ilike.%${q}%,id.ilike.%${q}%`);
+  }
   if (params.day) {
     const start = new Date(params.day);
     start.setHours(0, 0, 0, 0);
@@ -76,7 +80,31 @@ async function fetchAds(params: {
   const to = from + params.pageSize - 1;
   const { data, error, count } = await query.range(from, to);
   if (error) throw error;
-  return { rows: data ?? [], count: count ?? 0 };
+
+  const rows = data ?? [];
+  const ids = rows.map((r: any) => r.id).filter(Boolean);
+
+  // Fetch thumbnails in a second query (more predictable than nested selects)
+  const mediaMap = new Map<string, { url: string; width?: number | null; height?: number | null }>();
+  if (ids.length) {
+    const { data: mediaRows, error: mediaError } = await supabase
+      .from("classified_ad_media")
+      .select("ad_id,thumbnail_url,media_url,width,height,sort_order")
+      .in("ad_id", ids)
+      .order("sort_order", { ascending: true });
+    if (mediaError) throw mediaError;
+    (mediaRows ?? []).forEach((m: any) => {
+      if (!mediaMap.has(m.ad_id)) {
+        mediaMap.set(m.ad_id, {
+          url: m.thumbnail_url ?? m.media_url,
+          width: m.width ?? null,
+          height: m.height ?? null,
+        });
+      }
+    });
+  }
+
+  return { rows, count: count ?? 0, mediaMap };
 }
 
 export default function AdminClassifieds() {
@@ -104,6 +132,10 @@ export default function AdminClassifieds() {
   const total = adsQuery.data?.count ?? 0;
   const pageCount = Math.max(1, Math.ceil(total / pageSize));
 
+  const [selected, setSelected] = React.useState<Set<string>>(new Set());
+  const allIds = React.useMemo(() => (adsQuery.data?.rows ?? []).map((r: any) => r.id), [adsQuery.data?.rows]);
+  const allChecked = allIds.length > 0 && allIds.every((id: string) => selected.has(id));
+
   const updateStatus = async (id: string, next: Status) => {
     const payload: any = { status: next };
     if (next === "active") payload.published_at = new Date().toISOString();
@@ -121,6 +153,11 @@ export default function AdminClassifieds() {
     setPage(0);
   }, [q, status, category, day]);
 
+  React.useEffect(() => {
+    // reset selection on data change
+    setSelected(new Set());
+  }, [adsQuery.data?.rows]);
+
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-start justify-between gap-4">
@@ -128,69 +165,67 @@ export default function AdminClassifieds() {
           <h1 className="text-2xl font-semibold">Gerenciamento de Classificados</h1>
           <p className="text-sm text-muted-foreground">Revise, aprove e gerencie os anúncios do portal.</p>
         </div>
-        <Button>Novo Anúncio</Button>
+        <Button>
+          <span className="sr-only md:not-sr-only">Novo Anúncio</span>
+          <span className="md:sr-only">+</span>
+        </Button>
       </div>
 
-      <Card>
-        <CardHeader className="pb-4">
-          <CardTitle className="text-base">Filtros</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 gap-3 md:grid-cols-4">
-            <div className="relative">
-              <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-              <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Buscar anúncio…" className="pl-9" />
-            </div>
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-12">
+        <div className="md:col-span-6 relative">
+          <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            placeholder="Buscar por título, anunciante ou ID..."
+            className="pl-9"
+          />
+        </div>
 
-            <Select value={status} onValueChange={(v) => setStatus(v as any)}>
-              <SelectTrigger className="bg-card">
-                <SelectValue placeholder="Todos os Status" />
-              </SelectTrigger>
-              <SelectContent className="z-50 bg-popover">
-                <SelectItem value="all">Todos os Status</SelectItem>
-                <SelectItem value="pending">Pendente</SelectItem>
-                <SelectItem value="active">Ativo</SelectItem>
-                <SelectItem value="rejected">Rejeitado</SelectItem>
-              </SelectContent>
-            </Select>
+        <div className="md:col-span-2">
+          <Select value={status} onValueChange={(v) => setStatus(v as any)}>
+            <SelectTrigger className="bg-card">
+              <SelectValue placeholder="Todos os Status" />
+            </SelectTrigger>
+            <SelectContent className="z-50 bg-popover">
+              <SelectItem value="all">Todos os Status</SelectItem>
+              <SelectItem value="pending">Pendente</SelectItem>
+              <SelectItem value="active">Ativo</SelectItem>
+              <SelectItem value="rejected">Rejeitado</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
 
-            <Select value={category} onValueChange={(v) => setCategory(v as any)}>
-              <SelectTrigger className="bg-card">
-                <SelectValue placeholder="Todas Categorias" />
-              </SelectTrigger>
-              <SelectContent className="z-50 bg-popover">
-                <SelectItem value="all">Todas Categorias</SelectItem>
-                {(categoriesQuery.data ?? []).map((c) => (
-                  <SelectItem key={c.slug} value={c.slug}>
-                    {c.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+        <div className="md:col-span-2">
+          <Select value={category} onValueChange={(v) => setCategory(v as any)}>
+            <SelectTrigger className="bg-card">
+              <SelectValue placeholder="Todas Categorias" />
+            </SelectTrigger>
+            <SelectContent className="z-50 bg-popover">
+              <SelectItem value="all">Todas Categorias</SelectItem>
+              {(categoriesQuery.data ?? []).map((c) => (
+                <SelectItem key={c.slug} value={c.slug}>
+                  {c.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
 
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  className={cn("justify-start text-left font-normal", !day && "text-muted-foreground")}
-                >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {day ? format(day, "dd/MM/yyyy") : "Data"}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0 z-50" align="start">
-                <Calendar
-                  mode="single"
-                  selected={day}
-                  onSelect={setDay}
-                  initialFocus
-                  className={cn("p-3 pointer-events-auto")}
-                />
-              </PopoverContent>
-            </Popover>
-          </div>
-        </CardContent>
-      </Card>
+        <div className="md:col-span-2">
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" className={cn("w-full justify-start text-left font-normal", !day && "text-muted-foreground")}>
+                <CalendarIcon className="mr-2 h-4 w-4" />
+                {day ? format(day, "dd/MM/yyyy") : "Data"}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0 z-50" align="start">
+              <Calendar mode="single" selected={day} onSelect={setDay} initialFocus className={cn("p-3 pointer-events-auto")} />
+            </PopoverContent>
+          </Popover>
+        </div>
+      </div>
 
       <Card>
         <CardContent className="p-0">
@@ -198,11 +233,31 @@ export default function AdminClassifieds() {
             <p className="text-sm text-muted-foreground">
               {adsQuery.isLoading ? "Carregando…" : `Mostrando ${Math.min(total, page * pageSize + 1)}-${Math.min(total, (page + 1) * pageSize)} de ${total} resultados`}
             </p>
+            <div className="inline-flex items-center gap-2">
+              <Button variant="outline" size="icon" aria-label="Atualizar" onClick={() => adsQuery.refetch()}>
+                <RefreshCw className={cn("h-4 w-4", adsQuery.isFetching && "animate-spin")} />
+              </Button>
+              <Button variant="outline" size="icon" aria-label="Ajustes">
+                <SlidersHorizontal className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
 
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead className="w-10">
+                  <input
+                    type="checkbox"
+                    aria-label="Selecionar todos"
+                    checked={allChecked}
+                    onChange={(e) => {
+                      if (e.target.checked) setSelected(new Set(allIds));
+                      else setSelected(new Set());
+                    }}
+                    className="h-4 w-4 rounded border-input"
+                  />
+                </TableHead>
                 <TableHead>Anúncio</TableHead>
                 <TableHead>Categoria</TableHead>
                 <TableHead>Anunciante</TableHead>
@@ -214,9 +269,52 @@ export default function AdminClassifieds() {
             <TableBody>
               {(adsQuery.data?.rows ?? []).map((row: any) => (
                 <TableRow key={row.id}>
+                  <TableCell className="align-middle">
+                    <input
+                      type="checkbox"
+                      aria-label={`Selecionar anúncio ${row.title}`}
+                      checked={selected.has(row.id)}
+                      onChange={(e) => {
+                        setSelected((prev) => {
+                          const next = new Set(prev);
+                          if (e.target.checked) next.add(row.id);
+                          else next.delete(row.id);
+                          return next;
+                        });
+                      }}
+                      className="h-4 w-4 rounded border-input"
+                    />
+                  </TableCell>
                   <TableCell>
-                    <div className="font-medium">{row.title}</div>
-                    <div className="text-xs text-muted-foreground">ID: #{String(row.id).slice(0, 8)}</div>
+                    <div className="flex items-center gap-4">
+                      <div className="h-12 w-20 rounded-md bg-muted border overflow-hidden shrink-0">
+                        {(() => {
+                          const media = adsQuery.data?.mediaMap?.get(row.id);
+                          if (!media?.url) return null;
+                          return (
+                            <img
+                              src={media.url}
+                              alt={`Thumbnail do anúncio ${row.title}`}
+                              className="h-full w-full object-cover"
+                              loading="lazy"
+                            />
+                          );
+                        })()}
+                      </div>
+                      <div className="min-w-0">
+                        <div className="font-medium truncate">{row.title}</div>
+                        <div className="text-xs text-muted-foreground">
+                          ID: #{String(row.id).slice(0, 8)}
+                          {(() => {
+                            const media = adsQuery.data?.mediaMap?.get(row.id);
+                            if (!media?.width || !media?.height) return null;
+                            return (
+                              <span className="ml-2 inline-flex items-center rounded bg-muted px-1.5 py-0.5">{media.width}×{media.height}</span>
+                            );
+                          })()}
+                        </div>
+                      </div>
+                    </div>
                   </TableCell>
                   <TableCell>{catMap.get(row.category_slug) ?? row.category_slug}</TableCell>
                   <TableCell>
@@ -239,6 +337,15 @@ export default function AdminClassifieds() {
                           </Button>
                         </>
                       )}
+                      <Button size="icon" variant="ghost" aria-label="Ver">
+                        <Eye className="h-4 w-4" />
+                      </Button>
+                      <Button size="icon" variant="ghost" aria-label="Editar">
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                      <Button size="icon" variant="ghost" aria-label="Excluir">
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
                       <Button size="icon" variant="ghost" aria-label="Mais ações">
                         <MoreVertical className="h-4 w-4" />
                       </Button>
@@ -249,7 +356,7 @@ export default function AdminClassifieds() {
 
               {!adsQuery.isLoading && (adsQuery.data?.rows?.length ?? 0) === 0 && (
                 <TableRow>
-                  <TableCell colSpan={6} className="py-10 text-center text-muted-foreground">
+                  <TableCell colSpan={7} className="py-10 text-center text-muted-foreground">
                     Nenhum anúncio encontrado.
                   </TableCell>
                 </TableRow>
