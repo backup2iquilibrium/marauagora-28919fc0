@@ -53,7 +53,7 @@ export default function AdvertiserClassifiedsDashboard() {
   }, [adsQuery.data]);
 
   return (
-    <div className="min-h-screen bg-background text-foreground p-6 space-y-6">
+    <div className="p-6 space-y-6">
       <div className="flex items-start justify-between gap-4">
         <div>
           <p className="text-sm text-muted-foreground">Olá, {user?.email}</p>

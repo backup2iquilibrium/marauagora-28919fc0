@@ -32,6 +32,8 @@ import AdminAdManagement from "./pages/admin/AdminAdManagement";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminResetPassword from "./pages/admin/AdminResetPassword";
 import AdvertiserClassifiedsDashboard from "./pages/advertiser/AdvertiserClassifiedsDashboard";
+import AdvertiserLayout from "./pages/advertiser/AdvertiserLayout";
+import AdvertiserAdDashboard from "./pages/advertiser/AdvertiserAdDashboard";
 
 const queryClient = new QueryClient();
 
@@ -83,13 +85,16 @@ const App = () => (
 
             {/* Advertiser */}
             <Route
-              path="/anunciante/classificados"
+              path="/anunciante"
               element={
                 <RequireAuth to="/admin/login">
-                  <AdvertiserClassifiedsDashboard />
+                  <AdvertiserLayout />
                 </RequireAuth>
               }
-            />
+            >
+              <Route path="publicidade" element={<AdvertiserAdDashboard />} />
+              <Route path="classificados" element={<AdvertiserClassifiedsDashboard />} />
+            </Route>
 
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />

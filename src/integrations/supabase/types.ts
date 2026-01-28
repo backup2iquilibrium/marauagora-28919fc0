@@ -23,6 +23,7 @@ export type Database = {
           id: string
           impressions: number
           notes: string | null
+          owner_user_id: string | null
           space_id: string
           starts_at: string | null
           status: Database["public"]["Enums"]["ad_campaign_status"]
@@ -37,6 +38,7 @@ export type Database = {
           id?: string
           impressions?: number
           notes?: string | null
+          owner_user_id?: string | null
           space_id: string
           starts_at?: string | null
           status?: Database["public"]["Enums"]["ad_campaign_status"]
@@ -51,6 +53,7 @@ export type Database = {
           id?: string
           impressions?: number
           notes?: string | null
+          owner_user_id?: string | null
           space_id?: string
           starts_at?: string | null
           status?: Database["public"]["Enums"]["ad_campaign_status"]
