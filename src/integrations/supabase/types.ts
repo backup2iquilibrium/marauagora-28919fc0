@@ -142,6 +142,50 @@ export type Database = {
         }
         Relationships: []
       }
+      classified_ad_media: {
+        Row: {
+          ad_id: string
+          created_at: string
+          height: number | null
+          id: string
+          kind: string
+          media_url: string
+          sort_order: number
+          thumbnail_url: string | null
+          width: number | null
+        }
+        Insert: {
+          ad_id: string
+          created_at?: string
+          height?: number | null
+          id?: string
+          kind?: string
+          media_url: string
+          sort_order?: number
+          thumbnail_url?: string | null
+          width?: number | null
+        }
+        Update: {
+          ad_id?: string
+          created_at?: string
+          height?: number | null
+          id?: string
+          kind?: string
+          media_url?: string
+          sort_order?: number
+          thumbnail_url?: string | null
+          width?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "classified_ad_media_ad_id_fkey"
+            columns: ["ad_id"]
+            isOneToOne: false
+            referencedRelation: "classified_ads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       classified_ads: {
         Row: {
           advertiser_email: string

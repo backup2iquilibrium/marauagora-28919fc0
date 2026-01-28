@@ -1,9 +1,10 @@
-import { LogOut, Newspaper, Tag, Settings, Users, Megaphone, FileText } from "lucide-react";
+import { Bell, LogOut, Newspaper, Settings, Tag, Users, Megaphone, FileText } from "lucide-react";
 import { Outlet, NavLink as RRNavLink } from "react-router-dom";
 
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/context/AuthContext";
 
 const navItems = [
   { to: "/admin", label: "Dashboard", icon: Newspaper },
@@ -15,6 +16,9 @@ const navItems = [
 ];
 
 export default function AdminLayout() {
+  const { user } = useAuth();
+  const displayName = (user?.user_metadata as any)?.full_name || user?.email || "Admin";
+
   return (
     <div className="min-h-screen bg-background text-foreground">
       <div className="flex min-h-screen">
@@ -55,9 +59,33 @@ export default function AdminLayout() {
           </div>
         </aside>
 
-        <main className="flex-1">
-          <Outlet />
-        </main>
+        <div className="flex-1 min-w-0">
+          <header className="h-16 border-b bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+            <div className="h-full px-6 flex items-center justify-end gap-3">
+              <Button variant="outline" size="icon" aria-label="Notificações">
+                <Bell className="h-4 w-4" />
+              </Button>
+              <Button variant="outline" size="icon" aria-label="Configurações">
+                <Settings className="h-4 w-4" />
+              </Button>
+              <div className="pl-2 border-l ml-1 flex items-center gap-3">
+                <div className="text-right leading-tight">
+                  <div className="text-sm font-semibold truncate max-w-[180px]">{displayName}</div>
+                  <div className="text-xs text-muted-foreground">Painel Administrativo</div>
+                </div>
+                <div className="h-9 w-9 rounded-full bg-muted border" aria-hidden />
+              </div>
+            </div>
+          </header>
+
+          <main className="min-w-0">
+            <Outlet />
+          </main>
+
+          <footer className="px-6 py-6 text-xs text-muted-foreground border-t">
+            © 2024 Marau Agora. Todos os direitos reservados.
+          </footer>
+        </div>
       </div>
     </div>
   );
