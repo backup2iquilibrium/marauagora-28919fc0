@@ -13,7 +13,7 @@ import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
-import sidebarImage from "@/assets/admin-sidebar.jpg";
+import sidebarImage from "@/assets/admin-sidebar-screen7.png";
 
 const passwordRules = {
   minLen: (v: string) => v.length >= 8,
@@ -38,21 +38,21 @@ function PasswordRequirements({ password }: { password: string }) {
     <div className="flex items-center gap-3">
       <div
         className={
-          "h-5 w-5 rounded-sm border grid place-items-center " +
-          (ok ? "bg-primary border-primary text-primary-foreground" : "bg-background border-input text-muted-foreground")
+          "h-5 w-5 rounded border border-input grid place-items-center " +
+          (ok ? "bg-primary/15" : "bg-background")
         }
         aria-hidden
       >
-        {ok ? <Check className="h-3.5 w-3.5" /> : null}
+        {ok ? <Check className="h-3.5 w-3.5 text-primary" /> : null}
       </div>
       <span className={"text-sm " + (ok ? "text-foreground" : "text-muted-foreground")}>{label}</span>
     </div>
   );
 
   return (
-    <div className="rounded-lg border bg-card p-4">
+    <div className="rounded-lg border bg-card p-5">
       <div className="text-xs font-semibold tracking-wider text-muted-foreground">REQUISITOS DA SENHA</div>
-      <div className="mt-4 grid gap-3 sm:grid-cols-2">
+      <div className="mt-4 grid gap-4 sm:grid-cols-2">
         <Item ok={checks.minLen} label="Mínimo de 8 caracteres" />
         <Item ok={checks.upperLower} label="Letra maiúscula e minúscula" />
         <Item ok={checks.number} label="Pelo menos um número" />
@@ -113,7 +113,7 @@ export default function AdminResetPassword() {
     <div className="min-h-screen bg-background text-foreground px-4 py-10">
       <div className="mx-auto w-full max-w-6xl overflow-hidden rounded-2xl border bg-card shadow-sm grid grid-cols-1 md:grid-cols-2">
         {/* Painel lateral */}
-        <aside className="relative min-h-[320px] md:min-h-[640px] overflow-hidden">
+          <aside className="relative min-h-[320px] md:min-h-[640px] overflow-hidden">
           <img
             src={sidebarImage}
             alt="Paisagem urbana ao entardecer"
@@ -122,16 +122,13 @@ export default function AdminResetPassword() {
           />
           <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-background/25 to-background/10" />
 
-          <div className="relative z-10 p-8 md:p-10 flex h-full flex-col">
-            <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-lg bg-background/15 border border-border/30 grid place-items-center">
-                <span className="text-sm font-bold">M</span>
+            <div className="relative z-10 p-8 md:p-10 flex h-full flex-col">
+              <div className="flex items-center gap-3">
+                <div className="h-10 w-10 rounded-lg bg-background/15 border border-border/30 grid place-items-center">
+                  <span className="text-sm font-bold">M</span>
+                </div>
+                <div className="text-lg font-semibold">Marau Agora</div>
               </div>
-              <div>
-                <div className="font-semibold">Marau Agora</div>
-                <div className="text-xs text-muted-foreground">Painel Administrativo</div>
-              </div>
-            </div>
 
             <div className="mt-auto">
               <blockquote className="max-w-sm text-lg font-semibold leading-snug">
@@ -143,7 +140,7 @@ export default function AdminResetPassword() {
         </aside>
 
         {/* Form */}
-        <main className="p-8 md:p-12">
+          <main className="p-8 md:p-12">
           <div className="max-w-xl">
             <h1 className="text-4xl font-semibold tracking-tight">Definir Nova Senha</h1>
             <p className="mt-3 text-muted-foreground max-w-prose">
@@ -260,7 +257,7 @@ export default function AdminResetPassword() {
         </main>
       </div>
 
-      <div className="mt-8 text-center text-xs text-muted-foreground">© {new Date().getFullYear()} Marau Agora. Todos os direitos reservados.</div>
+      <div className="mt-8 text-center text-xs text-muted-foreground">© 2024 Marau Agora. Todos os direitos reservados.</div>
     </div>
   );
 }
