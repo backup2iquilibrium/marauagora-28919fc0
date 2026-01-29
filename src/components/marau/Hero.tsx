@@ -1,4 +1,6 @@
+import { useState, useEffect } from "react";
 import { HeroSlide } from "./types";
+import { useSettings } from "@/context/SettingsContext";
 
 const slides: HeroSlide[] = [
   {
@@ -60,6 +62,17 @@ function Tag({ tone, children }: { tone?: HeroSlide["tagTone"]; children: string
 }
 
 export function Hero() {
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const { carouselSpeed } = useSettings();
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % slides.length);
+    }, carouselSpeed);
+
+    return () => clearInterval(timer);
+  }, [carouselSpeed]);
+
   return (
     <section className="mb-12">
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -67,10 +80,8 @@ export function Hero() {
           {slides.map((s, idx) => (
             <div
               key={s.title}
-              className={
-                "absolute inset-0 w-full h-full opacity-0 transition-opacity duration-1000 " +
-                (idx === 0 ? "animate-carousel-1" : idx === 1 ? "animate-carousel-2" : "animate-carousel-3")
-              }
+              className={`absolute inset-0 w-full h-full transition-opacity duration-1000 ${idx === currentSlide ? "opacity-100 z-10" : "opacity-0 z-0"
+                }`}
             >
               <img src={s.imageUrl} alt={s.title} className="absolute inset-0 w-full h-full object-cover" loading="lazy" />
               <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/20 to-transparent" />
@@ -85,9 +96,19 @@ export function Hero() {
           ))}
 
           <div className="absolute bottom-4 right-4 z-20 flex space-x-2" aria-hidden="true">
-            <div className="w-2 h-2 rounded-full bg-primary-foreground/80" />
-            <div className="w-2 h-2 rounded-full bg-primary-foreground/50" />
-            <div className="w-2 h-2 rounded-full bg-primary-foreground/50" />
+            {slides.map((_, idx) => (
+              <button
+                key={idx}
+                type="button"
+                className={`w-2 h-2 rounded-full transition-colors ${idx === currentSlide ? "bg-primary-foreground/90" : "bg-primary-foreground/50 hover:bg-primary-foreground/75"
+                  }`}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setCurrentSlide(idx);
+                }}
+                aria-label={`Ir para slide ${idx + 1}`}
+              />
+            ))}
           </div>
         </article>
 

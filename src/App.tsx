@@ -37,70 +37,73 @@ import AdvertiserAdDashboard from "./pages/advertiser/AdvertiserAdDashboard";
 
 const queryClient = new QueryClient();
 
+import { SettingsProvider } from "@/context/SettingsContext";
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <Toaster />
       <Sonner />
-      <AuthProvider>
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/noticia/:slug" element={<NewsDetails />} />
-            <Route path="/categoria/:slug" element={<CategoryNews />} />
-            <Route path="/vagas" element={<Jobs />} />
-            <Route path="/vagas/:id" element={<JobDetails />} />
-            <Route path="/pontos" element={<CityPoints />} />
-            <Route path="/points" element={<CityPoints />} />
-            <Route path="/contato" element={<Contact />} />
-            <Route path="/quem-somos" element={<QuemSomos />} />
-            <Route path="/busca" element={<SearchResults />} />
-            <Route path="/politica-de-privacidade" element={<PrivacyPolicy />} />
-            <Route path="/termos-de-uso" element={<TermsOfUse />} />
-            <Route path="/agenda" element={<Agenda />} />
-            <Route path="/galerias" element={<Galleries />} />
-            <Route path="/galerias/:slug" element={<GalleryDetails />} />
-            <Route path="/servicos" element={<Services />} />
-            <Route path="/horoscopo" element={<Horoscope />} />
+      <SettingsProvider>
+        <AuthProvider>
+          <BrowserRouter>
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/noticia/:slug" element={<NewsDetails />} />
+              <Route path="/categoria/:slug" element={<CategoryNews />} />
+              <Route path="/vagas" element={<Jobs />} />
+              <Route path="/vagas/:id" element={<JobDetails />} />
+              <Route path="/pontos" element={<CityPoints />} />
+              <Route path="/points" element={<CityPoints />} />
+              <Route path="/contato" element={<Contact />} />
+              <Route path="/quem-somos" element={<QuemSomos />} />
+              <Route path="/busca" element={<SearchResults />} />
+              <Route path="/politica-de-privacidade" element={<PrivacyPolicy />} />
+              <Route path="/termos-de-uso" element={<TermsOfUse />} />
+              <Route path="/agenda" element={<Agenda />} />
+              <Route path="/galerias" element={<Galleries />} />
+              <Route path="/galerias/:slug" element={<GalleryDetails />} />
+              <Route path="/servicos" element={<Services />} />
+              <Route path="/horoscopo" element={<Horoscope />} />
 
-            {/* Admin */}
-            <Route path="/admin/login" element={<AdminLogin />} />
-            <Route path="/admin/recuperar-senha" element={<AdminForgotPassword />} />
-            <Route path="/admin/redefinir-senha" element={<AdminResetPassword />} />
-            <Route
-              path="/admin"
-              element={
-                <RequireAdmin>
-                  <AdminLayout />
-                </RequireAdmin>
-              }
-            >
-              <Route path="publicidade" element={<AdminAdManagement />} />
-              <Route path="classificados" element={<AdminClassifieds />} />
-              <Route index element={<AdminDashboard />} />
-              <Route path="conteudo" element={<div className="p-6 text-muted-foreground">Conteúdo (em breve)</div>} />
-              <Route path="usuarios" element={<div className="p-6 text-muted-foreground">Usuários (em breve)</div>} />
-              <Route path="configuracoes" element={<div className="p-6 text-muted-foreground">Configurações (em breve)</div>} />
-            </Route>
+              {/* Admin */}
+              <Route path="/admin/login" element={<AdminLogin />} />
+              <Route path="/admin/recuperar-senha" element={<AdminForgotPassword />} />
+              <Route path="/admin/redefinir-senha" element={<AdminResetPassword />} />
+              <Route
+                path="/admin"
+                element={
+                  <RequireAdmin>
+                    <AdminLayout />
+                  </RequireAdmin>
+                }
+              >
+                <Route path="publicidade" element={<AdminAdManagement />} />
+                <Route path="classificados" element={<AdminClassifieds />} />
+                <Route index element={<AdminDashboard />} />
+                <Route path="conteudo" element={<div className="p-6 text-muted-foreground">Conteúdo (em breve)</div>} />
+                <Route path="usuarios" element={<div className="p-6 text-muted-foreground">Usuários (em breve)</div>} />
+                <Route path="configuracoes" element={<div className="p-6 text-muted-foreground">Configurações (em breve)</div>} />
+              </Route>
 
-            {/* Advertiser */}
-            <Route
-              path="/anunciante"
-              element={
-                <RequireAuth to="/admin/login">
-                  <AdvertiserLayout />
-                </RequireAuth>
-              }
-            >
-              <Route path="publicidade" element={<AdvertiserAdDashboard />} />
-              <Route path="classificados" element={<AdvertiserClassifiedsDashboard />} />
-            </Route>
+              {/* Advertiser */}
+              <Route
+                path="/anunciante"
+                element={
+                  <RequireAuth to="/admin/login">
+                    <AdvertiserLayout />
+                  </RequireAuth>
+                }
+              >
+                <Route path="publicidade" element={<AdvertiserAdDashboard />} />
+                <Route path="classificados" element={<AdvertiserClassifiedsDashboard />} />
+              </Route>
 
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-      </AuthProvider>
+              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </BrowserRouter>
+        </AuthProvider>
     </TooltipProvider>
   </QueryClientProvider>
 );

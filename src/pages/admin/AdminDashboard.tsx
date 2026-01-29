@@ -29,6 +29,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { useSettings } from "@/context/SettingsContext";
+import { toast } from "sonner";
 
 type StatCard = {
   title: string;
@@ -89,6 +91,18 @@ const activity = [
 ];
 
 export default function AdminDashboard() {
+  const { carouselSpeed, setCarouselSpeed } = useSettings();
+  const [localSpeed, setLocalSpeed] = React.useState(carouselSpeed);
+
+  React.useEffect(() => {
+    setLocalSpeed(carouselSpeed);
+  }, [carouselSpeed]);
+
+  const saveSpeed = () => {
+    setCarouselSpeed(localSpeed);
+    toast.success("Velocidade atualizada com sucesso!");
+  };
+
   const todayLabel = React.useMemo(() => {
     const d = new Date();
     // Quinta-feira, 24 de Outubro
@@ -137,6 +151,41 @@ export default function AdminDashboard() {
           </a>
         </Button>
       </section>
+
+      {/* Settings Card */}
+      <Card className="bg-slate-50 border-blue-200">
+        <CardHeader>
+          <div className="flex items-center gap-2">
+            <div className="bg-blue-600 rounded p-1">
+              <PenSquare className="h-4 w-4 text-white" />
+            </div>
+            <CardTitle className="text-lg text-slate-900">Configurações do Site</CardTitle>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center gap-4 max-w-md">
+            <div className="flex-1">
+              <label className="text-sm font-medium text-slate-700 block mb-2">
+                Velocidade do Carrossel (segundos)
+              </label>
+              <div className="flex gap-2">
+                <Input
+                  type="number"
+                  value={localSpeed / 1000}
+                  onChange={(e) => setLocalSpeed(Number(e.target.value) * 1000)}
+                  className="bg-white"
+                />
+                <Button onClick={saveSpeed} disabled={localSpeed === carouselSpeed}>
+                  Salvar
+                </Button>
+              </div>
+              <p className="text-xs text-slate-500 mt-2">
+                Tempo que cada imagem fica visível na página inicial.
+              </p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       <section className="grid grid-cols-1 gap-4 lg:grid-cols-4">
         {statCards.map((c) => (
