@@ -99,9 +99,9 @@ export default {
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
-        "carousel-1": "carousel-slide-1 24s infinite",
-        "carousel-2": "carousel-slide-2 24s infinite",
-        "carousel-3": "carousel-slide-3 24s infinite",
+        "carousel-1": "carousel-slide-1 48s infinite",
+        "carousel-2": "carousel-slide-2 48s infinite",
+        "carousel-3": "carousel-slide-3 48s infinite",
       },
     },
   },
