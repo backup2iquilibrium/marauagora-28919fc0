@@ -1,6 +1,10 @@
 
-const path = require('path');
-const fs = require('fs');
+import path from 'path';
+import fs from 'fs';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Manual .env parser
 function parseEnv(filePath) {
@@ -30,13 +34,13 @@ const SUPABASE_URL = envConfig.VITE_SUPABASE_URL;
 const SUPABASE_KEY = envConfig.VITE_SUPABASE_PUBLISHABLE_KEY;
 
 if (!SUPABASE_URL || !SUPABASE_KEY) {
-    console.error('❌ Missing Supabase credentials in .env');
-    process.exit(1);
+  console.error('❌ Missing Supabase credentials in .env');
+  process.exit(1);
 }
 
 async function testConnection() {
   console.log(`Checking connection to: ${SUPABASE_URL}`);
-  
+
   try {
     // We try to fetch the OpenApi spec which lists tables
     const response = await fetch(`${SUPABASE_URL}/rest/v1/`, {
@@ -51,25 +55,25 @@ async function testConnection() {
       console.log('✅ Connection successful!');
       const data = await response.json();
       console.log('\n--- Live Tables ---');
-      
+
       const tables = new Set();
-      
+
       if (data.definitions) {
         Object.keys(data.definitions).forEach(table => tables.add(table));
-      } 
-      
+      }
+
       if (data.paths) {
-          Object.keys(data.paths).forEach(p => {
-              if (p !== '/' && !p.includes('rpc/')) {
-                  tables.add(p.replace(/\//g, ''));
-              }
-          });
+        Object.keys(data.paths).forEach(p => {
+          if (p !== '/' && !p.includes('rpc/')) {
+            tables.add(p.replace(/\//g, ''));
+          }
+        });
       }
 
       if (tables.size > 0) {
-          Array.from(tables).sort().forEach(table => console.log(`- ${table}`));
+        Array.from(tables).sort().forEach(table => console.log(`- ${table}`));
       } else {
-          console.log('No tables found or accessible.');
+        console.log('No tables found or accessible.');
       }
 
     } else {
