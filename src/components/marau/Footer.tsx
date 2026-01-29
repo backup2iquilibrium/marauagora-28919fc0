@@ -1,63 +1,98 @@
-import { LayoutDashboard } from "lucide-react";
+import { Facebook, Instagram, MapPin, Phone, Youtube } from "lucide-react";
 import { Link } from "react-router-dom";
 
 export function Footer({ logoUrl }: { logoUrl: string }) {
   return (
-    <footer className="bg-slate-900 text-slate-300 py-16">
-      <div className="container mx-auto px-4">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-16">
-
-          {/* Brand */}
-          <div className="col-span-1">
-            <div className="flex items-center gap-2 mb-6">
-              <div className="bg-blue-600 rounded p-1">
-                <LayoutDashboard className="h-5 w-5 text-white" />
-              </div>
-              <span className="font-bold text-xl tracking-tight text-white">Marau Agora</span>
-            </div>
-            <p className="text-sm leading-relaxed text-slate-400 mb-6">
-              O portal de notícias que conecta Marau ao mundo, sempre com ética e responsabilidade.
+    <footer className="bg-primary text-primary-foreground pt-12 pb-6 mt-12">
+      <div className="container px-4">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+          <div className="md:col-span-1">
+            <img
+              alt="Marau Agora — logo"
+              className="h-12 w-auto object-contain mb-4 bg-background/10 rounded px-2 py-1"
+              src={logoUrl}
+              loading="lazy"
+            />
+            <p className="text-sm text-primary-foreground/80 leading-relaxed mb-4">
+              O Marau Agora é o seu portal de notícias confiável, trazendo informações em tempo real sobre tudo o que acontece
+              em Marau e região.
             </p>
+            <div className="flex gap-3">
+              <a className="w-8 h-8 rounded-full bg-background/10 flex items-center justify-center hover:bg-secondary hover:text-secondary-foreground transition-colors" href="#" aria-label="Facebook">
+                <Facebook className="h-4 w-4" />
+              </a>
+              <a className="w-8 h-8 rounded-full bg-background/10 flex items-center justify-center hover:bg-secondary hover:text-secondary-foreground transition-colors" href="#" aria-label="Instagram">
+                <Instagram className="h-4 w-4" />
+              </a>
+              <a className="w-8 h-8 rounded-full bg-background/10 flex items-center justify-center hover:bg-secondary hover:text-secondary-foreground transition-colors" href="#" aria-label="YouTube">
+                <Youtube className="h-4 w-4" />
+              </a>
+            </div>
           </div>
 
-          {/* Links */}
           <div>
-            <h4 className="font-bold text-white uppercase tracking-wider text-sm mb-6">Editorial</h4>
-            <ul className="space-y-3 text-sm">
-              <li><Link to="/categoria/cidade" className="hover:text-blue-400 transition-colors">Cidade</Link></li>
-              <li><Link to="/categoria/esportes" className="hover:text-blue-400 transition-colors">Esportes</Link></li>
-              <li><Link to="/categoria/policia" className="hover:text-blue-400 transition-colors">Polícia</Link></li>
-              <li><Link to="/categoria/politica" className="hover:text-blue-400 transition-colors">Política</Link></li>
+            <h4 className="font-bold text-lg mb-4 text-secondary">Editorial</h4>
+            <ul className="space-y-2 text-sm text-primary-foreground/80">
+              <li>
+                <Link className="hover:text-primary-foreground transition-colors" to="/agenda">
+                  Agenda Cultural
+                </Link>
+              </li>
+              <li>
+                <Link className="hover:text-primary-foreground transition-colors" to="/horoscopo">
+                  Horóscopo
+                </Link>
+              </li>
+              {["Política", "Segurança", "Esporte", "Agronegócio", "Variedades"].map((l) => (
+                <li key={l}>
+                  <a className="hover:text-primary-foreground transition-colors" href="#">
+                    {l}
+                  </a>
+                </li>
+              ))}
             </ul>
           </div>
 
           <div>
-            <h4 className="font-bold text-white uppercase tracking-wider text-sm mb-6">Institucional</h4>
-            <ul className="space-y-3 text-sm">
-              <li><Link to="/quem-somos" className="hover:text-blue-400 transition-colors">Quem Somos</Link></li>
-              <li><Link to="/expediente" className="hover:text-blue-400 transition-colors">Expediente</Link></li>
-              <li><Link to="/contato" className="hover:text-blue-400 transition-colors">Contato</Link></li>
-              <li><Link to="/vagas" className="hover:text-blue-400 transition-colors">Trabalhe Conosco</Link></li>
+            <h4 className="font-bold text-lg mb-4 text-secondary">Institucional</h4>
+            <ul className="space-y-2 text-sm text-primary-foreground/80">
+              <li>
+                <Link className="hover:text-primary-foreground transition-colors" to="/servicos">
+                  Serviços Públicos
+                </Link>
+              </li>
+              {["Quem Somos", "Expediente", "Anuncie Conosco", "Política de Privacidade", "Fale Conosco"].map((l) => (
+                <li key={l}>
+                  <a className="hover:text-primary-foreground transition-colors" href="#">
+                    {l}
+                  </a>
+                </li>
+              ))}
             </ul>
           </div>
 
           <div>
-            <h4 className="font-bold text-white uppercase tracking-wider text-sm mb-6">Social</h4>
-            <ul className="space-y-3 text-sm">
-              <li><a href="#" className="hover:text-blue-400 transition-colors">Instagram</a></li>
-              <li><a href="#" className="hover:text-blue-400 transition-colors">Facebook</a></li>
-              <li><a href="#" className="hover:text-blue-400 transition-colors">Twitter</a></li>
+            <h4 className="font-bold text-lg mb-4 text-secondary">Contato</h4>
+            <ul className="space-y-2 text-sm text-primary-foreground/80">
+              <li className="flex items-start gap-2">
+                <MapPin className="h-4 w-4 mt-0.5" aria-hidden="true" />
+                Av. Júlio Borella, 1234 - Centro, Marau - RS
+              </li>
+              <li className="flex items-center gap-2">
+                <Phone className="h-4 w-4" aria-hidden="true" /> (54) 3342-0000
+              </li>
+              <li className="flex items-center gap-2">
+                <span className="h-4 w-4 inline-block" aria-hidden="true" /> contato@marauagora.com.br
+              </li>
+              <li className="flex items-center gap-2">
+                <span className="h-4 w-4 inline-block" aria-hidden="true" /> (54) 99999-9999 (WhatsApp)
+              </li>
             </ul>
           </div>
-
         </div>
 
-        <div className="border-t border-slate-800 pt-8 flex flex-col md:flex-row justify-between items-center text-xs text-slate-500">
+        <div className="border-t border-primary-foreground/10 pt-6 text-center text-xs text-primary-foreground/70">
           <p>© 2026 Marau Agora. Todos os direitos reservados.</p>
-          <div className="flex gap-6 mt-4 md:mt-0">
-            <Link to="/termos" className="hover:text-white transition-colors">Termos de Uso</Link>
-            <Link to="/privacidade" className="hover:text-white transition-colors">Privacidade</Link>
-          </div>
         </div>
       </div>
     </footer>

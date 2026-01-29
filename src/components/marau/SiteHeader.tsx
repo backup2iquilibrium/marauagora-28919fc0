@@ -1,4 +1,4 @@
-import { Facebook, Instagram, Mail, Search, Youtube, LayoutDashboard } from "lucide-react";
+import { Facebook, Instagram, Mail, Search, Youtube } from "lucide-react";
 import * as React from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -36,58 +36,80 @@ export function SiteHeader({
     navigate(`/busca?q=${encodeURIComponent(trimmed)}`);
   };
 
-  const newNavItems = [
-    { label: "Início", href: "/" },
-    { label: "Notícias", href: "/categoria/noticias" },
-    { label: "Esportes", href: "/categoria/esportes" },
-    { label: "Política", href: "/categoria/politica" },
-    { label: "Quem Somos", href: "/quem-somos" },
-  ];
-
   return (
-    <header className="bg-white border-b sticky top-0 z-40">
-      <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-        {/* Logo and Nav */}
-        <div className="flex items-center gap-8">
-          <div className="shrink-0 flex items-center gap-2 cursor-pointer" onClick={() => navigate('/')}>
-            <div className="bg-blue-500 rounded p-1">
-              <LayoutDashboard className="h-5 w-5 text-white" />
-            </div>
-            <span className="font-bold text-xl tracking-tight text-slate-900">Marau Agora</span>
-          </div>
-
-          <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-slate-600">
-            {newNavItems.map((item) => (
-              <NavLink
-                key={item.label}
-                to={item.href}
-                className={({ isActive }) =>
-                  isActive ? "text-blue-600 font-semibold" : "hover:text-blue-600 transition-colors"
-                }
-              >
-                {item.label}
-              </NavLink>
-            ))}
-          </nav>
-        </div>
-
-        {/* Search and Action */}
-        <div className="flex items-center gap-4">
-          <div className="relative hidden md:block w-64">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-            <Input
-              placeholder="Buscar"
-              className="pl-9 bg-slate-100 border-transparent focus-visible:bg-white focus-visible:ring-blue-500 h-9"
-              value={q}
-              onChange={(e) => setQ(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && submitSearch()}
+    <header className="bg-card shadow-sm sticky top-0 z-40">
+      <div className="container px-4 py-4">
+        <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+          <div className="shrink-0">
+            <img
+              src={logoUrl}
+              alt="Marau Agora — logomarca"
+              className="h-16 w-auto object-contain"
+              loading="eager"
             />
           </div>
-          <Button className="bg-blue-600 hover:bg-blue-700 text-white font-medium h-9 px-6">
-            Inscrever-se
-          </Button>
+
+          <div className="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto">
+            <div className="flex items-center gap-2 text-primary">
+              <a className="hover:opacity-80" href="#" aria-label="Facebook">
+                <Facebook className="h-5 w-5" />
+              </a>
+              <a className="hover:opacity-80" href="#" aria-label="Instagram">
+                <Instagram className="h-5 w-5" />
+              </a>
+              <a className="hover:opacity-80" href="#" aria-label="E-mail">
+                <Mail className="h-5 w-5" />
+              </a>
+              <a className="hover:opacity-80" href="#" aria-label="YouTube">
+                <Youtube className="h-5 w-5" />
+              </a>
+            </div>
+
+            <div className="relative w-full sm:w-80 md:w-96 lg:w-[450px]">
+              <Input
+                placeholder="Buscar notícias, vagas, serviços..."
+                className="h-11 rounded-full pl-5 pr-12 bg-muted focus-visible:ring-ring"
+                value={q}
+                onChange={(e) => setQ(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") submitSearch();
+                }}
+              />
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-primary"
+                aria-label="Buscar"
+                onClick={submitSearch}
+              >
+                <Search className="h-5 w-5" />
+              </Button>
+            </div>
+          </div>
         </div>
       </div>
+
+      <nav className="border-t bg-card">
+        <div className="container px-4">
+          <ul className="flex overflow-x-auto no-scrollbar gap-6 py-3 text-sm font-medium text-muted-foreground whitespace-nowrap">
+            {navItems.map((item) => (
+              <li key={item.label} className={item.accent ? "ml-auto" : undefined}>
+                <NavLink
+                  to={item.href}
+                  className={
+                    item.accent
+                      ? "text-primary font-bold inline-flex items-center"
+                      : "hover:text-primary transition-colors"
+                  }
+                >
+                  {item.label}
+                </NavLink>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </nav>
     </header>
   );
 }
