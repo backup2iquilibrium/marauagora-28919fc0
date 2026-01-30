@@ -113,16 +113,16 @@ export default function AdminResetPassword() {
     <div className="min-h-screen bg-background text-foreground px-4 py-10">
       <div className="mx-auto w-full max-w-6xl overflow-hidden rounded-2xl border bg-card shadow-sm grid grid-cols-1 md:grid-cols-2">
         {/* Painel lateral */}
-        <aside className="relative min-h-[320px] md:min-h-[640px] overflow-hidden">
+        <aside className="relative min-h-[320px] md:min-h-[640px] overflow-hidden bg-primary">
           <img
-            src={sidebarImage}
-            alt="Paisagem urbana ao entardecer"
-            className="absolute inset-0 h-full w-full object-cover"
+            src="/login.png"
+            alt=""
+            className="absolute inset-0 h-full w-full object-cover opacity-40 mix-blend-overlay"
             loading="lazy"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-background/25 to-background/10" />
+          <div className="absolute inset-0 bg-gradient-to-b from-primary/60 to-primary/90" />
 
-          <div className="relative z-10 p-8 md:p-10 flex h-full flex-col">
+          <div className="relative z-10 p-8 md:p-10 flex h-full flex-col text-primary-foreground">
             <div className="flex flex-col gap-3">
               <img src="/logo.png" alt="Marau Agora" className="h-12 w-auto object-contain" />
               <div className="text-sm font-medium text-white/90 uppercase tracking-widest pl-1 shadow-black/10 drop-shadow-md">
@@ -131,13 +131,10 @@ export default function AdminResetPassword() {
             </div>
 
             <div className="mt-auto">
-              <div className="mb-6">
-                <img src="/login.png" alt="" className="max-w-[150px] h-auto rounded-lg shadow-2xl opacity-90 border border-white/10" />
-              </div>
               <blockquote className="max-w-sm text-lg font-semibold leading-snug">
                 “A segurança da informação é fundamental para manter a integridade do nosso jornalismo.”
               </blockquote>
-              <div className="mt-3 text-xs text-muted-foreground">Painel Administrativo v2.4</div>
+              <div className="mt-3 text-xs text-white/70">Painel Administrativo v2.4</div>
             </div>
           </div>
         </aside>

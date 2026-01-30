@@ -44,27 +44,32 @@ export default function AdminForgotPassword() {
     <div className="min-h-screen bg-background text-foreground px-4 py-10">
       <div className="mx-auto w-full max-w-5xl overflow-hidden rounded-xl shadow-sm border bg-card grid grid-cols-1 md:grid-cols-2">
         {/* Painel lateral */}
-        <aside className="bg-primary text-primary-foreground p-8 md:p-10 relative">
-          <div className="flex flex-col gap-3">
-            <img src="/logo.png" alt="Marau Agora" className="h-12 w-auto object-contain" />
-            <div className="text-sm font-medium text-primary-foreground/90 uppercase tracking-widest pl-1">
-              Painel Administrativo
+        <aside className="relative bg-primary text-primary-foreground p-8 md:p-10 overflow-hidden">
+          <img
+            src="/login.png"
+            alt=""
+            className="absolute inset-0 h-full w-full object-cover opacity-40 mix-blend-overlay"
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-primary/60 to-primary/90" />
+
+          <div className="relative z-10 flex flex-col h-full">
+            <div className="flex flex-col gap-3">
+              <img src="/logo.png" alt="Marau Agora" className="h-12 w-auto object-contain" />
+              <div className="text-sm font-medium text-primary-foreground/90 uppercase tracking-widest pl-1">
+                Painel Administrativo
+              </div>
             </div>
-          </div>
 
-          <div className="mt-10">
-            <h2 className="text-3xl font-semibold tracking-tight">Informação com credibilidade.</h2>
-            <p className="mt-3 text-primary-foreground/85 max-w-sm">
-              Acesse o painel para gerenciar notícias, colaboradores e publicidade do portal.
-            </p>
-          </div>
+            <div className="mt-10">
+              <h2 className="text-3xl font-semibold tracking-tight">Informação com credibilidade.</h2>
+              <p className="mt-3 text-primary-foreground/85 max-w-sm">
+                Acesse o painel para gerenciar notícias, colaboradores e publicidade do portal.
+              </p>
+            </div>
 
-          <div className="mt-10 mb-6">
-            <img src="/login.png" alt="" className="max-w-[180px] h-auto rounded-lg shadow-2xl opacity-90" />
-          </div>
-
-          <div className="mt-auto border-t border-primary-foreground/15 pt-6 text-sm text-primary-foreground/70">
-            © {new Date().getFullYear()} Marau Agora. Todos os direitos reservados.
+            <div className="mt-auto border-t border-primary-foreground/15 pt-6 text-sm text-primary-foreground/70">
+              © {new Date().getFullYear()} Marau Agora. Todos os direitos reservados.
+            </div>
           </div>
         </aside>
 
