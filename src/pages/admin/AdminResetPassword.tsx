@@ -131,6 +131,9 @@ export default function AdminResetPassword() {
             </div>
 
             <div className="mt-auto">
+              <div className="mb-6">
+                <img src="/login.png" alt="" className="max-w-[150px] h-auto rounded-lg shadow-2xl opacity-90 border border-white/10" />
+              </div>
               <blockquote className="max-w-sm text-lg font-semibold leading-snug">
                 “A segurança da informação é fundamental para manter a integridade do nosso jornalismo.”
               </blockquote>

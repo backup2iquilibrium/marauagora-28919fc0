@@ -59,7 +59,11 @@ export default function AdminForgotPassword() {
             </p>
           </div>
 
-          <div className="mt-10 border-t border-primary-foreground/15 pt-6 text-sm text-primary-foreground/70">
+          <div className="mt-10 mb-6">
+            <img src="/login.png" alt="" className="max-w-[180px] h-auto rounded-lg shadow-2xl opacity-90" />
+          </div>
+
+          <div className="mt-auto border-t border-primary-foreground/15 pt-6 text-sm text-primary-foreground/70">
             © {new Date().getFullYear()} Marau Agora. Todos os direitos reservados.
           </div>
         </aside>
