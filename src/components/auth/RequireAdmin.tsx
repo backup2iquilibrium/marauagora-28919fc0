@@ -5,7 +5,7 @@ import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 
 export function RequireAdmin({ children }: { children: JSX.Element }) {
-  const { user, loading } = useAuth();
+  const { user, loading, isDeveloper } = useAuth();
   const [isAdmin, setIsAdmin] = React.useState<boolean | null>(null);
 
   React.useEffect(() => {
@@ -13,6 +13,12 @@ export function RequireAdmin({ children }: { children: JSX.Element }) {
     async function run() {
       if (!user) {
         setIsAdmin(null);
+        return;
+      }
+
+      // If developer, instant access
+      if (isDeveloper) {
+        setIsAdmin(true);
         return;
       }
 
@@ -33,7 +39,7 @@ export function RequireAdmin({ children }: { children: JSX.Element }) {
     return () => {
       cancelled = true;
     };
-  }, [user]);
+  }, [user, isDeveloper]);
 
   if (loading) return <div className="min-h-[50vh] grid place-items-center text-muted-foreground">Carregando…</div>;
   if (!user) return <Navigate to="/admin/login" replace />;
@@ -43,28 +49,14 @@ export function RequireAdmin({ children }: { children: JSX.Element }) {
   }
 
   if (!isAdmin) {
-    // DEV MODE: Allow access but show warning
     return (
-      <div className="flex flex-col h-full bg-red-50">
-        <div className="bg-red-600 text-white text-xs py-1 px-4 text-center font-bold">
-          MODO DESENVOLVEDOR: ACESSO DE ADMIN LIBERADO SEM PERMISSÃO REAL
-        </div>
-        <div className="flex-1">
-          {children}
+      <div className="min-h-[50vh] grid place-items-center">
+        <div className="max-w-md text-center space-y-2">
+          <h1 className="text-xl font-semibold">Acesso restrito</h1>
+          <p className="text-sm text-muted-foreground">Você precisa ser admin para acessar esta área.</p>
         </div>
       </div>
     );
-    /* 
-    // Original Access Denied logic
-    return (
-     <div className="min-h-[50vh] grid place-items-center">
-       <div className="max-w-md text-center space-y-2">
-         <h1 className="text-xl font-semibold">Acesso restrito</h1>
-         <p className="text-sm text-muted-foreground">Você precisa ser admin para acessar esta área.</p>
-       </div>
-     </div>
-   ); 
-   */
   }
 
   return children;
