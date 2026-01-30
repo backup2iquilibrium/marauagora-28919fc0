@@ -113,7 +113,7 @@ export default function AdminResetPassword() {
     <div className="min-h-screen bg-background text-foreground px-4 py-10">
       <div className="mx-auto w-full max-w-6xl overflow-hidden rounded-2xl border bg-card shadow-sm grid grid-cols-1 md:grid-cols-2">
         {/* Painel lateral */}
-          <aside className="relative min-h-[320px] md:min-h-[640px] overflow-hidden">
+        <aside className="relative min-h-[320px] md:min-h-[640px] overflow-hidden">
           <img
             src={sidebarImage}
             alt="Paisagem urbana ao entardecer"
@@ -122,13 +122,15 @@ export default function AdminResetPassword() {
           />
           <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-background/25 to-background/10" />
 
-            <div className="relative z-10 p-8 md:p-10 flex h-full flex-col">
-              <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-lg bg-background/15 border border-border/30 grid place-items-center">
-                  <span className="text-sm font-bold">M</span>
-                </div>
-                <div className="text-lg font-semibold">Marau Agora</div>
+          <div className="relative z-10 p-8 md:p-10 flex h-full flex-col">
+            <div className="flex flex-col gap-3">
+              <div className="bg-white p-3 rounded-xl w-fit shadow-md">
+                <img src="/logo.png" alt="Marau Agora" className="h-12 w-auto object-contain" />
               </div>
+              <div className="text-sm font-medium text-white/90 uppercase tracking-widest pl-1 shadow-black/10 drop-shadow-md">
+                Marau Agora
+              </div>
+            </div>
 
             <div className="mt-auto">
               <blockquote className="max-w-sm text-lg font-semibold leading-snug">
@@ -140,7 +142,7 @@ export default function AdminResetPassword() {
         </aside>
 
         {/* Form */}
-          <main className="p-8 md:p-12">
+        <main className="p-8 md:p-12">
           <div className="max-w-xl">
             <h1 className="text-4xl font-semibold tracking-tight">Definir Nova Senha</h1>
             <p className="mt-3 text-muted-foreground max-w-prose">

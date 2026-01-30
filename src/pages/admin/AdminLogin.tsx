@@ -47,13 +47,12 @@ export default function AdminLogin() {
       <div className="mx-auto w-full max-w-5xl overflow-hidden rounded-xl shadow-sm border bg-card grid grid-cols-1 md:grid-cols-2">
         {/* Painel lateral */}
         <aside className="bg-primary text-primary-foreground p-8 md:p-10 relative">
-          <div className="flex items-center gap-3">
-            <div className="h-9 w-9 rounded-lg bg-background/10 grid place-items-center">
-              <span className="text-sm font-bold">M</span>
+          <div className="flex flex-col gap-3">
+            <div className="bg-white p-3 rounded-xl w-fit shadow-md">
+              <img src="/logo.png" alt="Marau Agora" className="h-12 w-auto object-contain" />
             </div>
-            <div>
-              <div className="font-semibold">Marau Agora</div>
-              <div className="text-xs text-primary-foreground/80">Admin Panel</div>
+            <div className="text-sm font-medium text-primary-foreground/90 uppercase tracking-widest pl-1">
+              Painel Administrativo
             </div>
           </div>
 

@@ -35,9 +35,9 @@ export function DashboardShell({
     <div className="min-h-screen bg-background text-foreground">
       <div className="flex min-h-screen">
         <aside className="w-72 border-r bg-card hidden md:flex md:flex-col">
-          <div className="px-5 py-5 border-b">
-            <p className="text-sm text-muted-foreground">{brand}</p>
-            <p className="text-lg font-semibold">{panelTitle}</p>
+          <div className="px-5 py-6 border-b">
+            <img src="/logo.png" alt={brand} className="h-12 w-auto object-contain mb-3" />
+            <p className="text-sm font-medium text-muted-foreground">{panelTitle}</p>
           </div>
 
           <nav className="p-3 space-y-1">
