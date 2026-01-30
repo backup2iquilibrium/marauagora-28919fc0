@@ -12,6 +12,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { TopBar } from "@/components/marau/TopBar";
+import { SiteHeader } from "@/components/marau/SiteHeader";
+import { Footer } from "@/components/marau/Footer";
+
+const LOGO_URL = "/logo.png";
 
 import {
   ChevronDown,
@@ -139,44 +144,8 @@ export default function CityPoints() {
 
   return (
     <div className="min-h-screen bg-background text-foreground font-jakarta">
-      {/* Header (do HTML) */}
-      <header className="sticky top-0 z-40 border-b bg-card">
-        <div className="container px-4 py-4">
-          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted">
-                <Building2 className="h-5 w-5 text-primary" />
-              </div>
-              <p className="text-lg font-semibold">Marau Agora</p>
-            </div>
-
-            <nav className="flex items-center gap-4 text-sm text-muted-foreground overflow-x-auto no-scrollbar">
-              <Link className="hover:text-foreground" to="/">
-                Notícias
-              </Link>
-              <Link className="hover:text-foreground" to="/categoria/eventos">
-                Eventos
-              </Link>
-              <Link className="text-primary font-semibold" to="/pontos">
-                Pontos da Cidade
-              </Link>
-              <Link className="hover:text-foreground" to="/servicos-publicos">
-                Serviços
-              </Link>
-              <Link className="hover:text-foreground" to="/contato">
-                Contato
-              </Link>
-            </nav>
-
-            <div className="flex items-center gap-2">
-              <Button variant="ghost" size="icon" aria-label="Buscar">
-                <Search className="h-5 w-5" />
-              </Button>
-              <Button variant="secondary">Entrar</Button>
-            </div>
-          </div>
-        </div>
-      </header>
+      <TopBar />
+      <SiteHeader logoUrl={LOGO_URL} />
 
       <main className="container px-4 py-8">
         {/* Hero */}
@@ -319,99 +288,7 @@ export default function CityPoints() {
         </section>
       </main>
 
-      {/* Footer (do HTML) */}
-      <footer className="mt-12 border-t bg-card">
-        <div className="container px-4 py-10">
-          <div className="grid grid-cols-1 gap-8 md:grid-cols-4">
-            <div className="space-y-3">
-              <div className="flex items-center gap-2">
-                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-muted">
-                  <Building2 className="h-4 w-4 text-primary" />
-                </div>
-                <p className="font-semibold">Marau Agora</p>
-              </div>
-              <p className="text-sm text-muted-foreground">
-                Sua fonte confiável para notícias locais, eventos e os melhores lugares para visitar em Marau, RS.
-              </p>
-            </div>
-
-            <div>
-              <p className="text-sm font-medium">Descubra</p>
-              <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
-                <li>
-                  <Link className="hover:text-foreground" to="/">
-                    Notícias
-                  </Link>
-                </li>
-                <li>
-                  <Link className="hover:text-foreground" to="/categoria/eventos">
-                    Eventos
-                  </Link>
-                </li>
-                <li>
-                  <Link className="hover:text-foreground" to="/pontos">
-                    Pontos da Cidade
-                  </Link>
-                </li>
-              </ul>
-            </div>
-
-            <div>
-              <p className="text-sm font-medium">Serviços</p>
-              <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
-                <li>
-                  <Link className="hover:text-foreground" to="/classificados">
-                    Classificados
-                  </Link>
-                </li>
-                <li>
-                  <Link className="hover:text-foreground" to="/vagas">
-                    Empregos
-                  </Link>
-                </li>
-                <li>
-                  <Link className="hover:text-foreground" to="/">
-                    Clima
-                  </Link>
-                </li>
-              </ul>
-            </div>
-
-            <div>
-              <p className="text-sm font-medium">Empresa</p>
-              <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
-                <li>
-                  <Link className="hover:text-foreground" to="/quem-somos">
-                    Sobre Nós
-                  </Link>
-                </li>
-                <li>
-                  <Link className="hover:text-foreground" to="/contato">
-                    Contato
-                  </Link>
-                </li>
-                <li>
-                  <Link className="hover:text-foreground" to="#">
-                    Anuncie
-                  </Link>
-                </li>
-              </ul>
-            </div>
-          </div>
-
-          <div className="mt-8 flex flex-col gap-3 border-t pt-6 text-sm text-muted-foreground md:flex-row md:items-center md:justify-between">
-            <p>© 2024 Marau Agora. Todos os direitos reservados.</p>
-            <div className="flex items-center gap-4">
-              <Link className="hover:text-foreground" to="/politica-de-privacidade">
-                Privacidade
-              </Link>
-              <Link className="hover:text-foreground" to="/termos-de-uso">
-                Termos
-              </Link>
-            </div>
-          </div>
-        </div>
-      </footer>
+      <Footer logoUrl={LOGO_URL} />
     </div>
   );
 }

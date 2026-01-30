@@ -19,6 +19,11 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
+import { TopBar } from "@/components/marau/TopBar";
+import { SiteHeader } from "@/components/marau/SiteHeader";
+import { Footer } from "@/components/marau/Footer";
+
+const LOGO_URL = "/logo.png";
 
 const contactSchema = z.object({
   name: z.string().trim().min(2, "Informe seu nome completo").max(120, "Máximo 120 caracteres"),
@@ -67,40 +72,9 @@ export default function Contact() {
   };
 
   return (
-    <div className="min-h-screen bg-background text-foreground font-work">
-      {/* Header do HTML */}
-      <header className="sticky top-0 z-40 border-b bg-card">
-        <div className="container px-4 py-4">
-          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-            <div className="flex items-center gap-2">
-              <Newspaper className="h-5 w-5 text-primary" />
-              <p className="text-lg font-semibold">Marau Agora</p>
-            </div>
-
-            <nav className="flex items-center gap-4 overflow-x-auto no-scrollbar text-sm text-muted-foreground">
-              <Link to="/" className="hover:text-foreground">
-                Início
-              </Link>
-              <Link to="/categoria/noticias" className="hover:text-foreground">
-                Notícias
-              </Link>
-              <Link to="/categoria/esportes" className="hover:text-foreground">
-                Esportes
-              </Link>
-              <Link to="/categoria/politica" className="hover:text-foreground">
-                Política
-              </Link>
-              <Link to="/contato" className="text-primary font-semibold">
-                Contato
-              </Link>
-            </nav>
-
-            <Button variant="ghost" size="icon" aria-label="Buscar">
-              <Search className="h-5 w-5" />
-            </Button>
-          </div>
-        </div>
-      </header>
+    <div className="min-h-screen bg-background text-foreground">
+      <TopBar />
+      <SiteHeader logoUrl={LOGO_URL} />
 
       <main className="container px-4 py-10">
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
@@ -239,25 +213,7 @@ export default function Contact() {
         </div>
       </main>
 
-      <footer className="border-t bg-card">
-        <div className="container px-4 py-8">
-          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between text-sm text-muted-foreground">
-            <div className="flex items-center gap-2">
-              <Newspaper className="h-4 w-4 text-primary" />
-              <span>Marau Agora</span>
-              <span>© 2024 Marau Agora. Todos os direitos reservados.</span>
-            </div>
-            <div className="flex items-center gap-4">
-              <Link to="/termos-de-uso" className="hover:text-foreground">
-                Termos de Uso
-              </Link>
-              <Link to="/politica-de-privacidade" className="hover:text-foreground">
-                Política de Privacidade
-              </Link>
-            </div>
-          </div>
-        </div>
-      </footer>
+      <Footer logoUrl={LOGO_URL} />
     </div>
   );
 }
