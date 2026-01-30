@@ -48,9 +48,7 @@ export default function AdminLogin() {
         {/* Painel lateral */}
         <aside className="bg-primary text-primary-foreground p-8 md:p-10 relative">
           <div className="flex flex-col gap-3">
-            <div className="bg-white p-3 rounded-xl w-fit shadow-md">
-              <img src="/logo.png" alt="Marau Agora" className="h-12 w-auto object-contain" />
-            </div>
+            <img src="/logo.png" alt="Marau Agora" className="h-12 w-auto object-contain" />
             <div className="text-sm font-medium text-primary-foreground/90 uppercase tracking-widest pl-1">
               Painel Administrativo
             </div>

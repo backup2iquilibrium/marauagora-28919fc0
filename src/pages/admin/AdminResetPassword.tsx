@@ -124,9 +124,7 @@ export default function AdminResetPassword() {
 
           <div className="relative z-10 p-8 md:p-10 flex h-full flex-col">
             <div className="flex flex-col gap-3">
-              <div className="bg-white p-3 rounded-xl w-fit shadow-md">
-                <img src="/logo.png" alt="Marau Agora" className="h-12 w-auto object-contain" />
-              </div>
+              <img src="/logo.png" alt="Marau Agora" className="h-12 w-auto object-contain" />
               <div className="text-sm font-medium text-white/90 uppercase tracking-widest pl-1 shadow-black/10 drop-shadow-md">
                 Marau Agora
               </div>
