@@ -9,7 +9,7 @@ export function Footer({ logoUrl }: { logoUrl: string }) {
           <div className="md:col-span-1">
             <img
               alt="Marau Agora — logo"
-              className="h-12 w-auto object-contain mb-4 bg-background/10 rounded px-2 py-1"
+              className="h-12 w-auto object-contain mb-4"
               src={logoUrl}
               loading="lazy"
             />
