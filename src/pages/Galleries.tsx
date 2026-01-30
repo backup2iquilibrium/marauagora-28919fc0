@@ -34,8 +34,7 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-const LOGO_URL =
-  "https://lh3.googleusercontent.com/aida-public/AB6AXuAxrvhZIsLpFBhL4Fdg88ttSHjhIb-frJZQZlaxm8GNQc7IW4mGb6BEqX2FQHmaj5bWS_a_MAl-WrKOfqZv531UtiOEoVWECnv_zEkdUgFQPP4xOUlX1yLx1i1OZJ8scM7yIzgQ_kxoKeircZhd3n99pbXddvrZNxvVJ0LngrGdOEY6Erpyltdl5OirCSp02ao8a-6h_Tq9XGEvnDmkDVa-vtppe-1SASqAQ2YWNx6p66Oa5ofAncc0fEvxM9h_FbKYN9e7c07h";
+const LOGO_URL = "/logo.png";
 
 type GalleryRow = Tables<"galleries">;
 
@@ -189,10 +188,10 @@ export default function Galleries() {
                     style={
                       featured?.cover_image_url
                         ? {
-                            backgroundImage: `url(${featured.cover_image_url})`,
-                            backgroundSize: "cover",
-                            backgroundPosition: "center",
-                          }
+                          backgroundImage: `url(${featured.cover_image_url})`,
+                          backgroundSize: "cover",
+                          backgroundPosition: "center",
+                        }
                         : undefined
                     }
                   />
