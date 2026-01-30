@@ -39,17 +39,35 @@ export function Footer({ logoUrl }: { logoUrl: string }) {
                 </Link>
               </li>
               <li>
+                <a className="hover:text-primary-foreground transition-colors" href="#">
+                  Agronegócio
+                </a>
+              </li>
+              <li>
+                <a className="hover:text-primary-foreground transition-colors" href="#">
+                  Esporte
+                </a>
+              </li>
+              <li>
                 <Link className="hover:text-primary-foreground transition-colors" to="/horoscopo">
                   Horóscopo
                 </Link>
               </li>
-              {["Política", "Segurança", "Esporte", "Agronegócio", "Variedades"].map((l) => (
-                <li key={l}>
-                  <a className="hover:text-primary-foreground transition-colors" href="#">
-                    {l}
-                  </a>
-                </li>
-              ))}
+              <li>
+                <a className="hover:text-primary-foreground transition-colors" href="#">
+                  Política
+                </a>
+              </li>
+              <li>
+                <a className="hover:text-primary-foreground transition-colors" href="#">
+                  Segurança
+                </a>
+              </li>
+              <li>
+                <a className="hover:text-primary-foreground transition-colors" href="#">
+                  Variedades
+                </a>
+              </li>
             </ul>
           </div>
 
@@ -57,17 +75,35 @@ export function Footer({ logoUrl }: { logoUrl: string }) {
             <h4 className="font-bold text-lg mb-4 text-secondary">Institucional</h4>
             <ul className="space-y-2 text-sm text-primary-foreground/80">
               <li>
+                <a className="hover:text-primary-foreground transition-colors" href="#">
+                  Anuncie Conosco
+                </a>
+              </li>
+              <li>
+                <a className="hover:text-primary-foreground transition-colors" href="#">
+                  Expediente
+                </a>
+              </li>
+              <li>
+                <a className="hover:text-primary-foreground transition-colors" href="#">
+                  Fale Conosco
+                </a>
+              </li>
+              <li>
+                <Link className="hover:text-primary-foreground transition-colors" to="/politica-de-privacidade">
+                  Política de Privacidade
+                </Link>
+              </li>
+              <li>
+                <Link className="hover:text-primary-foreground transition-colors" to="/quem-somos">
+                  Quem Somos
+                </Link>
+              </li>
+              <li>
                 <Link className="hover:text-primary-foreground transition-colors" to="/servicos">
                   Serviços Públicos
                 </Link>
               </li>
-              {["Quem Somos", "Expediente", "Anuncie Conosco", "Política de Privacidade", "Fale Conosco"].map((l) => (
-                <li key={l}>
-                  <a className="hover:text-primary-foreground transition-colors" href="#">
-                    {l}
-                  </a>
-                </li>
-              ))}
             </ul>
           </div>
 
