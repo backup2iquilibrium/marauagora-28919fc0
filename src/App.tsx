@@ -34,6 +34,7 @@ import AdminResetPassword from "./pages/admin/AdminResetPassword";
 import AdvertiserClassifiedsDashboard from "./pages/advertiser/AdvertiserClassifiedsDashboard";
 import AdvertiserLayout from "./pages/advertiser/AdvertiserLayout";
 import AdvertiserAdDashboard from "./pages/advertiser/AdvertiserAdDashboard";
+import CreateClassifiedAd from "./pages/advertiser/CreateClassifiedAd";
 
 const queryClient = new QueryClient();
 
@@ -97,6 +98,7 @@ const App = () => (
               >
                 <Route path="publicidade" element={<AdvertiserAdDashboard />} />
                 <Route path="classificados" element={<AdvertiserClassifiedsDashboard />} />
+                <Route path="classificados/novo" element={<CreateClassifiedAd />} />
               </Route>
 
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

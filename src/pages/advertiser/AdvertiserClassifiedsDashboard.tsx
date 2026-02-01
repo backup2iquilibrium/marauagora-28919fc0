@@ -1,4 +1,5 @@
 import * as React from "react";
+import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { Plus, RefreshCw } from "lucide-react";
@@ -34,6 +35,7 @@ async function fetchMyAds(userId: string, status: Status | "all") {
 
 export default function AdvertiserClassifiedsDashboard() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [tab, setTab] = React.useState<Status | "all">("all");
 
   const adsQuery = useQuery({
@@ -65,7 +67,7 @@ export default function AdvertiserClassifiedsDashboard() {
             <RefreshCw className="h-4 w-4 mr-2" />
             Atualizar
           </Button>
-          <Button onClick={() => toast.info("Criar anúncio", { description: "Vamos implementar o formulário na próxima etapa." })}>
+          <Button onClick={() => navigate("/anunciante/classificados/novo")}>
             <Plus className="h-4 w-4 mr-2" />
             Novo Anúncio
           </Button>
