@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { NewsItem } from "./types";
 
 const items: NewsItem[] = [
@@ -35,9 +36,9 @@ export function LatestNews() {
     <section>
       <div className="flex justify-between items-center mb-6 border-b pb-2">
         <h2 className="text-2xl font-serif font-bold text-primary">Últimas Notícias</h2>
-        <a className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors" href="#">
+        <Link className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors" to="/categoria/noticias">
           Ver todas
-        </a>
+        </Link>
       </div>
 
       <div className="space-y-6">
@@ -57,13 +58,15 @@ export function LatestNews() {
 
             <div className="sm:w-2/3 flex flex-col justify-center">
               <div className="flex items-center text-xs text-muted-foreground mb-2 gap-2">
-                <span className="text-primary font-bold uppercase">{n.category}</span>
+                <Link to={`/categoria/${n.category.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")}`} className="text-primary font-bold uppercase hover:underline">
+                  {n.category}
+                </Link>
                 <span aria-hidden="true">•</span>
                 <span>{n.time}</span>
               </div>
 
               <h3 className="text-xl font-bold font-serif mb-2 text-foreground hover:text-primary transition-colors">
-                <a href="#">{n.title}</a>
+                <Link to={`/noticia/${n.title.toLowerCase().split(' ').join('-')}`}>{n.title}</Link>
               </h3>
               <p className="text-muted-foreground text-sm line-clamp-3">{n.excerpt}</p>
             </div>

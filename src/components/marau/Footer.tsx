@@ -39,14 +39,14 @@ export function Footer({ logoUrl }: { logoUrl: string }) {
                 </Link>
               </li>
               <li>
-                <a className="hover:text-primary-foreground transition-colors" href="#">
+                <Link className="hover:text-primary-foreground transition-colors" to="/categoria/agronegocio">
                   Agronegócio
-                </a>
+                </Link>
               </li>
               <li>
-                <a className="hover:text-primary-foreground transition-colors" href="#">
+                <Link className="hover:text-primary-foreground transition-colors" to="/categoria/esportes">
                   Esporte
-                </a>
+                </Link>
               </li>
               <li>
                 <Link className="hover:text-primary-foreground transition-colors" to="/horoscopo">
@@ -54,19 +54,19 @@ export function Footer({ logoUrl }: { logoUrl: string }) {
                 </Link>
               </li>
               <li>
-                <a className="hover:text-primary-foreground transition-colors" href="#">
+                <Link className="hover:text-primary-foreground transition-colors" to="/categoria/politica">
                   Política
-                </a>
+                </Link>
               </li>
               <li>
-                <a className="hover:text-primary-foreground transition-colors" href="#">
+                <Link className="hover:text-primary-foreground transition-colors" to="/categoria/policia">
                   Segurança
-                </a>
+                </Link>
               </li>
               <li>
-                <a className="hover:text-primary-foreground transition-colors" href="#">
+                <Link className="hover:text-primary-foreground transition-colors" to="/categoria/variedades">
                   Variedades
-                </a>
+                </Link>
               </li>
             </ul>
           </div>

@@ -39,37 +39,75 @@ export default function CategoryNews() {
   const categoryLabel = useMemo(() => {
     if (!slug) return "Notícias";
     const map: Record<string, string> = {
-      esportes: "Esporte",
-      esporte: "Esporte",
+      esportes: "Esportes",
+      esporte: "Esportes",
       politica: "Política",
+      policia: "Polícia",
       policial: "Polícia",
-      cidade: "Notícias",
+      agronegocio: "Agronegócio",
+      agronegócios: "Agronegócio",
+      cidade: "Cidade",
       noticias: "Notícias",
+      classificados: "Classificados",
     };
     return map[slug] ?? slug.charAt(0).toUpperCase() + slug.slice(1);
   }, [slug]);
 
-  const filters = useMemo(() => ["Todos", "Futebol", "Vôlei", "Futsal", "Eventos"], []);
+  const filters = useMemo(() => {
+    const filterMap: Record<string, string[]> = {
+      esportes: ["Todos", "Futebol", "Vôlei", "Futsal", "Eventos"],
+      agronegocio: ["Todos", "Safra", "Pecuária", "Tecnologia", "Mercado"],
+      politica: ["Todos", "Municipal", "Estadual", "Nacional"],
+      policia: ["Todos", "Ocorrências", "Trânsito", "Investigação"],
+    };
+    return filterMap[slug || ""] ?? ["Todos", "Geral", "Destaques"];
+  }, [slug]);
 
-  const highlight = useMemo(
-    () => ({
+  const highlight = useMemo(() => {
+    if (slug === "agronegocio") {
+      return {
+        title: "Safra recorde de soja impulsiona economia local e gera novos empregos",
+        excerpt: "Produtores rurais de Marau celebram números positivos da colheita, superando expectativas iniciais do setor.",
+        authorLine: "Por Redação",
+        time: "Há 1 dia",
+        href: "/noticia/safra-recorde-soja-marau",
+      };
+    }
+    return {
       title: "Vôlei Marau conquista título regional histórico em noite de ginásio lotado",
-      excerpt:
-        "A equipe local superou os adversários de Passo Fundo em uma partida emocionante de cinco sets neste domingo, garantindo o troféu inédito para a cidade.",
+      excerpt: "A equipe local superou os adversários de Passo Fundo em uma partida emocionante de cinco sets neste domingo.",
       authorLine: "Por Lucas Silva",
       time: "Há 2 horas",
       href: "/noticia/volei-marau-conquista-titulo",
-    }),
-    [],
-  );
+    };
+  }, [slug]);
 
-  const items = useMemo<CategoryItem[]>(
-    () => [
+  const items = useMemo<CategoryItem[]>(() => {
+    if (slug === "agronegocio") {
+      return [
+        {
+          tag: "Tecnologia",
+          title: "Drones transformam o monitoramento de safras no interior de Marau",
+          excerpt: "Novos equipamentos permitem identificar pragas e falhas na irrigação com precisão milimétrica.",
+          authorLine: "",
+          date: "25 Out, 2023",
+          href: "/noticia/drones-campo-marau",
+        },
+        {
+          tag: "Mercado",
+          title: "Preço do milho apresenta estabilidade após oscilações na bolsa",
+          excerpt: "Análise econômica mostra o impacto direto nos produtores da região norte do estado.",
+          authorLine: "",
+          date: "24 Out, 2023",
+          href: "/noticia/preco-milho-estabilidade",
+        },
+      ];
+    }
+    return [
       {
         tag: "Futebol",
         title: "Campeonato Municipal de Futebol inicia neste final de semana com 12 equipes",
-        excerpt:
-          "Jogos de abertura acontecem no Estádio Municipal Carlos Renato Bebber com entrada franca para a comunidade.",
+        excerpt: "Jogos de abertura acontecem no Estádio Municipal Carlos Renato Bebber com entrada franca.",
         authorLine: "",
         date: "24 Out, 2023",
         href: "/noticia/campeonato-municipal-futebol",
@@ -77,24 +115,13 @@ export default function CategoryNews() {
       {
         tag: "Atletismo",
         title: "Maratona Escolar reúne mais de 500 estudantes da rede pública",
-        excerpt:
-          "Evento promove saúde e integração entre as escolas do município, revelando novos talentos do atletismo.",
+        excerpt: "Evento promove saúde e integração entre as escolas do município.",
         authorLine: "",
         date: "23 Out, 2023",
         href: "/noticia/maratona-escolar-500-estudantes",
       },
-      {
-        tag: "Futsal",
-        title: "AMF anuncia novo reforço para a temporada 2024",
-        excerpt:
-          "Ala esquerdo com passagem pela seleção chega para somar ao elenco na busca pelo acesso.",
-        authorLine: "",
-        date: "22 Out, 2023",
-        href: "/noticia/amf-anuncia-reforco-2024",
-      },
-    ],
-    [],
-  );
+    ];
+  }, [slug]);
 
   const mostRead = useMemo(
     () => [
