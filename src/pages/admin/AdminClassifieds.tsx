@@ -58,7 +58,7 @@ async function fetchAds(params: {
 }) {
   let query = supabase
     .from("classified_ads")
-    .select("id,title,category_slug,advertiser_name,advertiser_email,status,created_at", { count: "exact" })
+    .select("id,title,category_slug,advertiser_name,advertiser_email,status,created_at,price,whatsapp,description", { count: "exact" })
     .order("created_at", { ascending: false });
 
   if (params.status !== "all") query = query.eq("status", params.status);
@@ -262,6 +262,7 @@ export default function AdminClassifieds() {
                 <TableHead>Categoria</TableHead>
                 <TableHead>Anunciante</TableHead>
                 <TableHead>Data</TableHead>
+                <TableHead>Preço</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead className="text-right">Ações</TableHead>
               </TableRow>
@@ -322,6 +323,12 @@ export default function AdminClassifieds() {
                     <div className="text-xs text-muted-foreground">{row.advertiser_email}</div>
                   </TableCell>
                   <TableCell>{format(new Date(row.created_at), "dd/MM/yyyy")}</TableCell>
+                  <TableCell>
+                    <div className="font-medium text-primary">{row.price || "—"}</div>
+                    {row.whatsapp && (
+                      <div className="text-[10px] text-muted-foreground">Zap: {row.whatsapp}</div>
+                    )}
+                  </TableCell>
                   <TableCell>
                     <StatusPill status={row.status as Status} />
                   </TableCell>

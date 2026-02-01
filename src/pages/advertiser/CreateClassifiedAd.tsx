@@ -70,6 +70,9 @@ export default function CreateClassifiedAd() {
                     advertiser_name: user.email?.split("@")[0] || "Anunciante",
                     advertiser_email: user.email || "",
                     status: "pending",
+                    price: formData.price,
+                    whatsapp: formData.whatsapp,
+                    description: formData.description,
                 })
                 .select()
                 .single();

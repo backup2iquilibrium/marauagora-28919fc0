@@ -1,5 +1,8 @@
 import { useMemo } from "react";
 import { Link, useParams } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import { format } from "date-fns";
+import { supabase } from "@/integrations/supabase/client";
 
 import { TopBar } from "@/components/marau/TopBar";
 import { SiteHeader } from "@/components/marau/SiteHeader";
@@ -36,6 +39,16 @@ type CategoryItem = {
   whatsapp?: string;
   imageUrl?: string;
 };
+
+async function fetchActiveAds() {
+  const { data, error } = await supabase
+    .from("classified_ads")
+    .select("*, classified_ad_media(*)")
+    .eq("status", "active")
+    .order("created_at", { ascending: false });
+  if (error) throw error;
+  return data || [];
+}
 
 function ClassifiedCard({ item }: { item: CategoryItem }) {
   return (
@@ -139,6 +152,12 @@ export default function CategoryNews() {
     };
   }, [sanitizedSlug]);
 
+  const adsQuery = useQuery({
+    queryKey: ["active_classified_ads"],
+    queryFn: fetchActiveAds,
+    enabled: sanitizedSlug === "classificados",
+  });
+
   const items = useMemo<CategoryItem[]>(() => {
     if (sanitizedSlug === "agronegocio") {
       return [
@@ -161,7 +180,19 @@ export default function CategoryNews() {
       ];
     }
     if (sanitizedSlug === "classificados") {
-      return [
+      const dbAds = (adsQuery.data || []).map((ad: any) => ({
+        tag: ad.category_slug.charAt(0).toUpperCase() + ad.category_slug.slice(1),
+        title: ad.title,
+        excerpt: ad.description || "",
+        authorLine: ad.advertiser_name,
+        date: format(new Date(ad.created_at), "dd MMM, yyyy"),
+        href: `/categoria/classificados`,
+        price: ad.price,
+        whatsapp: ad.whatsapp,
+        imageUrl: ad.classified_ad_media?.[0]?.media_url || ad.classified_ad_media?.[0]?.thumbnail_url,
+      }));
+
+      const mockClassifieds = [
         {
           tag: "Veículos",
           title: "Vende-se Caminhonete Hilux 2022 - Único dono",
@@ -185,7 +216,7 @@ export default function CategoryNews() {
         {
           tag: "Serviços",
           title: "Aulas Particulares de Inglês e Reforço Escolar",
-          excerpt: "Professor com experiência internacional atende em domicílio ou online. Metodologia personalizada.",
+          excerpt: "Professor com experência internacional atende em domicílio ou online. Metodologia personalizada.",
           authorLine: "",
           date: "23 Out, 2023",
           href: "/categoria/classificados",
@@ -203,6 +234,8 @@ export default function CategoryNews() {
           whatsapp: "5554999999966",
         },
       ];
+
+      return [...dbAds, ...mockClassifieds];
     }
     if (sanitizedSlug === "politica") {
       return [
