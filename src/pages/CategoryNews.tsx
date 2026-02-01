@@ -32,7 +32,43 @@ type CategoryItem = {
   authorLine: string;
   date: string;
   href: string;
+  price?: string;
+  whatsapp?: string;
+  imageUrl?: string;
 };
+
+function ClassifiedCard({ item }: { item: CategoryItem }) {
+  return (
+    <Card className="overflow-hidden hover:shadow-md transition-shadow">
+      <div className="aspect-[4/3] bg-muted relative">
+        {item.imageUrl ? (
+          <img src={item.imageUrl} alt={item.title} className="w-full h-full object-cover" />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center text-muted-foreground">Sem imagem</div>
+        )}
+        <div className="absolute top-2 left-2">
+          <Badge variant="secondary" className="bg-background/90 backdrop-blur-sm">
+            {item.tag}
+          </Badge>
+        </div>
+      </div>
+      <CardContent className="p-4">
+        {item.price && (
+          <p className="text-xl font-bold text-primary mb-1">{item.price}</p>
+        )}
+        <h3 className="font-bold text-lg leading-tight mb-2 line-clamp-2">
+          {item.title}
+        </h3>
+        <p className="text-xs text-muted-foreground mb-4">{item.date}</p>
+        <Button className="w-full gap-2 bg-[#25D366] hover:bg-[#128C7E] text-white border-none" asChild>
+          <a href={`https://wa.me/${item.whatsapp}`} target="_blank" rel="noopener noreferrer">
+            Contatar Vendedor
+          </a>
+        </Button>
+      </CardContent>
+    </Card>
+  );
+}
 
 export default function CategoryNews() {
   const { slug } = useParams();
@@ -85,6 +121,15 @@ export default function CategoryNews() {
         href: "/categoria/classificados",
       };
     }
+    if (sanitizedSlug === "politica") {
+      return {
+        title: "Câmara de Vereadores debate novo plano diretor para o desenvolvimento de Marau",
+        excerpt: "Audiência pública reuniu especialistas e comunidade para discutir o futuro urbano do município nos próximos 10 anos.",
+        authorLine: "Por Luiz Abreu",
+        time: "Há 3 horas",
+        href: "/noticia/plano-diretor-marau",
+      };
+    }
     return {
       title: "Vôlei Marau conquista título regional histórico em noite de ginásio lotado",
       excerpt: "A equipe local superou os adversários de Passo Fundo em uma partida emocionante de cinco sets neste domingo.",
@@ -124,6 +169,8 @@ export default function CategoryNews() {
           authorLine: "",
           date: "26 Out, 2023",
           href: "/categoria/classificados",
+          price: "R$ 245.000,00",
+          whatsapp: "5554999999999",
         },
         {
           tag: "Imóveis",
@@ -132,6 +179,40 @@ export default function CategoryNews() {
           authorLine: "",
           date: "25 Out, 2023",
           href: "/categoria/classificados",
+          price: "R$ 1.800,00 / mês",
+          whatsapp: "5554999999988",
+        },
+        {
+          tag: "Serviços",
+          title: "Aulas Particulares de Inglês e Reforço Escolar",
+          excerpt: "Professor com experiência internacional atende em domicílio ou online. Metodologia personalizada.",
+          authorLine: "",
+          date: "23 Out, 2023",
+          href: "/categoria/classificados",
+          price: "Consulte valor",
+          whatsapp: "5554999999977",
+        },
+        {
+          tag: "Imóveis",
+          title: "Terreno em Loteamento Novo - Pronto para construir",
+          excerpt: "Lote de 360m² em área alta com infraestrutura completa e ótima vista da cidade.",
+          authorLine: "",
+          date: "22 Out, 2023",
+          href: "/categoria/classificados",
+          price: "R$ 120.000,00",
+          whatsapp: "5554999999966",
+        },
+      ];
+    }
+    if (sanitizedSlug === "politica") {
+      return [
+        {
+          tag: "Municipal",
+          title: "Prefeitura anuncia novos investimentos para a rede municipal de educação",
+          excerpt: "Recursos serão destinados à reforma de escolas e aquisição de novos equipamentos tecnológicos.",
+          authorLine: "",
+          date: "24 Out, 2023",
+          href: "/noticia/investimentos-educacao",
         },
       ];
     }
@@ -229,55 +310,67 @@ export default function CategoryNews() {
             </div>
 
             <section className="mt-8">
-              <Card>
-                <CardContent className="p-0">
-                  <div className="grid grid-cols-1 md:grid-cols-5">
-                    <div className="md:col-span-2 bg-muted aspect-[16/10] md:aspect-auto" />
-                    <div className="md:col-span-3 p-6">
-                      <p className="text-xs text-muted-foreground">Destaque</p>
-                      <h2 className="mt-2 font-serif text-2xl leading-tight">{highlight.title}</h2>
-                      <p className="mt-2 text-muted-foreground">{highlight.excerpt}</p>
-                      <p className="mt-4 text-sm text-muted-foreground">
-                        <span className="text-foreground font-medium">{highlight.authorLine}</span> • {highlight.time}
-                      </p>
-                      <div className="mt-4">
-                        <Button asChild variant="secondary" className="gap-2">
-                          <Link to={highlight.href}>
-                            Ler matéria
-                            <ArrowRight className="h-4 w-4" />
-                          </Link>
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </section>
+              {sanitizedSlug === "classificados" ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                  {items.map((item, idx) => (
+                    <ClassifiedCard key={idx} item={item} />
+                  ))}
+                </div>
+              ) : (
+                <div className="space-y-8">
+                  <section>
+                    <Card>
+                      <CardContent className="p-0">
+                        <div className="grid grid-cols-1 md:grid-cols-5">
+                          <div className="md:col-span-2 bg-muted aspect-[16/10] md:aspect-auto" />
+                          <div className="md:col-span-3 p-6">
+                            <p className="text-xs text-muted-foreground">Destaque</p>
+                            <h2 className="mt-2 font-serif text-2xl leading-tight">{highlight.title}</h2>
+                            <p className="mt-2 text-muted-foreground">{highlight.excerpt}</p>
+                            <p className="mt-4 text-sm text-muted-foreground">
+                              <span className="text-foreground font-medium">{highlight.authorLine}</span> • {highlight.time}
+                            </p>
+                            <div className="mt-4">
+                              <Button asChild variant="secondary" className="gap-2">
+                                <Link to={highlight.href}>
+                                  Ler matéria
+                                  <ArrowRight className="h-4 w-4" />
+                                </Link>
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </section>
 
-            <section className="mt-8 space-y-6">
-              {items.map((item) => (
-                <Card key={item.href}>
-                  <CardContent className="p-6">
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="min-w-0">
-                        <p className="text-xs text-muted-foreground">{item.tag}</p>
-                        <h3 className="mt-1 font-serif text-xl leading-snug">
-                          <Link to={item.href} className="hover:underline">
-                            {item.title}
-                          </Link>
-                        </h3>
-                        <p className="mt-2 text-muted-foreground">{item.excerpt}</p>
-                        <p className="mt-3 text-sm text-muted-foreground">{item.date}</p>
-                      </div>
-                      <div className="hidden sm:block h-20 w-28 rounded-md bg-muted" />
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+                  <section className="space-y-6">
+                    {items.map((item) => (
+                      <Card key={item.href}>
+                        <CardContent className="p-6">
+                          <div className="flex items-start justify-between gap-4">
+                            <div className="min-w-0">
+                              <p className="text-xs text-muted-foreground">{item.tag}</p>
+                              <h3 className="mt-1 font-serif text-xl leading-snug">
+                                <Link to={item.href} className="hover:underline">
+                                  {item.title}
+                                </Link>
+                              </h3>
+                              <p className="mt-2 text-muted-foreground">{item.excerpt}</p>
+                              <p className="mt-3 text-sm text-muted-foreground">{item.date}</p>
+                            </div>
+                            <div className="hidden sm:block h-20 w-28 rounded-md bg-muted" />
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </section>
+                </div>
+              )}
 
-              <div className="flex justify-center">
+              <div className="flex justify-center mt-8">
                 <Button variant="outline" className="gap-2">
-                  Carregar mais notícias
+                  Carregar mais {sanitizedSlug === "classificados" ? "anúncios" : "notícias"}
                   <ArrowDown className="h-4 w-4" />
                 </Button>
               </div>
