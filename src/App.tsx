@@ -31,6 +31,9 @@ import AdminClassifieds from "./pages/admin/AdminClassifieds";
 import AdminAdManagement from "./pages/admin/AdminAdManagement";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminResetPassword from "./pages/admin/AdminResetPassword";
+import AdminContent from "./pages/admin/AdminContent";
+import AdminUsers from "./pages/admin/AdminUsers";
+import AdminSettings from "./pages/admin/AdminSettings";
 import AdvertiserClassifiedsDashboard from "./pages/advertiser/AdvertiserClassifiedsDashboard";
 import AdvertiserLayout from "./pages/advertiser/AdvertiserLayout";
 import AdvertiserAdDashboard from "./pages/advertiser/AdvertiserAdDashboard";
@@ -82,9 +85,9 @@ const App = () => (
                 <Route path="publicidade" element={<AdminAdManagement />} />
                 <Route path="classificados" element={<AdminClassifieds />} />
                 <Route index element={<AdminDashboard />} />
-                <Route path="conteudo" element={<div className="p-6 text-muted-foreground">Conteúdo (em breve)</div>} />
-                <Route path="usuarios" element={<div className="p-6 text-muted-foreground">Usuários (em breve)</div>} />
-                <Route path="configuracoes" element={<div className="p-6 text-muted-foreground">Configurações (em breve)</div>} />
+                <Route path="conteudo" element={<AdminContent />} />
+                <Route path="usuarios" element={<AdminUsers />} />
+                <Route path="configuracoes" element={<AdminSettings />} />
               </Route>
 
               {/* Advertiser */}

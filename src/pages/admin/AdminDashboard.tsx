@@ -1,6 +1,7 @@
 import * as React from "react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { useQuery } from "@tanstack/react-query";
 import {
   Bell,
   Bookmark,
@@ -31,68 +32,47 @@ import {
 } from "@/components/ui/table";
 import { useSettings } from "@/context/SettingsContext";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
-type StatCard = {
-  title: string;
-  value: string;
-  helper: string;
-  icon: React.ReactNode;
-  iconBg: string;
-};
+async function fetchStats() {
+  const [news, pendingAds, activeAds, users] = await Promise.all([
+    supabase.from("news").select("*", { count: "exact", head: true }),
+    supabase.from("classified_ads").select("*", { count: "exact", head: true }).eq("status", "pending"),
+    supabase.from("classified_ads").select("*", { count: "exact", head: true }).eq("status", "active"),
+    supabase.from("profiles").select("*", { count: "exact", head: true }),
+  ]);
 
-const statCards: StatCard[] = [
-  {
-    title: "Visitas Hoje",
-    value: "12.4k",
-    helper: "+15% vs ontem",
-    icon: <Bookmark className="h-4 w-4 text-primary" aria-hidden="true" />,
-    iconBg: "bg-muted",
-  },
-  {
-    title: "Artigos Pendentes",
-    value: "4",
-    helper: "Requer atenção",
-    icon: <PenSquare className="h-4 w-4 text-primary" aria-hidden="true" />,
-    iconBg: "bg-muted",
-  },
-  {
-    title: "Anúncios Ativos",
-    value: "18",
-    helper: "-1 vs semana passada",
-    icon: <Upload className="h-4 w-4 text-primary" aria-hidden="true" />,
-    iconBg: "bg-muted",
-  },
-  {
-    title: "Usuários Ativos",
-    value: "3.2k",
-    helper: "+8% novos registros",
-    icon: <UserPlus className="h-4 w-4 text-primary" aria-hidden="true" />,
-    iconBg: "bg-muted",
-  },
-];
+  return {
+    newsCount: news.count || 0,
+    pendingAdsCount: pendingAds.count || 0,
+    activeAdsCount: activeAds.count || 0,
+    usersCount: users.count || 0,
+  };
+}
 
-const latestNews = [
-  { title: "Festa do Salaminho…", author: "Ana Silva", category: "Cultura", categoryTone: "secondary" as const, status: "Publicado", statusTone: "secondary" as const },
-  { title: "Prefeitura anuncia …", author: "Carlos Souza", category: "Política", categoryTone: "outline" as const, status: "Pendente", statusTone: "outline" as const },
-  { title: "Marau Futsal vence…", author: "Roberto Lima", category: "Esporte", categoryTone: "outline" as const, status: "Publicado", statusTone: "secondary" as const },
-  { title: "Previsão do tempo …", author: "Ana Silva", category: "Geral", categoryTone: "outline" as const, status: "Rascunho", statusTone: "outline" as const },
-];
-
-const occupancy = 80;
-const donutData = [
-  { name: "Ocupado", value: occupancy },
-  { name: "Livre", value: 100 - occupancy },
-];
-
-const activity = [
-  { title: "João Silva editou \"Ata da Câmara\"", time: "Há 10 minutos" },
-  { title: "Sistema publicou \"Notícias da Manhã\"", time: "Há 45 minutos" },
-  { title: "Anúncio \"Mercado X\" expira em breve", time: "Há 2 horas" },
-];
+async function fetchLatestNews() {
+  const { data, error } = await supabase
+    .from("news")
+    .select("*")
+    .order("published_at", { ascending: false })
+    .limit(5);
+  if (error) throw error;
+  return data || [];
+}
 
 export default function AdminDashboard() {
   const { carouselSpeed, setCarouselSpeed } = useSettings();
   const [localSpeed, setLocalSpeed] = React.useState(carouselSpeed);
+
+  const statsQuery = useQuery({
+    queryKey: ["admin_stats"],
+    queryFn: fetchStats,
+  });
+
+  const newsQuery = useQuery({
+    queryKey: ["admin_latest_news"],
+    queryFn: fetchLatestNews,
+  });
 
   React.useEffect(() => {
     setLocalSpeed(carouselSpeed);
@@ -105,9 +85,50 @@ export default function AdminDashboard() {
 
   const todayLabel = React.useMemo(() => {
     const d = new Date();
-    // Quinta-feira, 24 de Outubro
     return format(d, "EEEE, dd 'de' MMMM", { locale: ptBR });
   }, []);
+
+  const statCards = [
+    {
+      title: "Total de Notícias",
+      value: statsQuery.data?.newsCount.toString() || "0",
+      helper: "Artigos no portal",
+      icon: <Bookmark className="h-4 w-4 text-primary" aria-hidden="true" />,
+      iconBg: "bg-muted",
+    },
+    {
+      title: "Anúncios Pendentes",
+      value: statsQuery.data?.pendingAdsCount.toString() || "0",
+      helper: "Aguardando revisão",
+      icon: <PenSquare className="h-4 w-4 text-primary" aria-hidden="true" />,
+      iconBg: statsQuery.data?.pendingAdsCount ? "bg-amber-100" : "bg-muted",
+    },
+    {
+      title: "Classificados Ativos",
+      value: statsQuery.data?.activeAdsCount.toString() || "0",
+      helper: "Visíveis no mural",
+      icon: <Upload className="h-4 w-4 text-primary" aria-hidden="true" />,
+      iconBg: "bg-muted",
+    },
+    {
+      title: "Usuários Registrados",
+      value: statsQuery.data?.usersCount.toString() || "0",
+      helper: "Base de usuários",
+      icon: <UserPlus className="h-4 w-4 text-primary" aria-hidden="true" />,
+      iconBg: "bg-muted",
+    },
+  ];
+
+  const occupancy = 80;
+  const donutData = [
+    { name: "Ocupado", value: occupancy },
+    { name: "Livre", value: 100 - occupancy },
+  ];
+
+  const activity = [
+    { title: "Dashboard atualizado com dados reais", time: "Justo agora" },
+    { title: "Sistema monitorando acessos", time: "Em tempo real" },
+  ];
 
   return (
     <div className="p-6 space-y-6">
@@ -141,7 +162,7 @@ export default function AdminDashboard() {
       <section className="flex items-start justify-between gap-4">
         <div>
           <h1 className="text-4xl font-semibold tracking-tight">Bom dia, Admin</h1>
-          <p className="mt-1 text-muted-foreground">{todayLabel} | ☀️ 22°C em Marau, RS</p>
+          <p className="mt-1 text-muted-foreground">{todayLabel} | Marau, RS</p>
         </div>
 
         <Button variant="outline" className="gap-2" asChild>
@@ -159,7 +180,7 @@ export default function AdminDashboard() {
             <div className="bg-blue-600 rounded p-1">
               <PenSquare className="h-4 w-4 text-white" />
             </div>
-            <CardTitle className="text-lg text-slate-900">Configurações do Site</CardTitle>
+            <CardTitle className="text-lg text-slate-900">Configurações Rápidas</CardTitle>
           </div>
         </CardHeader>
         <CardContent>
@@ -197,35 +218,20 @@ export default function AdminDashboard() {
               </div>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-semibold tracking-tight">{c.value}</div>
+              <div className="text-3xl font-semibold tracking-tight">{statsQuery.isLoading ? "..." : c.value}</div>
               <div className="mt-1 text-sm text-muted-foreground">{c.helper}</div>
             </CardContent>
           </Card>
         ))}
       </section>
 
-      <section className="flex flex-wrap items-center gap-3">
-        <Button className="gap-2">
-          <PenSquare className="h-4 w-4" aria-hidden="true" />
-          Escrever Notícia
-        </Button>
-        <Button variant="outline" className="gap-2">
-          <UserPlus className="h-4 w-4" aria-hidden="true" />
-          Novo Usuário
-        </Button>
-        <Button variant="outline" className="gap-2">
-          <Upload className="h-4 w-4" aria-hidden="true" />
-          Upload Banner
-        </Button>
-      </section>
-
-      <section className="grid grid-cols-1 gap-4 xl:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
         <Card className="xl:col-span-2">
           <CardHeader className="pb-2">
             <div className="flex items-center justify-between gap-4">
               <CardTitle className="text-base">Últimas Notícias</CardTitle>
-              <Button variant="ghost" className="text-primary">
-                Ver todas
+              <Button variant="ghost" className="text-primary" asChild>
+                <a href="/admin/conteudo">Ver todas</a>
               </Button>
             </div>
           </CardHeader>
@@ -234,34 +240,40 @@ export default function AdminDashboard() {
               <TableHeader>
                 <TableRow>
                   <TableHead>Título</TableHead>
-                  <TableHead>Autor</TableHead>
                   <TableHead>Categoria</TableHead>
-                  <TableHead>Status</TableHead>
+                  <TableHead>Data</TableHead>
                   <TableHead className="text-right">Ações</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {latestNews.map((n) => (
-                  <TableRow key={n.title}>
-                    <TableCell className="font-medium">{n.title}</TableCell>
-                    <TableCell>{n.author}</TableCell>
-                    <TableCell>
-                      <Badge variant={n.categoryTone} className="rounded-full">
-                        {n.category}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant={n.statusTone} className="rounded-full">
-                        {n.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <Button variant="ghost" size="icon" aria-label="Mais ações">
-                        <span className="text-muted-foreground">⋮</span>
-                      </Button>
-                    </TableCell>
+                {newsQuery.isLoading ? (
+                  <TableRow>
+                    <TableCell colSpan={4} className="text-center py-4 text-muted-foreground">Carregando notícias...</TableCell>
                   </TableRow>
-                ))}
+                ) : newsQuery.data?.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={4} className="text-center py-4 text-muted-foreground">Nenhuma notícia encontrada.</TableCell>
+                  </TableRow>
+                ) : (
+                  newsQuery.data?.map((n) => (
+                    <TableRow key={n.id}>
+                      <TableCell className="font-medium truncate max-w-[300px]">{n.title}</TableCell>
+                      <TableCell>
+                        <Badge variant="outline" className="rounded-full capitalize">
+                          {n.category_slug}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-xs text-muted-foreground">
+                        {format(new Date(n.published_at), "dd/MM/yyyy")}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <Button variant="ghost" size="icon" aria-label="Editar">
+                          <svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M11.8536 1.14645C11.6583 0.951184 11.3417 0.951184 11.1464 1.14645L3.71461 8.57829C3.62314 8.66976 3.55217 8.78131 3.50812 8.90295L2.5262 11.6139C2.43302 11.8711 2.50346 12.1578 2.70711 12.3614C2.91075 12.5651 3.19739 12.6355 3.45464 12.5423L6.16556 11.5604C6.28719 11.5163 6.39875 11.4454 6.49021 11.3539L13.8536 3.99052C14.0488 3.79526 14.0488 3.47868 13.8536 3.28341L11.8536 1.14645ZM4.42171 9.2854L10.5 3.20711L11.7929 4.5L5.71461 10.5783L4.42171 9.2854ZM3.75477 10.3341L4.6659 11.2452L3.25477 11.7511L3.75477 10.3341ZM12.5 3.20711L11.7929 2.5L10.5 3.79289L11.2071 4.5L12.5 3.20711Z" fill="currentColor" fillRule="evenodd" clipRule="evenodd"></path></svg>
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
               </TableBody>
             </Table>
           </CardContent>
@@ -272,8 +284,8 @@ export default function AdminDashboard() {
             <CardHeader className="pb-2">
               <div className="flex items-center justify-between gap-4">
                 <CardTitle className="text-base">Espaços Publicitários</CardTitle>
-                <Button variant="ghost" className="text-primary">
-                  Gerenciar
+                <Button variant="ghost" className="text-primary" asChild>
+                  <a href="/admin/publicidade">Gerenciar</a>
                 </Button>
               </div>
             </CardHeader>
@@ -306,15 +318,15 @@ export default function AdminDashboard() {
               <div className="mt-6 space-y-2 text-sm">
                 <div className="flex items-center justify-between">
                   <span className="text-muted-foreground">Banner Topo</span>
-                  <span className="text-primary">Ativo</span>
+                  <span className="text-primary font-medium">Ativo</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-muted-foreground">Lateral Dir.</span>
-                  <span className="text-primary">Ativo</span>
+                  <span className="text-primary font-medium">Ativo</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-muted-foreground">Rodapé</span>
-                  <span className="text-destructive">Expirado</span>
+                  <span className="text-destructive font-medium">Expirado</span>
                 </div>
               </div>
             </CardContent>
@@ -325,8 +337,8 @@ export default function AdminDashboard() {
               <CardTitle className="text-base">Atividade Recente</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              {activity.map((a) => (
-                <div key={a.title} className="flex items-start gap-3">
+              {activity.map((a, i) => (
+                <div key={i} className="flex items-start gap-3">
                   <div className="h-9 w-9 rounded-full bg-muted grid place-items-center">
                     <span className="text-xs font-semibold text-muted-foreground">•</span>
                   </div>
@@ -339,7 +351,7 @@ export default function AdminDashboard() {
             </CardContent>
           </Card>
         </div>
-      </section>
+      </div>
     </div>
   );
 }
