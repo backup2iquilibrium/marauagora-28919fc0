@@ -36,8 +36,10 @@ type CategoryItem = {
 
 export default function CategoryNews() {
   const { slug } = useParams();
+  const sanitizedSlug = (slug || "").trim().toLowerCase();
+
   const categoryLabel = useMemo(() => {
-    if (!slug) return "Notícias";
+    if (!sanitizedSlug) return "Notícias";
     const map: Record<string, string> = {
       esportes: "Esportes",
       esporte: "Esportes",
@@ -50,8 +52,8 @@ export default function CategoryNews() {
       noticias: "Notícias",
       classificados: "Classificados",
     };
-    return map[slug] ?? slug.charAt(0).toUpperCase() + slug.slice(1);
-  }, [slug]);
+    return map[sanitizedSlug] ?? sanitizedSlug.charAt(0).toUpperCase() + sanitizedSlug.slice(1);
+  }, [sanitizedSlug]);
 
   const filters = useMemo(() => {
     const filterMap: Record<string, string[]> = {
@@ -59,18 +61,28 @@ export default function CategoryNews() {
       agronegocio: ["Todos", "Safra", "Pecuária", "Tecnologia", "Mercado"],
       politica: ["Todos", "Municipal", "Estadual", "Nacional"],
       policia: ["Todos", "Ocorrências", "Trânsito", "Investigação"],
+      classificados: ["Todos", "Veículos", "Imóveis", "Serviços", "Empregos"],
     };
-    return filterMap[slug || ""] ?? ["Todos", "Geral", "Destaques"];
-  }, [slug]);
+    return filterMap[sanitizedSlug] ?? ["Todos", "Geral", "Destaques"];
+  }, [sanitizedSlug]);
 
   const highlight = useMemo(() => {
-    if (slug === "agronegocio") {
+    if (sanitizedSlug === "agronegocio") {
       return {
         title: "Safra recorde de soja impulsiona economia local e gera novos empregos",
         excerpt: "Produtores rurais de Marau celebram números positivos da colheita, superando expectativas iniciais do setor.",
         authorLine: "Por Redação",
         time: "Há 1 dia",
         href: "/noticia/safra-recorde-soja-marau",
+      };
+    }
+    if (sanitizedSlug === "classificados") {
+      return {
+        title: "Mercado imobiliário em Marau apresenta alta procura por aluguéis no centro",
+        excerpt: "Levantamento aponta que a proximidade com serviços e comércio é o principal fator de decisão para novos moradores.",
+        authorLine: "Por Redação",
+        time: "Há 5 horas",
+        href: "/categoria/classificados",
       };
     }
     return {
@@ -80,10 +92,10 @@ export default function CategoryNews() {
       time: "Há 2 horas",
       href: "/noticia/volei-marau-conquista-titulo",
     };
-  }, [slug]);
+  }, [sanitizedSlug]);
 
   const items = useMemo<CategoryItem[]>(() => {
-    if (slug === "agronegocio") {
+    if (sanitizedSlug === "agronegocio") {
       return [
         {
           tag: "Tecnologia",
@@ -100,6 +112,26 @@ export default function CategoryNews() {
           authorLine: "",
           date: "24 Out, 2023",
           href: "/noticia/preco-milho-estabilidade",
+        },
+      ];
+    }
+    if (sanitizedSlug === "classificados") {
+      return [
+        {
+          tag: "Veículos",
+          title: "Vende-se Caminhonete Hilux 2022 - Único dono",
+          excerpt: "Veículo em estado de novo, com todas as revisões feitas em concessionária. Completa e pronta para uso.",
+          authorLine: "",
+          date: "26 Out, 2023",
+          href: "/categoria/classificados",
+        },
+        {
+          tag: "Imóveis",
+          title: "Apartamento de 2 dormitórios para locação próxima à Praça Central",
+          excerpt: "Excelente localização, mobiliado e com box de garagem. Ideal para estudantes ou casais novos.",
+          authorLine: "",
+          date: "25 Out, 2023",
+          href: "/categoria/classificados",
         },
       ];
     }
@@ -121,7 +153,7 @@ export default function CategoryNews() {
         href: "/noticia/maratona-escolar-500-estudantes",
       },
     ];
-  }, [slug]);
+  }, [sanitizedSlug]);
 
   const mostRead = useMemo(
     () => [
