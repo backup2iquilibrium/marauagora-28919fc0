@@ -23,21 +23,29 @@ export default defineConfig(({ mode }) => ({
       output: {
         manualChunks(id) {
           if (id.includes('node_modules')) {
-            if (id.includes('react') || id.includes('react-dom') || id.includes('react-router')) {
+            // Group React core together
+            if (id.includes('node_modules/react/') ||
+              id.includes('node_modules/react-dom/') ||
+              id.includes('node_modules/react-router/') ||
+              id.includes('node_modules/react-router-dom/')) {
               return 'vendor-core';
             }
+            // Group UI components
             if (id.includes('@radix-ui')) {
               return 'vendor-ui';
             }
+            // Group icons
             if (id.includes('lucide-react')) {
               return 'vendor-icons';
             }
+            // Group heavy libraries
             if (id.includes('recharts')) {
               return 'vendor-charts';
             }
             if (id.includes('@supabase')) {
               return 'vendor-db';
             }
+            // Everything else in a general vendor chunk
             return 'vendor';
           }
         },
