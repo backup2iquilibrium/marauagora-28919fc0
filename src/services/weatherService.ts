@@ -25,10 +25,16 @@ const API_KEY = import.meta.env.VITE_OPENWEATHER_API_KEY;
  * Fetches current weather data for Marau, RS from OpenWeatherMap API
  */
 export async function getCurrentWeather(): Promise<WeatherData['current']> {
+    if (!API_KEY) {
+        console.error('VITE_OPENWEATHER_API_KEY is not defined. Please add it to your environment variables.');
+        throw new Error('Weather API key is missing');
+    }
+
     const url = `https://api.openweathermap.org/data/2.5/weather?lat=${MARAU_LAT}&lon=${MARAU_LON}&appid=${API_KEY}&units=metric&lang=pt_br`;
 
     const response = await fetch(url);
     if (!response.ok) {
+        console.error(`Weather API error: ${response.status} - ${response.statusText}`);
         throw new Error(`Weather API error: ${response.status}`);
     }
 
@@ -47,10 +53,16 @@ export async function getCurrentWeather(): Promise<WeatherData['current']> {
  * Fetches 5-day weather forecast for Marau, RS from OpenWeatherMap API
  */
 export async function getWeatherForecast(): Promise<WeatherData['forecast']> {
+    if (!API_KEY) {
+        console.error('VITE_OPENWEATHER_API_KEY is not defined. Please add it to your environment variables.');
+        throw new Error('Weather API key is missing');
+    }
+
     const url = `https://api.openweathermap.org/data/2.5/forecast?lat=${MARAU_LAT}&lon=${MARAU_LON}&appid=${API_KEY}&units=metric&lang=pt_br`;
 
     const response = await fetch(url);
     if (!response.ok) {
+        console.error(`Forecast API error: ${response.status} - ${response.statusText}`);
         throw new Error(`Forecast API error: ${response.status}`);
     }
 
