@@ -1,17 +1,27 @@
 import { CalendarDays } from "lucide-react";
-
+import { useQuotes } from "@/hooks/useQuotes";
 import { TickerItem } from "./types";
 
 const defaultTickers: TickerItem[] = [
   { label: "USD", value: "R$ 5,01" },
+  { label: "Bitcoin", value: "R$ 350k" },
   { label: "Soja", value: "R$ 135,00" },
   { label: "Milho", value: "R$ 55,20" },
 ];
 
-export function TopBar({ dateLabel = "Quarta-feira, 25 de Outubro", tickers = defaultTickers }: {
-  dateLabel?: string;
-  tickers?: TickerItem[];
-}) {
+const formatDate = (date: Date): string => {
+  const days = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'];
+  const months = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+
+  return `${days[date.getDay()]}, ${date.getDate()} de ${months[date.getMonth()]}`;
+};
+
+export function TopBar() {
+  const { quotes } = useQuotes();
+  const today = new Date();
+  const dateLabel = formatDate(today);
+  const tickers = quotes?.quotes || defaultTickers;
+
   return (
     <div className="bg-primary text-primary-foreground py-2 shadow-sm relative z-50">
       <div className="container flex flex-col md:flex-row justify-between items-center gap-2">
