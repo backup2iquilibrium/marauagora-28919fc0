@@ -58,13 +58,27 @@ async function getBitcoinPrice(): Promise<QuoteData> {
 }
 
 /**
- * Gets commodity prices (static for now, can be enhanced with Cotriel scraping)
+ * Gets commodity prices from Sementes Roos via serverless API
  */
-function getCommodityPrices(): QuoteData[] {
-    return [
-        { label: 'Soja', value: 'R$ 135,00' },
-        { label: 'Milho', value: 'R$ 55,20' },
-    ];
+async function getCommodityPrices(): Promise<QuoteData[]> {
+    try {
+        const response = await fetch('/api/quotes');
+        if (!response.ok) throw new Error('Failed to fetch commodity quotes');
+
+        const data = await response.json();
+
+        return [
+            { label: 'Soja', value: data.soja || 'R$ 117,00' },
+            { label: 'Milho', value: data.milho || 'R$ 57,00' },
+        ];
+    } catch (error) {
+        console.error('Error fetching commodity prices:', error);
+        // Fallback to latest known values
+        return [
+            { label: 'Soja', value: 'R$ 117,00' },
+            { label: 'Milho', value: 'R$ 57,00' },
+        ];
+    }
 }
 
 /**
@@ -72,26 +86,25 @@ function getCommodityPrices(): QuoteData[] {
  */
 export async function getAllQuotes(): Promise<QuotesResponse> {
     try {
-        const [usd, bitcoin] = await Promise.all([
+        const [usd, bitcoin, commodities] = await Promise.all([
             getUSDRate(),
             getBitcoinPrice(),
+            getCommodityPrices(),
         ]);
-
-        const commodities = getCommodityPrices();
 
         return {
             quotes: [usd, bitcoin, ...commodities],
             lastUpdated: new Date(),
         };
     } catch (error) {
-        console.error('Error fetching quotes:', error);
-        // Return all fallback data
+        console.error('Error fetching all quotes:', error);
+        // Return safe fallback
         return {
             quotes: [
                 { label: 'USD', value: 'R$ 5,01' },
                 { label: 'Bitcoin', value: 'R$ 350k' },
-                { label: 'Soja', value: 'R$ 135,00' },
-                { label: 'Milho', value: 'R$ 55,20' },
+                { label: 'Soja', value: 'R$ 117,00' },
+                { label: 'Milho', value: 'R$ 57,00' },
             ],
             lastUpdated: new Date(),
         };
