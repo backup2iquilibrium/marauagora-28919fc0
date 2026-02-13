@@ -31,6 +31,7 @@ export function TopBar() {
         </div>
 
         <div className="flex items-center gap-3 overflow-x-auto max-w-full no-scrollbar text-sm font-medium">
+          <span className="text-primary-foreground/90 font-bold mr-1 hidden sm:inline">Cotações</span>
           {tickers.map((t) => (
             <span key={t.label} className="flex items-center gap-2 bg-background/10 px-3 py-1 rounded-full whitespace-nowrap">
               <span className="text-secondary font-bold">{t.label}</span>
