@@ -18,13 +18,31 @@ export function Footer({ logoUrl }: { logoUrl: string }) {
               em Marau e região.
             </p>
             <div className="flex gap-3">
-              <a className="w-8 h-8 rounded-full bg-background/10 flex items-center justify-center hover:bg-secondary hover:text-secondary-foreground transition-colors" href="#" aria-label="Facebook">
+              <a
+                className="w-8 h-8 rounded-full bg-background/10 flex items-center justify-center hover:bg-secondary hover:text-secondary-foreground transition-colors"
+                href="https://www.facebook.com/marauagora/"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Facebook"
+              >
                 <Facebook className="h-4 w-4" />
               </a>
-              <a className="w-8 h-8 rounded-full bg-background/10 flex items-center justify-center hover:bg-secondary hover:text-secondary-foreground transition-colors" href="#" aria-label="Instagram">
+              <a
+                className="w-8 h-8 rounded-full bg-background/10 flex items-center justify-center hover:bg-secondary hover:text-secondary-foreground transition-colors"
+                href="https://www.instagram.com/marauagora/"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Instagram"
+              >
                 <Instagram className="h-4 w-4" />
               </a>
-              <a className="w-8 h-8 rounded-full bg-background/10 flex items-center justify-center hover:bg-secondary hover:text-secondary-foreground transition-colors" href="#" aria-label="YouTube">
+              <a
+                className="w-8 h-8 rounded-full bg-background/10 flex items-center justify-center hover:bg-secondary hover:text-secondary-foreground transition-colors"
+                href="https://www.youtube.com/@marauagora"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="YouTube"
+              >
                 <Youtube className="h-4 w-4" />
               </a>
             </div>
@@ -112,16 +130,13 @@ export function Footer({ logoUrl }: { logoUrl: string }) {
             <ul className="space-y-2 text-sm text-primary-foreground/80">
               <li className="flex items-start gap-2">
                 <MapPin className="h-4 w-4 mt-0.5" aria-hidden="true" />
-                Av. Júlio Borella, 1234 - Centro, Marau - RS
+                Av. Júlio Borella, 777 - 3 andar <br /> Marau - RS - CEP 99150-000
               </li>
               <li className="flex items-center gap-2">
-                <Phone className="h-4 w-4" aria-hidden="true" /> (54) 3342-0000
+                <span className="h-4 w-4 inline-block" aria-hidden="true" /> marauagorars@gmail.com
               </li>
               <li className="flex items-center gap-2">
-                <span className="h-4 w-4 inline-block" aria-hidden="true" /> contato@marauagora.com.br
-              </li>
-              <li className="flex items-center gap-2">
-                <span className="h-4 w-4 inline-block" aria-hidden="true" /> (54) 99999-9999 (WhatsApp)
+                <span className="h-4 w-4 inline-block" aria-hidden="true" /> (54) 92000-1320 (WhatsApp)
               </li>
             </ul>
           </div>
