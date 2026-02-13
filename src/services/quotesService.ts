@@ -1,4 +1,6 @@
 // Financial quotes data types
+import { supabase } from "@/integrations/supabase/client";
+
 export interface QuoteData {
     label: string;
     value: string;
@@ -60,10 +62,38 @@ async function getBitcoinPrice(): Promise<QuoteData> {
 /**
  * Gets commodity prices from Sementes Roos via serverless API
  */
+// Gets commodity prices from Sementes Roos via Supabase or serverless API
 async function getCommodityPrices(): Promise<QuoteData[]> {
     try {
+        // 1. Try to get latest from Supabase first
+        const { data: lastQuote, error } = await supabase
+            .from('quotes')
+            .select('*')
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .single();
+
+        // Check if data is fresh (e.g., < 4 hours old) or if it's weekend
+        // For now, if we have ANY data, we prefer it over "Mercado fechado"
+        const isFresh = lastQuote && (new Date().getTime() - new Date(lastQuote.created_at).getTime() < 4 * 60 * 60 * 1000);
+
+        // Logical flow:
+        // If we have data in Supabase, use it immediately to render something.
+        // If it's stale and we are in a browser environment (not build), we can optionally trigger an update in the background.
+        // But since /api/quotes triggers the update, we can just call it if data is missing or stale.
+        // HOWEVER, calling /api/quotes locally (npm run dev) might fail if not proxied.
+
+        if (lastQuote) {
+            // Return Supabase data
+            return [
+                { label: 'Soja', value: lastQuote.soja || 'R$ 117,00' },
+                { label: 'Milho', value: lastQuote.milho || 'R$ 57,00' },
+            ];
+        }
+
+        // 2. If no data in Supabase, try the API (which will scrape and save to Supabase)
         const response = await fetch('/api/quotes');
-        if (!response.ok) throw new Error('Failed to fetch commodity quotes');
+        if (!response.ok) throw new Error('Failed to fetch commodity quotes from API');
 
         const data = await response.json();
 
@@ -73,7 +103,8 @@ async function getCommodityPrices(): Promise<QuoteData[]> {
         ];
     } catch (error) {
         console.error('Error fetching commodity prices:', error);
-        // Fallback to latest known values
+
+        // 3. Fallback to hardcoded values
         return [
             { label: 'Soja', value: 'R$ 117,00' },
             { label: 'Milho', value: 'R$ 57,00' },
