@@ -55,7 +55,7 @@ export default function AdminNewsEditor() {
         image_url: "",
         published_at: new Date().toISOString().slice(0, 16),
     });
- 
+
     const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
         if (!file) return;
@@ -333,9 +333,16 @@ export default function AdminNewsEditor() {
                                             onChange={(e) => setFormData(p => ({ ...p, image_url: e.target.value }))}
                                             placeholder="https://..."
                                         />
-                                        <p className="text-[10px] text-muted-foreground">
-                                            Insira o link direto da imagem hospedada.
-                                        </p>
+                                        <div className="space-y-1">
+                                            <p className="text-[10px] text-muted-foreground">
+                                                Insira o link direto da imagem (deve terminar em .jpg, .png, .webp, etc).
+                                            </p>
+                                            {formData.image_url.includes("canva.com") && (
+                                                <p className="text-[10px] text-amber-600 font-medium">
+                                                    Atenção: Links de edição/compartilhamento do Canva não funcionam. Você precisa baixar a imagem ou pegar o "Endereço da Imagem" direto.
+                                                </p>
+                                            )}
+                                        </div>
                                     </TabsContent>
                                 </Tabs>
 
