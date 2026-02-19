@@ -1,32 +1,39 @@
 import * as React from "react";
 import { useNavigate } from "react-router-dom";
-import { Search, Loader2, Newspaper, Briefcase, MapPin, Calendar, X } from "lucide-react";
+import {
+    Search, Loader2, Newspaper, Briefcase,
+    MapPin, Calendar, ShoppingBag, X,
+} from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { searchMockData, type MockSearchResult, type MockItemType } from "@/services/mockSearchData";
 
-type CategoryKey = "news" | "jobs" | "points" | "events";
+type SearchItemType = MockItemType | "news" | "jobs" | "points" | "events";
 
 type SearchSuggestion = {
-    item_type: CategoryKey;
+    item_type: SearchItemType;
     item_id: string;
     title: string;
     excerpt: string | null;
     route: string;
     published_at: string;
     rank: number;
+    source: "db" | "mock";
 };
 
-const categoryIcon: Record<CategoryKey, React.ReactNode> = {
+const categoryIcon: Record<string, React.ReactNode> = {
     news: <Newspaper className="h-4 w-4 shrink-0 text-blue-500" />,
     jobs: <Briefcase className="h-4 w-4 shrink-0 text-green-500" />,
     points: <MapPin className="h-4 w-4 shrink-0 text-orange-500" />,
     events: <Calendar className="h-4 w-4 shrink-0 text-purple-500" />,
+    classifieds: <ShoppingBag className="h-4 w-4 shrink-0 text-pink-500" />,
 };
 
-const categoryLabel: Record<CategoryKey, string> = {
+const categoryLabel: Record<string, string> = {
     news: "Notícia",
     jobs: "Vaga",
     points: "Local",
     events: "Evento",
+    classifieds: "Classificado",
 };
 
 function useDebounce<T>(value: T, delay: number): T {
@@ -38,6 +45,17 @@ function useDebounce<T>(value: T, delay: number): T {
     return debouncedValue;
 }
 
+/** Deduplica por item_id+item_type mantendo o de maior rank */
+function dedup(items: SearchSuggestion[]): SearchSuggestion[] {
+    const seen = new Map<string, SearchSuggestion>();
+    for (const item of items) {
+        const key = `${item.item_type}-${item.item_id}`;
+        const prev = seen.get(key);
+        if (!prev || item.rank > prev.rank) seen.set(key, item);
+    }
+    return Array.from(seen.values());
+}
+
 export function SearchAutocomplete() {
     const navigate = useNavigate();
     const [q, setQ] = React.useState("");
@@ -46,11 +64,11 @@ export function SearchAutocomplete() {
     const [loading, setLoading] = React.useState(false);
     const [activeIndex, setActiveIndex] = React.useState(-1);
 
-    const debouncedQ = useDebounce(q.trim(), 300);
+    const debouncedQ = useDebounce(q.trim(), 280);
     const containerRef = React.useRef<HTMLDivElement>(null);
     const inputRef = React.useRef<HTMLInputElement>(null);
 
-    // Busca sugestões ao digitar
+    // ── Busca principal ──────────────────────────────────────────────────────────
     React.useEffect(() => {
         if (debouncedQ.length < 2) {
             setSuggestions([]);
@@ -61,6 +79,19 @@ export function SearchAutocomplete() {
         let cancelled = false;
         setLoading(true);
 
+        // 1. Busca local (mock) — SÍNCRONA e imediata
+        const mockResults: SearchSuggestion[] = searchMockData(debouncedQ, 8).map((r) => ({
+            ...r,
+            source: "mock" as const,
+        }));
+
+        if (!cancelled) {
+            setSuggestions(mockResults);
+            setOpen(mockResults.length > 0);
+            setActiveIndex(-1);
+        }
+
+        // 2. Busca no Supabase (assíncrona) — substitui/complementa se retornar dados
         (supabase as any)
             .rpc("search_portal", {
                 q: debouncedQ,
@@ -69,14 +100,31 @@ export function SearchAutocomplete() {
                 page_size: 8,
                 page_offset: 0,
             })
-            .then(({ data, error }: { data: SearchSuggestion[] | null; error: any }) => {
+            .then(({ data, error }: { data: any[] | null; error: any }) => {
                 if (cancelled) return;
                 setLoading(false);
-                if (!error && data) {
-                    setSuggestions(data);
-                    setOpen(data.length > 0);
+
+                if (!error && data && data.length > 0) {
+                    const dbResults: SearchSuggestion[] = data.map((r) => ({
+                        ...r,
+                        source: "db" as const,
+                    }));
+
+                    // Prioriza resultados reais do banco, complementa com mocks
+                    const combined = dedup([...dbResults, ...mockResults])
+                        .sort((a, b) => b.rank - a.rank)
+                        .slice(0, 8);
+
+                    setSuggestions(combined);
+                    setOpen(combined.length > 0);
                     setActiveIndex(-1);
+                } else {
+                    // Supabase vazio: mantém somente os mocks
+                    setLoading(false);
                 }
+            })
+            .catch(() => {
+                if (!cancelled) setLoading(false);
             });
 
         return () => {
@@ -84,7 +132,7 @@ export function SearchAutocomplete() {
         };
     }, [debouncedQ]);
 
-    // Fecha dropdown ao clicar fora
+    // Fecha ao clicar fora
     React.useEffect(() => {
         function handler(e: MouseEvent) {
             if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
@@ -140,7 +188,7 @@ export function SearchAutocomplete() {
 
     return (
         <div ref={containerRef} className="relative w-full sm:w-80 md:w-96 lg:w-[450px]">
-            {/* Input */}
+            {/* ── Input ── */}
             <div className="relative">
                 <input
                     ref={inputRef}
@@ -162,7 +210,6 @@ export function SearchAutocomplete() {
                     aria-activedescendant={activeIndex >= 0 ? `suggestion-${activeIndex}` : undefined}
                 />
 
-                {/* Botão limpar */}
                 {q.length > 0 && (
                     <button
                         type="button"
@@ -174,29 +221,26 @@ export function SearchAutocomplete() {
                     </button>
                 )}
 
-                {/* Ícone de busca / loader */}
                 <button
                     type="button"
                     onClick={submitSearch}
                     className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-primary p-1.5 transition-colors"
                     aria-label="Buscar"
                 >
-                    {loading ? (
-                        <Loader2 className="h-5 w-5 animate-spin" />
-                    ) : (
-                        <Search className="h-5 w-5" />
-                    )}
+                    {loading
+                        ? <Loader2 className="h-5 w-5 animate-spin" />
+                        : <Search className="h-5 w-5" />}
                 </button>
             </div>
 
-            {/* Dropdown de sugestões */}
+            {/* ── Dropdown ── */}
             {open && suggestions.length > 0 && (
                 <div
                     role="listbox"
                     aria-label="Sugestões de busca"
                     className="absolute top-full mt-2 left-0 right-0 z-50 bg-card border border-border rounded-2xl shadow-2xl overflow-hidden"
                 >
-                    <ul className="py-2 max-h-[420px] overflow-y-auto">
+                    <ul className="py-2 max-h-[420px] overflow-y-auto divide-y divide-border/40">
                         {suggestions.map((item, idx) => (
                             <li
                                 key={`${item.item_type}-${item.item_id}`}
@@ -205,17 +249,21 @@ export function SearchAutocomplete() {
                                 aria-selected={activeIndex === idx}
                                 onMouseEnter={() => setActiveIndex(idx)}
                                 onMouseDown={(e) => {
-                                    e.preventDefault(); // evita perda de foco antes do clique
+                                    e.preventDefault();
                                     goToResult(item.route);
                                 }}
-                                className={`flex items-start gap-3 px-4 py-3 cursor-pointer transition-colors ${activeIndex === idx
-                                        ? "bg-primary/10 text-primary"
-                                        : "hover:bg-muted"
+                                className={`flex items-start gap-3 px-4 py-3 cursor-pointer transition-colors ${activeIndex === idx ? "bg-primary/10" : "hover:bg-muted"
                                     }`}
                             >
-                                <span className="mt-0.5">{categoryIcon[item.item_type]}</span>
+                                <span className="mt-0.5">
+                                    {categoryIcon[item.item_type] ?? categoryIcon["news"]}
+                                </span>
+
                                 <div className="min-w-0 flex-1">
-                                    <p className="text-sm font-semibold leading-snug line-clamp-2">
+                                    <p
+                                        className={`text-sm font-semibold leading-snug line-clamp-2 ${activeIndex === idx ? "text-primary" : ""
+                                            }`}
+                                    >
                                         {item.title}
                                     </p>
                                     {item.excerpt && (
@@ -224,14 +272,15 @@ export function SearchAutocomplete() {
                                         </p>
                                     )}
                                 </div>
+
                                 <span className="shrink-0 text-[10px] font-medium uppercase tracking-wide text-muted-foreground bg-muted px-2 py-0.5 rounded-full mt-0.5">
-                                    {categoryLabel[item.item_type]}
+                                    {categoryLabel[item.item_type] ?? item.item_type}
                                 </span>
                             </li>
                         ))}
                     </ul>
 
-                    {/* Rodapé: ver todos os resultados */}
+                    {/* Rodapé */}
                     <div className="border-t border-border px-4 py-2.5">
                         <button
                             type="button"
@@ -242,7 +291,7 @@ export function SearchAutocomplete() {
                             className="w-full text-sm text-primary font-semibold hover:underline flex items-center justify-center gap-1.5 py-1"
                         >
                             <Search className="h-4 w-4" />
-                            Ver todos os resultados para "{q.trim()}"
+                            Ver todos os resultados para &ldquo;{q.trim()}&rdquo;
                         </button>
                     </div>
                 </div>
