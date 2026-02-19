@@ -70,21 +70,21 @@ export function SiteHeader({
                 <Instagram className="h-5 w-5" />
               </a>
               <a
-                className="hover:opacity-80"
+                className="hover:opacity-80 cursor-pointer"
                 href="mailto:marauagorars@gmail.com"
-                aria-label="E-mail"
+                aria-label="Enviar e-mail para Marau Agora"
+                title="marauagorars@gmail.com"
               >
                 <Mail className="h-5 w-5" />
               </a>
-              <a
-                className="hover:opacity-80"
-                href="https://www.youtube.com/@marauagora"
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="YouTube"
+              <button
+                className="hover:opacity-80 cursor-pointer bg-transparent border-none p-0 text-primary"
+                aria-label="YouTube - Em Breve"
+                title="Em Breve"
+                onClick={() => alert("Em Breve! 🎬\nNosso canal no YouTube estará disponível em breve.")}
               >
                 <Youtube className="h-5 w-5" />
-              </a>
+              </button>
             </div>
 
             <div className="relative w-full sm:w-80 md:w-96 lg:w-[450px]">
