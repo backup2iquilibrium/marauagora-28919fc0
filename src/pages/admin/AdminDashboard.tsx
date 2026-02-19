@@ -35,11 +35,13 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
 async function fetchStats() {
-  const [news, pendingAds, activeAds, users] = await Promise.all([
+  const [news, pendingAds, activeAds, users, spaces, activeAdCampaigns] = await Promise.all([
     supabase.from("news").select("*", { count: "exact", head: true }),
     supabase.from("classified_ads").select("*", { count: "exact", head: true }).eq("status", "pending"),
     supabase.from("classified_ads").select("*", { count: "exact", head: true }).eq("status", "active"),
     supabase.from("profiles").select("*", { count: "exact", head: true }),
+    supabase.from("ad_spaces").select("*").order("sort_order", { ascending: true }),
+    supabase.from("ad_campaigns").select("*").eq("status", "active"),
   ]);
 
   return {
@@ -47,6 +49,8 @@ async function fetchStats() {
     pendingAdsCount: pendingAds.count || 0,
     activeAdsCount: activeAds.count || 0,
     usersCount: users.count || 0,
+    spaces: spaces.data || [],
+    activeCampaigns: activeAdCampaigns.data || [],
   };
 }
 
@@ -119,7 +123,10 @@ export default function AdminDashboard() {
     },
   ];
 
-  const occupancy = 80;
+  const totalSpaces = statsQuery.data?.spaces.filter(s => s.is_active).length || 0;
+  const occupiedCount = statsQuery.data?.activeCampaigns.length || 0;
+  const occupancy = totalSpaces > 0 ? Math.round((occupiedCount / totalSpaces) * 100) : 0;
+
   const donutData = [
     { name: "Ocupado", value: occupancy },
     { name: "Livre", value: 100 - occupancy },
@@ -316,18 +323,20 @@ export default function AdminDashboard() {
               </div>
 
               <div className="mt-6 space-y-2 text-sm">
-                <div className="flex items-center justify-between">
-                  <span className="text-muted-foreground">Banner Topo</span>
-                  <span className="text-primary font-medium">Ativo</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-muted-foreground">Lateral Dir.</span>
-                  <span className="text-primary font-medium">Ativo</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-muted-foreground">Rodapé</span>
-                  <span className="text-destructive font-medium">Expirado</span>
-                </div>
+                {statsQuery.data?.spaces.filter(s => s.is_active).slice(0, 3).map(space => {
+                  const isActive = statsQuery.data?.activeCampaigns.some(c => c.space_id === space.id);
+                  return (
+                    <div key={space.id} className="flex items-center justify-between">
+                      <span className="text-muted-foreground truncate max-w-[120px]">{space.name}</span>
+                      <span className={isActive ? "text-primary font-medium" : "text-muted-foreground font-medium"}>
+                        {isActive ? "Ativo" : "Livre"}
+                      </span>
+                    </div>
+                  );
+                })}
+                {totalSpaces === 0 && (
+                  <div className="text-center text-muted-foreground text-xs py-2">Nenhum espaço ativo.</div>
+                )}
               </div>
             </CardContent>
           </Card>

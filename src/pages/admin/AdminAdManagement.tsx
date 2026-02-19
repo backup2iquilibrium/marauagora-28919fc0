@@ -1,5 +1,7 @@
 import * as React from "react";
 import { Area, AreaChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { useQuery } from "@tanstack/react-query";
+import { format } from "date-fns";
 import {
   BadgeDollarSign,
   BarChart3,
@@ -27,6 +29,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 type MetricCardProps = {
   title: string;
@@ -57,6 +60,7 @@ function MetricCard({ title, value, badgeText, badgeTone = "secondary", icon }: 
   );
 }
 
+// Chart data remains focused on totals as there is no historical analytics table yet
 const chartData = [
   { week: "Semana 1", clicks: 12, views: 210 },
   { week: "Semana 2", clicks: 10, views: 180 },
@@ -64,76 +68,36 @@ const chartData = [
   { week: "Semana 4", clicks: 18, views: 320 },
 ];
 
-type InventoryItem = {
-  title: string;
-  subtitle: string;
-  meta: string;
-  statusLabel: string;
-  statusTone: "secondary" | "destructive";
-  rightMeta?: string;
-  icon: React.ReactNode;
-  iconBgClassName: string;
-};
+async function fetchAdManagementData() {
+  const [spacesRes, campaignsRes] = await Promise.all([
+    supabase.from("ad_spaces").select("*").order("sort_order", { ascending: true }),
+    supabase.from("ad_campaigns").select("*").order("created_at", { ascending: false }),
+  ]);
 
-const inventory: InventoryItem[] = [
-  {
-    title: "Topo Home",
-    subtitle: "728x90px • Desktop",
-    meta: "",
-    statusLabel: "Ocupado",
-    statusTone: "destructive",
-    rightMeta: "Fila: 2",
-    icon: <LayoutPanelTop className="h-5 w-5" aria-hidden="true" />,
-    iconBgClassName: "bg-muted",
-  },
-  {
-    title: "Lateral Notícias",
-    subtitle: "300x250px • Responsivo",
-    meta: "",
-    statusLabel: "Disponível",
-    statusTone: "secondary",
-    rightMeta: "R$ 450/mês",
-    icon: <SidebarIcon className="h-5 w-5" aria-hidden="true" />,
-    iconBgClassName: "bg-muted",
-  },
-  {
-    title: "In-Feed (Lista)",
-    subtitle: "Nativo • Mobile",
-    meta: "",
-    statusLabel: "Ocupado",
-    statusTone: "destructive",
-    rightMeta: "Fila: 0",
-    icon: <List className="h-5 w-5" aria-hidden="true" />,
-    iconBgClassName: "bg-muted",
-  },
-  {
-    title: "Rodapé",
-    subtitle: "970x250px • Desktop",
-    meta: "",
-    statusLabel: "Disponível",
-    statusTone: "secondary",
-    rightMeta: "R$ 300/mês",
-    icon: <PanelBottom className="h-5 w-5" aria-hidden="true" />,
-    iconBgClassName: "bg-muted",
-  },
-];
+  if (spacesRes.error) throw spacesRes.error;
+  if (campaignsRes.error) throw campaignsRes.error;
 
-type CampaignRow = {
-  ad: string;
-  placement: string;
-  client: string;
-  status: "Ativo" | "Pausado";
-  date: string;
-};
+  return {
+    spaces: spacesRes.data || [],
+    campaigns: campaignsRes.data || [],
+  };
+}
 
-const campaigns: CampaignRow[] = [
-  { ad: "Ofertas Semanais", placement: "Topo Home", client: "Supermercado Bom Preço", status: "Ativo", date: "Até 12/11/2023" },
-  { ad: "Festival de Inverno", placement: "Lateral Notícias", client: "Farmácias São João", status: "Pausado", date: "Até 30/11/2023" },
-  { ad: "Vestibular de Verão", placement: "Topo Home", client: "Universidade UPF", status: "Ativo", date: "Até 15/12/2023" },
-];
+function getSpaceIcon(device: string) {
+  const d = device.toLowerCase();
+  if (d.includes("desktop") || d.includes("topo")) return <LayoutPanelTop className="h-5 w-5" />;
+  if (d.includes("sidebar") || d.includes("lateral")) return <SidebarIcon className="h-5 w-5" />;
+  if (d.includes("bottom") || d.includes("rodape")) return <PanelBottom className="h-5 w-5" />;
+  return <List className="h-5 w-5" />;
+}
 
 export default function AdminAdManagement() {
   const [autoAds, setAutoAds] = React.useState(true);
+
+  const { data, isLoading } = useQuery({
+    queryKey: ["admin-ad-management"],
+    queryFn: fetchAdManagementData,
+  });
 
   const onCopyPublisherId = async () => {
     try {
@@ -143,6 +107,25 @@ export default function AdminAdManagement() {
       toast.error("Não foi possível copiar", { description: "Copie manualmente o código." });
     }
   };
+
+  const spaces = data?.spaces || [];
+  const campaigns = data?.campaigns || [];
+
+  const activeSpaces = spaces.filter(s => s.is_active).length;
+  const activeCampaigns = campaigns.filter(c => c.status === "active");
+  const occupiedSpaces = new Set(activeCampaigns.map(c => c.space_id)).size;
+
+  const totalImpressions = campaigns.reduce((sum, c) => sum + (c.impressions || 0), 0);
+  const estimatedRevenue = activeCampaigns.reduce((sum, c) => {
+    const space = spaces.find(s => s.id === c.space_id);
+    return sum + (space?.monthly_price_cents || 0);
+  }, 0) / 100;
+
+  const occupancyRate = activeSpaces > 0 ? Math.round((occupiedSpaces / activeSpaces) * 100) : 0;
+
+  if (isLoading) {
+    return <div className="p-12 text-center text-muted-foreground">Carregando gerenciamento de publicidade...</div>;
+  }
 
   return (
     <div className="p-6 space-y-6">
@@ -167,29 +150,29 @@ export default function AdminAdManagement() {
       <section className="grid grid-cols-1 gap-4 lg:grid-cols-4">
         <MetricCard
           title="ESPAÇOS ATIVOS"
-          value="12/15"
+          value={`${occupiedSpaces}/${activeSpaces}`}
           badgeText="+2.5%"
           badgeTone="secondary"
           icon={<Megaphone className="h-4 w-4 text-primary" aria-hidden="true" />}
         />
         <MetricCard
-          title="IMPRESSÕES (MÊS)"
-          value="45.2k"
+          title="IMPRESSÕES (TOTAL)"
+          value={totalImpressions > 1000 ? `${(totalImpressions / 1000).toFixed(1)}k` : totalImpressions.toString()}
           badgeText="+12%"
           badgeTone="secondary"
           icon={<Eye className="h-4 w-4 text-primary" aria-hidden="true" />}
         />
         <MetricCard
-          title="RECEITA ESTIMADA"
-          value="R$ 3.2k"
+          title="RECEITA MENSAL"
+          value={`R$ ${estimatedRevenue.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`}
           badgeText="+5%"
           badgeTone="secondary"
           icon={<BadgeDollarSign className="h-4 w-4 text-primary" aria-hidden="true" />}
         />
         <MetricCard
           title="OCUPAÇÃO"
-          value="80%"
-          badgeText="Estável"
+          value={`${occupancyRate}%`}
+          badgeText={occupancyRate > 70 ? "Alta" : "Estável"}
           badgeTone="outline"
           icon={<BarChart3 className="h-4 w-4 text-primary" aria-hidden="true" />}
         />
@@ -200,11 +183,11 @@ export default function AdminAdManagement() {
           <CardHeader className="pb-2">
             <div className="flex items-start justify-between gap-4">
               <div>
-                <CardTitle className="text-base">Desempenho</CardTitle>
-                <p className="text-sm text-muted-foreground">Cliques e visualizações nos últimos 30 dias</p>
+                <CardTitle className="text-base">Desempenho Global</CardTitle>
+                <p className="text-sm text-muted-foreground">Visão acumulada de todas as campanhas</p>
               </div>
               <Badge variant="outline" className="rounded-full px-3 py-1">
-                Últimos 30 dias
+                Geral
               </Badge>
             </div>
           </CardHeader>
@@ -246,52 +229,59 @@ export default function AdminAdManagement() {
               </div>
             </CardHeader>
             <CardContent className="space-y-3">
-              {inventory.map((item) => (
-                <div key={item.title} className="flex items-start justify-between gap-3 rounded-lg border bg-card p-4">
-                  <div className="flex items-start gap-3">
-                    <div className={`h-10 w-10 rounded-lg ${item.iconBgClassName} grid place-items-center`}>
-                      {item.icon}
+              {spaces.map((space) => {
+                const activeCampaign = campaigns.find(c => c.space_id === space.id && c.status === "active");
+                return (
+                  <div key={space.id} className="flex items-start justify-between gap-3 rounded-lg border bg-card p-4">
+                    <div className="flex items-start gap-2">
+                      <div className="h-10 w-10 rounded-lg bg-muted grid place-items-center shrink-0">
+                        {getSpaceIcon(space.device_label)}
+                      </div>
+                      <div className="min-w-0">
+                        <div className="font-medium truncate">{space.name}</div>
+                        <div className="text-[10px] text-muted-foreground uppercase flex gap-2">
+                          <span>{space.size_label}</span>
+                          <span>•</span>
+                          <span>{space.device_label}</span>
+                        </div>
+                      </div>
                     </div>
-                    <div>
-                      <div className="font-medium">{item.title}</div>
-                      <div className="text-xs text-muted-foreground">{item.subtitle}</div>
-                    </div>
-                  </div>
 
-                  <div className="text-right">
-                    <Badge variant={item.statusTone} className="rounded-full">
-                      {item.statusLabel}
-                    </Badge>
-                    {item.rightMeta ? <div className="mt-1 text-xs text-muted-foreground">{item.rightMeta}</div> : null}
+                    <div className="text-right shrink-0">
+                      <Badge variant={activeCampaign ? "destructive" : "secondary"} className="rounded-full text-[10px]">
+                        {activeCampaign ? "Ocupado" : "Livre"}
+                      </Badge>
+                      <div className="mt-1 text-[10px] font-bold text-muted-foreground">
+                        {activeCampaign ? activeCampaign.client_name : (space.monthly_price_cents ? `R$ ${(space.monthly_price_cents / 100)}` : "-")}
+                      </div>
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-base">Google Adsense</CardTitle>
-              <p className="text-sm text-muted-foreground">Gerencie a integração automática.</p>
+              <p className="text-sm text-muted-foreground">Integração automática para espaços livres.</p>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="text-xs text-muted-foreground">PUBLISHER ID</div>
               <div className="flex items-center gap-2">
-                <div className="flex-1 rounded-lg border bg-card px-3 py-2 font-mono text-sm">pub-849201948201923</div>
+                <div className="flex-1 rounded-lg border bg-card px-3 py-2 font-mono text-xs">pub-849201948201923</div>
                 <Button variant="outline" size="icon" aria-label="Copiar Publisher ID" onClick={onCopyPublisherId}>
                   <Copy className="h-4 w-4" aria-hidden="true" />
                 </Button>
               </div>
 
               <div className="flex items-center justify-between gap-4">
-                <div>
-                  <div className="text-sm font-medium">Anúncios Automáticos</div>
-                </div>
+                <div className="text-sm font-medium">Anúncios Automáticos</div>
                 <Switch checked={autoAds} onCheckedChange={setAutoAds} />
               </div>
 
-              <Button variant="outline" className="w-full">
-                Acessar Relatório Completo
+              <Button variant="outline" className="w-full text-xs">
+                Acessar Console Adsense
               </Button>
             </CardContent>
           </Card>
@@ -301,9 +291,9 @@ export default function AdminAdManagement() {
       <Card>
         <CardHeader className="pb-2">
           <div className="flex items-center justify-between gap-4">
-            <CardTitle className="text-base">Campanhas Ativas</CardTitle>
-            <Button variant="ghost" className="text-primary">
-              Ver Todos
+            <CardTitle className="text-base">Campanhas Recentes</CardTitle>
+            <Button variant="ghost" className="text-primary h-auto p-0 text-sm">
+              Ver Histórico
             </Button>
           </div>
         </CardHeader>
@@ -311,32 +301,57 @@ export default function AdminAdManagement() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>ANÚNCIO</TableHead>
-                <TableHead>LOCALIZAÇÃO</TableHead>
-                <TableHead>CLIENTE</TableHead>
-                <TableHead>STATUS</TableHead>
+                <TableHead className="text-[10px] py-2">ANÚNCIO / PERÍODO</TableHead>
+                <TableHead className="text-[10px] py-2">LOCALIZAÇÃO</TableHead>
+                <TableHead className="text-[10px] py-2">CLIENTE</TableHead>
+                <TableHead className="text-[10px] py-2">MÉTRICAS</TableHead>
+                <TableHead className="text-[10px] py-2">STATUS</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {campaigns.map((row) => (
-                <TableRow key={`${row.ad}-${row.client}`}>
-                  <TableCell>
-                    <div className="font-medium">{row.ad}</div>
-                    <div className="text-xs text-muted-foreground">{row.date}</div>
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant="outline" className="rounded-full">
-                      {row.placement}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>{row.client}</TableCell>
-                  <TableCell>
-                    <Badge variant={row.status === "Ativo" ? "secondary" : "outline"} className="rounded-full">
-                      {row.status}
-                    </Badge>
+              {campaigns.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={5} className="text-center py-8 text-muted-foreground text-sm">
+                    Nenhuma campanha cadastrada.
                   </TableCell>
                 </TableRow>
-              ))}
+              ) : (
+                campaigns.map((row) => (
+                  <TableRow key={row.id}>
+                    <TableCell className="py-4">
+                      <div className="font-semibold text-sm">{row.title}</div>
+                      <div className="text-[10px] text-muted-foreground">
+                        {row.starts_at ? format(new Date(row.starts_at), "dd/MM/yyyy") : "Início imediato"}
+                        {row.ends_at ? ` — ${format(new Date(row.ends_at), "dd/MM/yyyy")}` : " — Indeterminado"}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="outline" className="rounded-full text-[10px] capitalize">
+                        {spaces.find(s => s.id === row.space_id)?.name || "Geral"}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-sm">{row.client_name}</TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-3 text-[10px]">
+                        <div className="flex items-center gap-1">
+                          <Eye className="h-3 w-3 text-muted-foreground" /> {row.impressions || 0}
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <BarChart3 className="h-3 w-3 text-muted-foreground" /> {row.clicks || 0}
+                        </div>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <Badge
+                        variant={row.status === "active" ? "secondary" : "outline"}
+                        className="rounded-full capitalize text-[10px]"
+                      >
+                        {row.status}
+                      </Badge>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
             </TableBody>
           </Table>
         </CardContent>
