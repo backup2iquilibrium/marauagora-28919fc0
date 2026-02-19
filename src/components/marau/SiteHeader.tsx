@@ -34,7 +34,7 @@ export function SiteHeader({
             <img
               src={logoUrl}
               alt="Marau Agora — logomarca"
-              className="h-16 w-auto object-contain"
+              className="h-20 md:h-28 w-auto object-contain"
               loading="eager"
             />
           </div>
