@@ -30,12 +30,23 @@ async function fetchNewsById(id: string) {
 }
 
 async function fetchCategories() {
-    const { data, error } = await supabase
-        .from("news_categories")
-        .select("*")
-        .order("name");
-    if (error) throw error;
-    return data || [];
+    try {
+        const { data, error } = await supabase
+            .from("news_categories" as any)
+            .select("*")
+            .order("name");
+        if (error) throw error;
+        return data || [];
+    } catch (e) {
+        return [
+            { slug: "cidade", name: "Cidade" },
+            { slug: "politica", name: "Política" },
+            { slug: "esportes", name: "Esportes" },
+            { slug: "policia", name: "Polícia" },
+            { slug: "agronegocio", name: "Agronegócio" },
+            { slug: "geral", name: "Geral" },
+        ];
+    }
 }
 
 export default function AdminNewsEditor() {
