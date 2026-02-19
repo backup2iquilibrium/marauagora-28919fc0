@@ -1,80 +1,73 @@
 import { Mail, Phone } from "lucide-react";
+import { Link } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
+async function fetchTopReadNews() {
+  const { data, error } = await supabase
+    .from("news")
+    .select("*")
+    .order("published_at", { ascending: false })
+    .limit(4);
+  if (error) throw error;
+  return data || [];
+}
+
 export function Sidebar() {
+  const { data: topNews = [], isLoading } = useQuery({
+    queryKey: ["sidebar-top-news"],
+    queryFn: fetchTopReadNews,
+  });
+
   return (
     <aside className="lg:col-span-1 space-y-8">
       <div className="space-y-4">
         <div className="flex items-center justify-between border-b pb-2">
-          <h3 className="font-bold text-sm text-muted-foreground uppercase tracking-wider">Patrocinadores</h3>
-          <span className="text-[10px] bg-muted px-1 rounded text-muted-foreground">Publicidade</span>
+          <h3 className="font-bold text-sm text-muted-foreground uppercase tracking-wider">Publicidade</h3>
         </div>
 
-        <div className="w-full bg-card border rounded-lg p-6 text-center shadow-sm hover:shadow-md transition-shadow cursor-pointer group">
-          <p className="text-[10px] text-muted-foreground uppercase mb-4">Patrocínio Master</p>
-          <div className="w-24 h-24 bg-muted rounded-full mb-4 mx-auto flex items-center justify-center group-hover:opacity-90 transition-opacity">
-            <span className="text-primary font-serif font-black text-2xl">SM</span>
-          </div>
-          <h4 className="font-bold text-xl text-primary group-hover:text-secondary transition-colors">Supermercado Marau</h4>
-          <p className="text-sm text-muted-foreground mt-2">Ofertas imperdíveis toda terça!</p>
-          <span className="inline-flex mt-4 text-xs font-bold text-secondary border border-secondary px-3 py-1.5 rounded hover:bg-secondary hover:text-secondary-foreground transition-colors">
-            Ver Encarte Digital
-          </span>
-        </div>
-
-        <div className="w-full bg-card border rounded-lg p-6 text-center shadow-sm hover:shadow-md transition-shadow cursor-pointer group">
-          <p className="text-[10px] text-muted-foreground uppercase mb-2">Apoio Local</p>
-          <div className="w-16 h-16 bg-muted rounded-full mb-3 mx-auto flex items-center justify-center group-hover:opacity-90 transition-opacity">
-            <span className="text-primary font-serif font-black">MC</span>
-          </div>
-          <h4 className="font-bold text-lg text-primary group-hover:text-secondary transition-colors">Mecânica Central</h4>
-          <p className="text-xs text-muted-foreground mt-1">Revisão completa para seu veículo</p>
-          <span className="inline-flex mt-3 text-xs font-bold text-secondary border border-secondary px-2 py-1 rounded hover:bg-secondary hover:text-secondary-foreground transition-colors">
-            Agendar
-          </span>
-        </div>
-
-        <div className="w-full bg-muted/50 border-2 border-dashed rounded-lg flex items-center justify-center relative overflow-hidden group hover:border-secondary hover:bg-card transition-all cursor-pointer">
-          <span className="absolute top-2 right-2 text-[10px] bg-card/80 px-1.5 py-0.5 rounded shadow-sm text-muted-foreground">
-            Anuncie Aqui
-          </span>
-          <div className="text-center p-6">
-            <p className="font-serif font-bold text-2xl text-primary mb-2 group-hover:scale-105 transition-transform">Sua Marca</p>
-            <p className="text-sm text-muted-foreground mb-4">Alcance milhares de leitores</p>
-            <Button className="rounded-full" size="sm">
-              Contatar Comercial
+        <div className="w-full bg-muted/30 border-2 border-dashed rounded-lg flex items-center justify-center relative overflow-hidden group hover:border-primary hover:bg-card transition-all cursor-pointer">
+          <div className="text-center p-8">
+            <p className="font-serif font-bold text-xl text-primary mb-2">Sua Marca Aqui</p>
+            <p className="text-sm text-muted-foreground mb-4">Alcance milhares de leitores em Marau e região.</p>
+            <Button className="rounded-full" size="sm" asChild>
+              <a href="mailto:comercial@marauagora.com.br">Anunciar Agora</a>
             </Button>
           </div>
         </div>
       </div>
 
-      <a
-        className="block bg-card border hover:border-primary transition-all rounded-lg p-3 shadow-sm group cursor-pointer text-center"
-        href="#"
+      <Link
+        className="block bg-card border hover:border-primary transition-all rounded-lg p-3 shadow-sm group text-center"
+        to="/guia-da-cidade"
       >
         <div className="flex items-center justify-center gap-2">
           <Phone className="h-4 w-4 text-primary" aria-hidden="true" />
-          <span className="font-medium text-sm group-hover:text-primary transition-colors">Consultar Telefones Úteis</span>
+          <span className="font-medium text-sm group-hover:text-primary transition-colors">Telefones Úteis</span>
         </div>
-      </a>
+      </Link>
 
       <div className="bg-card rounded-lg p-6 shadow-sm border">
-        <h3 className="font-serif font-bold text-lg text-primary mb-4">Mais Lidas</h3>
+        <h3 className="font-serif font-bold text-lg text-primary mb-4">Veja Também</h3>
         <ul className="space-y-4">
-          {[
-            "Acidente na ERS-324 deixa trânsito lento nesta manhã",
-            "Prefeitura abre inscrições para concurso público",
-            "Novo shopping center confirma instalação na região",
-            "Programação de Natal é divulgada com shows nacionais",
-          ].map((t, idx) => (
-            <li key={t} className="flex gap-3 items-start border-b pb-3 last:border-0 last:pb-0">
-              <span className="text-3xl font-bold text-muted leading-none">{idx + 1}</span>
-              <a className="text-sm font-medium hover:text-primary transition-colors leading-snug" href="#">
-                {t}
-              </a>
+          {topNews.map((n, idx) => (
+            <li key={n.id} className="flex gap-3 items-start border-b pb-3 last:border-0 last:pb-0 group">
+              <span className="text-3xl font-bold text-muted leading-none group-hover:text-primary transition-colors">
+                {idx + 1}
+              </span>
+              <Link
+                className="text-sm font-medium hover:text-primary transition-colors leading-snug line-clamp-2"
+                to={`/noticia/${n.slug}`}
+              >
+                {n.title}
+              </Link>
             </li>
+          ))}
+          {isLoading && [1, 2, 3].map(i => (
+            <div key={i} className="h-10 bg-muted animate-pulse rounded" />
           ))}
         </ul>
       </div>

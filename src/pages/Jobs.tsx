@@ -30,6 +30,11 @@ import {
 
 import { ArrowRight, Briefcase, Code, Factory, Mail, MapPin, Megaphone, Search, Stethoscope, Store, Timer, Wallet } from "lucide-react";
 
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { formatDistanceToNow } from "date-fns";
+import { ptBR } from "date-fns/locale";
+
 const LOGO_URL = "/logo.png";
 
 type Job = {
@@ -125,8 +130,19 @@ function JobCard({ job }: { job: Job }) {
   );
 }
 
+async function fetchJobs() {
+  const { data, error } = await supabase
+    .from("jobs")
+    .select("*")
+    .order("posted_at", { ascending: false });
+  if (error) throw error;
+  return data || [];
+}
+
 export default function Jobs() {
   const [searchParams, setSearchParams] = useSearchParams();
+  const q = (searchParams.get("q") || "").trim();
+  const [localQ, setLocalQ] = useState(q);
   const [city, setCity] = useState<string>("Marau - RS");
   const [sort, setSort] = useState<string>("recentes");
 
@@ -139,9 +155,10 @@ export default function Jobs() {
     setSelectedSector(searchParams.get("setor"));
     setSelectedRegion(searchParams.get("bairro"));
     setSelectedType(searchParams.get("tipo"));
+    setLocalQ((searchParams.get("q") || "").trim());
   }, [searchParams]);
 
-  const updateParam = (key: "setor" | "bairro" | "tipo", value: string | null) => {
+  const updateParam = (key: "setor" | "bairro" | "tipo" | "q", value: string | null) => {
     setSearchParams((prev) => {
       const next = new URLSearchParams(prev);
       if (!value) next.delete(key);
@@ -156,85 +173,40 @@ export default function Jobs() {
       next.delete("setor");
       next.delete("bairro");
       next.delete("tipo");
+      next.delete("q");
       return next;
     });
   };
 
-  const cities = useMemo(() => ["Marau - RS", "Passo Fundo - RS", "Vila Maria - RS"], []);
-  const jobs = useMemo<Job[]>(
-    () => [
-      {
-        id: "assistente-administrativo",
-        featuredLabel: "Nova",
-        icon: "factory",
-        title: "Assistente Administrativo",
-        company: "Metasa S.A.",
-        posted: "Hoje",
-        bullets: [
-          { icon: "location", label: "Distrito Industrial, Marau" },
-          { icon: "work", label: "Presencial" },
-          { icon: "schedule", label: "Integral" },
-        ],
-        tags: ["Indústria", "Administrativo"],
-      },
-      {
-        id: "vendedor-interno",
-        icon: "store",
-        title: "Vendedor Interno",
-        company: "Lojas Benoit",
-        posted: "Há 2 dias",
-        bullets: [
-          { icon: "location", label: "Centro, Marau" },
-          { icon: "payments", label: "Comissão + Salário Fixo" },
-        ],
-        tags: ["Comércio", "Vendas"],
-      },
-      {
-        id: "anuncio-destaque-empresa",
-        featuredLabel: "Anúncio",
-        icon: "computer",
-        title: "Destaque sua empresa aqui!",
-        company: "Alcance milhares de candidatos em Marau e região.",
-        posted: "",
-        bullets: [],
-        tags: [],
-      },
-      {
-        id: "tecnico-enfermagem",
-        icon: "medical",
-        title: "Técnico em Enfermagem",
-        company: "Hospital Cristo Redentor",
-        posted: "Há 3 dias",
-        bullets: [
-          { icon: "location", label: "Centro, Marau" },
-          { icon: "schedule", label: "Plantão 12x36" },
-        ],
-        tags: ["Saúde", "Urgente"],
-      },
-      {
-        id: "frontend-jr",
-        icon: "computer",
-        title: "Desenvolvedor Front-end Jr",
-        company: "TechMarau Soluções",
-        posted: "Há 1 semana",
-        bullets: [
-          { icon: "work", label: "Remoto / Híbrido" },
-          { icon: "code", label: "React & Tailwind" },
-        ],
-        tags: ["Tecnologia"],
-      },
-    ],
-    [],
-  );
+  const jobsQuery = useQuery({
+    queryKey: ["jobs-list"],
+    queryFn: fetchJobs,
+  });
 
+  const jobs = useMemo<Job[]>(() => {
+    return (jobsQuery.data || []).map((j) => ({
+      id: j.id,
+      icon: "factory", // Padronizado por enquanto
+      title: j.title,
+      company: j.company || "Empresa não informada",
+      posted: formatDistanceToNow(new Date(j.posted_at), { addSuffix: true, locale: ptBR }),
+      bullets: [
+        { icon: "location", label: j.location || "Marau - RS" },
+        { icon: "work", label: j.employment_type || "Efetivo" },
+      ],
+      tags: [],
+    }));
+  }, [jobsQuery.data]);
+
+  const cities = useMemo(() => ["Marau - RS", "Passo Fundo - RS", "Vila Maria - RS"], []);
   const sectors = useMemo(
     () => [
-      { label: "Indústria", count: 12 },
+      { label: "Indústria", count: jobs.length },
       { label: "Comércio / Varejo", count: 8 },
       { label: "Serviços", count: 5 },
       { label: "Tecnologia / TI", count: 3 },
     ],
-    [],
+    [jobs.length],
   );
   const regions = useMemo(() => ["Centro", "Distrito Industrial", "Borghetti"], []);
   const types = useMemo(() => ["Qualquer tipo", "Efetivo (CLT)", "Estágio"], []);

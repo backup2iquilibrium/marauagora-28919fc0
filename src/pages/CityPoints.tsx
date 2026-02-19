@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -16,13 +17,10 @@ import { TopBar } from "@/components/marau/TopBar";
 import { SiteHeader } from "@/components/marau/SiteHeader";
 import { Footer } from "@/components/marau/Footer";
 
-const LOGO_URL = "/logo.png";
-
 import {
   ChevronDown,
   Layers,
   LocateFixed,
-  Building2,
   MapPin,
   Search,
   Star,
@@ -34,244 +32,168 @@ import {
   Store,
 } from "lucide-react";
 
-type PointCategory =
-  | "Todos"
-  | "Restaurantes"
-  | "Hotéis"
-  | "Pontos Turísticos"
-  | "Bares"
-  | "Cafés"
-  | "Lojas";
+async function fetchServiceCategories() {
+  const { data, error } = await supabase
+    .from("public_service_categories")
+    .select("*")
+    .order("sort_order", { ascending: true });
+  if (error) throw error;
+  return data || [];
+}
 
-type Place = {
-  id: string;
-  name: string;
-  rating: number;
-  subtitle: string;
-  address: string;
-  category: Exclude<PointCategory, "Todos">;
-};
+async function fetchPublicServices() {
+  const { data, error } = await supabase
+    .from("public_services")
+    .select(`
+      *,
+      category:public_service_categories(*)
+    `)
+    .eq("status", "active");
+  if (error) throw error;
+  return data || [];
+}
 
-function CategoryIcon({ category }: { category: PointCategory }) {
+function CategoryIcon({ slug }: { slug: string }) {
   const cls = "h-4 w-4";
-  switch (category) {
-    case "Restaurantes":
-      return <UtensilsCrossed className={cls} />;
-    case "Hotéis":
-      return <Hotel className={cls} />;
-    case "Pontos Turísticos":
-      return <Landmark className={cls} />;
-    case "Bares":
-      return <Martini className={cls} />;
-    case "Cafés":
-      return <Coffee className={cls} />;
-    case "Lojas":
-      return <Store className={cls} />;
-    default:
-      return null;
-  }
+  if (slug.includes("restaurante")) return <UtensilsCrossed className={cls} />;
+  if (slug.includes("hotel") || slug.includes("hospedagem")) return <Hotel className={cls} />;
+  if (slug.includes("turismo") || slug.includes("ponto")) return <Landmark className={cls} />;
+  if (slug.includes("bar") || slug.includes("noite")) return <Martini className={cls} />;
+  if (slug.includes("cafe")) return <Coffee className={cls} />;
+  return <Store className={cls} />;
 }
 
 export default function CityPoints() {
-  const categories = useMemo<PointCategory[]>(
-    () => ["Todos", "Restaurantes", "Hotéis", "Pontos Turísticos", "Bares", "Cafés", "Lojas"],
-    [],
-  );
-
-  const [category, setCategory] = useState<PointCategory>("Todos");
+  const [selectedCategory, setSelectedCategory] = useState<string>("Todos");
   const [sort, setSort] = useState<string>("recomendados");
+  const [searchTerm, setSearchTerm] = useState("");
 
-  const places = useMemo<Place[]>(
-    () => [
-      {
-        id: "cantina-da-terra",
-        name: "Cantina da Terra",
-        rating: 4.8,
-        subtitle: "Restaurante Italiano • $$",
-        address: "Av. Júlio Borella, 1200 - Centro",
-        category: "Restaurantes",
-      },
-      {
-        id: "hotel-de-conto",
-        name: "Hotel De Conto",
-        rating: 4.5,
-        subtitle: "Hotel • $$$",
-        address: "Rua Bento Gonçalves, 450",
-        category: "Hotéis",
-      },
-      {
-        id: "parque-municipal-lauro",
-        name: "Parque Municipal Lauro",
-        rating: 4.9,
-        subtitle: "Parque e Lazer • Grátis",
-        address: "Rua Irineu Ferlin, Marau - RS",
-        category: "Pontos Turísticos",
-      },
-      {
-        id: "bella-vista-cafe",
-        name: "Bella Vista Café",
-        rating: 4.7,
-        subtitle: "Cafeteria • $$",
-        address: "Av. Barão do Rio Branco, 890",
-        category: "Cafés",
-      },
-      {
-        id: "igreja-matriz-cristo-rei",
-        name: "Igreja Matriz Cristo Rei",
-        rating: 4.8,
-        subtitle: "Ponto Turístico • Religioso",
-        address: "Praça Dr. Elpídio Fialho",
-        category: "Pontos Turísticos",
-      },
-      {
-        id: "the-public-pub",
-        name: "The Public Pub",
-        rating: 4.6,
-        subtitle: "Bar e Vida Noturna • $$$",
-        address: "Av. Presidente Vargas, 100",
-        category: "Bares",
-      },
-    ],
-    [],
-  );
+  const { data: categories = [], isLoading: loadingCats } = useQuery({
+    queryKey: ["service-categories"],
+    queryFn: fetchServiceCategories,
+  });
+
+  const { data: allPlaces = [], isLoading: loadingPlaces } = useQuery({
+    queryKey: ["public-services-list"],
+    queryFn: fetchPublicServices,
+  });
 
   const filteredPlaces = useMemo(() => {
-    const base = category === "Todos" ? places : places.filter((p) => p.category === category);
-    // mock sort (mantém ordem do HTML como padrão)
-    if (sort === "melhor_avaliados") return [...base].sort((a, b) => b.rating - a.rating);
-    return base;
-  }, [places, category, sort]);
+    let result = [...allPlaces];
+
+    if (selectedCategory !== "Todos") {
+      result = result.filter((p) => p.category?.slug === selectedCategory);
+    }
+
+    if (searchTerm.trim()) {
+      const low = searchTerm.toLowerCase();
+      result = result.filter(p =>
+        p.name.toLowerCase().includes(low) ||
+        (p.description && p.description.toLowerCase().includes(low))
+      );
+    }
+
+    if (sort === "melhor_avaliados") {
+      result.sort((a, b) => (b.rating || 0) - (a.rating || 0));
+    }
+
+    return result;
+  }, [allPlaces, selectedCategory, searchTerm, sort]);
 
   return (
-    <div className="min-h-screen bg-background text-foreground font-jakarta">
+    <div className="min-h-screen bg-background text-foreground">
       <TopBar />
-      <SiteHeader logoUrl={LOGO_URL} />
+      <SiteHeader logoUrl="/logo.png" />
 
       <main className="container px-4 py-8">
-        {/* Hero */}
-        <section className="rounded-xl border bg-card shadow-sm p-6 md:p-8">
-          <h1 className="text-3xl font-extrabold tracking-tight md:text-4xl">Explore Marau</h1>
-          <p className="mt-2 text-muted-foreground">
-            Descubra os melhores restaurantes, hotéis, parques e atrações turísticas em nossa cidade.
+        <section className="rounded-2xl border bg-card shadow-sm p-6 md:p-10 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-primary/5 via-card to-card">
+          <h1 className="text-3xl font-extrabold tracking-tight md:text-5xl font-serif">Explore Marau</h1>
+          <p className="mt-4 text-muted-foreground text-lg max-w-2xl font-light">
+            Descubra os melhores estabelecimentos, serviços e atrações turísticas da Cidade do Pica-pau.
           </p>
 
-          <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+          <div className="mt-8 flex flex-col gap-3 sm:flex-row max-w-3xl">
             <div className="relative flex-1">
               <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input className="pl-9" placeholder="Pesquisar" />
+              <Input
+                className="pl-9 h-12 rounded-full border-primary/20 focus:border-primary shadow-sm"
+                placeholder="O que você está procurando?"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
             </div>
-            <Button variant="secondary" className="gap-2">
-              Pesquisar
-              <ChevronDown className="h-4 w-4" />
-            </Button>
           </div>
 
-          <div className="mt-6 flex flex-wrap gap-2">
+          <div className="mt-8 flex flex-wrap gap-2">
+            <button key="all" type="button" onClick={() => setSelectedCategory("Todos")}>
+              <Badge
+                variant={selectedCategory === "Todos" ? "secondary" : "outline"}
+                className="rounded-full px-4 py-1.5 hover:bg-accent transition-all text-sm font-medium"
+              >
+                Todos
+              </Badge>
+            </button>
             {categories.map((c) => (
-              <button key={c} type="button" onClick={() => setCategory(c)}>
+              <button key={c.id} type="button" onClick={() => setSelectedCategory(c.slug)}>
                 <Badge
-                  variant={c === category ? "secondary" : "outline"}
-                  className="rounded-full px-3 py-1 hover:bg-accent inline-flex items-center gap-2"
+                  variant={c.slug === selectedCategory ? "secondary" : "outline"}
+                  className="rounded-full px-4 py-1.5 hover:bg-accent transition-all text-sm font-medium inline-flex items-center gap-2"
                 >
-                  {c !== "Todos" ? <CategoryIcon category={c} /> : null}
-                  {c}
+                  <CategoryIcon slug={c.slug} />
+                  {c.name}
                 </Badge>
               </button>
             ))}
           </div>
         </section>
 
-        {/* Mapa + controles */}
-        <section className="mt-8 grid grid-cols-1 gap-8 lg:grid-cols-4">
-          <div className="lg:col-span-3">
-            <Card>
-              <CardContent className="p-0">
-                <div className="relative">
-                  <div className="aspect-[16/10] w-full bg-muted" aria-label="Mapa (placeholder)" />
-                  <div className="absolute left-4 top-4 flex items-center gap-2">
-                    <Button variant="secondary" size="icon" aria-label="Minha localização">
-                      <LocateFixed className="h-4 w-4" />
-                    </Button>
-                    <Button variant="secondary" size="icon" aria-label="Camadas">
-                      <Layers className="h-4 w-4" />
-                    </Button>
-                  </div>
-
-                  <div className="absolute left-4 top-16 right-4">
-                    <div className="flex gap-2">
-                      <div className="relative flex-1">
-                        <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                        <Input className="pl-9 bg-card" placeholder="Pesquisar nesta área" />
-                      </div>
-                      <Button variant="secondary">Explorar nas Proximidades</Button>
-                    </div>
-                    <p className="mt-2 text-xs text-muted-foreground">
-                      Navegue pelo mapa para descobrir joias escondidas no centro da cidade.
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          <aside className="space-y-6">
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-base">Publicidade</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="rounded-lg border bg-muted p-6 text-center">
-                  <p className="font-medium">Anúncio em destaque</p>
-                </div>
-              </CardContent>
-            </Card>
-          </aside>
-        </section>
-
-        {/* Listagem */}
         <section className="mt-10">
-          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-            <h2 className="text-2xl font-bold tracking-tight">Lugares Populares</h2>
+          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between border-b pb-6">
+            <h2 className="text-2xl font-bold tracking-tight">
+              {filteredPlaces.length} {filteredPlaces.length === 1 ? "lugar encontrado" : "lugares encontrados"}
+            </h2>
 
             <div className="flex items-center gap-3">
-              <span className="text-sm text-muted-foreground">Ordenar por:</span>
+              <span className="text-sm text-muted-foreground font-medium">Ordenar por:</span>
               <Select value={sort} onValueChange={setSort}>
-                <SelectTrigger className="w-56 bg-card">
+                <SelectTrigger className="w-56 bg-card rounded-full border-primary/10">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="z-50 bg-popover">
+                <SelectContent>
                   <SelectItem value="recomendados">Recomendados</SelectItem>
                   <SelectItem value="melhor_avaliados">Melhor Avaliados</SelectItem>
-                  <SelectItem value="mais_proximos">Mais Próximos</SelectItem>
                 </SelectContent>
               </Select>
             </div>
           </div>
 
-          <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-8 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
             {filteredPlaces.map((p) => (
-              <Card key={p.id}>
-                <CardContent className="p-6">
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0">
-                      <p className="text-xs text-muted-foreground">{p.category}</p>
-                      <h3 className="mt-1 text-lg font-semibold leading-snug">{p.name}</h3>
-                    </div>
-                    <div className="flex items-center gap-1 text-sm">
-                      <Star className="h-4 w-4 text-secondary" />
-                      <span className="font-medium">{p.rating.toFixed(1)}</span>
-                    </div>
-                  </div>
+              <Card key={p.id} className="group hover:shadow-xl transition-all duration-300 border-none bg-card shadow-md overflow-hidden flex flex-col">
+                <div className="aspect-video w-full bg-muted relative overflow-hidden">
+                  {p.image_url ? (
+                    <img src={p.image_url} alt={p.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-primary/10 font-serif font-black text-6xl">MA</div>
+                  )}
+                  <Badge className="absolute top-3 right-3 bg-white/90 text-primary hover:bg-white backdrop-blur-sm border-none font-bold">
+                    <Star className="h-3 w-3 fill-secondary text-secondary mr-1" />
+                    {p.rating?.toFixed(1) || "5.0"}
+                  </Badge>
+                </div>
+                <CardContent className="p-6 flex-1 flex flex-col">
+                  <p className="text-[10px] font-bold text-primary uppercase tracking-widest mb-1">{p.category?.name}</p>
+                  <h3 className="text-xl font-bold leading-tight mb-2 group-hover:text-primary transition-colors">{p.name}</h3>
+                  <p className="text-sm text-muted-foreground line-clamp-2 mb-4 flex-1">{p.description}</p>
 
-                  <p className="mt-2 text-sm text-muted-foreground">{p.subtitle}</p>
-                  <div className="mt-3 flex items-start gap-2 text-sm text-muted-foreground">
-                    <MapPin className="mt-0.5 h-4 w-4" />
-                    <span className="leading-snug">{p.address}</span>
-                  </div>
+                  <div className="space-y-2 mt-auto">
+                    <div className="flex items-start gap-2 text-xs text-muted-foreground">
+                      <MapPin className="h-3.5 w-3.5 shrink-0 text-primary" />
+                      <span className="line-clamp-1">{p.address}</span>
+                    </div>
 
-                  <div className="mt-4">
-                    <Button variant="secondary" className="w-full">
-                      Ver Detalhes
+                    <Button variant="outline" className="w-full rounded-full group-hover:bg-primary group-hover:text-primary-foreground transition-all mt-4 border-primary/20" asChild>
+                      <Link to={`/guia-da-cidade/${p.id}`}>Detalhes</Link>
                     </Button>
                   </div>
                 </CardContent>
@@ -279,16 +201,28 @@ export default function CityPoints() {
             ))}
           </div>
 
-          <div className="mt-6 flex justify-center">
-            <Button variant="outline" className="gap-2">
-              Mostrar mais lugares
-              <ChevronDown className="h-4 w-4" />
-            </Button>
-          </div>
+          {(loadingCats || loadingPlaces) && (
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-3 mt-8">
+              {[1, 2, 3].map(i => <div key={i} className="h-64 bg-muted animate-pulse rounded-2xl" />)}
+            </div>
+          )}
+
+          {!loadingPlaces && filteredPlaces.length === 0 && (
+            <div className="mt-20 text-center py-20 border-2 border-dashed rounded-3xl">
+              <div className="bg-primary/5 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Search className="h-10 w-10 text-primary/40" />
+              </div>
+              <h3 className="text-xl font-bold text-foreground">Nenhum lugar encontrado</h3>
+              <p className="text-muted-foreground mt-2">Tente ajustar seus filtros ou termo de busca.</p>
+              <Button variant="link" onClick={() => { setSearchTerm(""); setSelectedCategory("Todos"); }} className="mt-4">
+                Limpar todos os filtros
+              </Button>
+            </div>
+          )}
         </section>
       </main>
 
-      <Footer logoUrl={LOGO_URL} />
+      <Footer logoUrl="/logo.png" />
     </div>
   );
 }

@@ -1,5 +1,8 @@
-import { useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Link, useParams } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
 
 import { TopBar } from "@/components/marau/TopBar";
 import { SiteHeader } from "@/components/marau/SiteHeader";
@@ -16,246 +19,164 @@ import {
 } from "@/components/ui/breadcrumb";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { BookmarkPlus, ChevronRight, Search, Share2, TrendingUp } from "lucide-react";
+import { BookmarkPlus, ChevronRight, Share2 } from "lucide-react";
 
-const LOGO_URL = "/logo.png";
+async function fetchNewsBySlug(slug: string) {
+  const { data, error } = await supabase
+    .from("news")
+    .select("*")
+    .eq("slug", slug)
+    .single();
+  if (error) throw error;
+  return data;
+}
 
-type RelatedItem = {
-  when: string;
-  title: string;
-  href: string;
-};
+async function fetchRelatedNews(categorySlug: string, currentId: string) {
+  const { data, error } = await supabase
+    .from("news")
+    .select("id, title, slug, published_at")
+    .eq("category_slug", categorySlug)
+    .neq("id", currentId)
+    .limit(3);
+  if (error) throw error;
+  return data || [];
+}
 
 export default function NewsDetails() {
   const { slug } = useParams();
 
-  const article = useMemo(
-    () => ({
-      category: "Local",
-      title: "Prefeitura de Marau anuncia novas obras de pavimentação no centro",
-      excerpt:
-        "Investimento de R$ 2 milhões visa melhorar o fluxo de veículos na Avenida Júlio Borella e ruas adjacentes, com previsão de término em 6 meses.",
-      author: "João Silva",
-      meta: "14 de Outubro, 2023 • 4 min de leitura",
-      heroCaption: "Obras começam na próxima segunda-feira (16). Foto: Divulgação/Prefeitura.",
-      paragraphs: [
-        "A Prefeitura de Marau confirmou nesta manhã o início de um ambicioso projeto de revitalização asfáltica que contemplará as principais vias do centro da cidade. O projeto, que estava em fase de licitação desde o início do ano, finalmente recebeu luz verde para começar.",
-        "Segundo o Secretário de Obras, o objetivo principal é reduzir os congestionamentos nos horários de pico e oferecer mais segurança para pedestres e motoristas. \"A Avenida Júlio Borella é o coração da nossa cidade, e ela precisa pulsar no ritmo do nosso crescimento\", afirmou durante a coletiva de imprensa.",
-        "\"Não se trata apenas de tapar buracos, mas de repensar a mobilidade urbana de Marau para os próximos 10 anos.\"",
-        "Além do recapeamento, o projeto prevê a instalação de nova sinalização viária, incluindo faixas de pedestres elevadas em frente às escolas e unidades de saúde. As calçadas também passarão por manutenção para garantir a acessibilidade de cadeirantes e idosos.",
-      ],
-      sectionTitle: "Cronograma e Desvios",
-      sectionBody: [
-        "Para minimizar o impacto no trânsito, as obras serão realizadas em etapas, começando pelo trecho norte da avenida. A prefeitura divulgou um mapa preliminar dos desvios que serão implementados. Motoristas devem ficar atentos à sinalização provisória e, se possível, buscar rotas alternativas durante o período de obras.",
-        "A previsão é que tudo esteja concluído até o final do semestre, garantindo que a cidade esteja pronta para as festividades de fim de ano com uma infraestrutura renovada.",
-      ],
-      tags: ["Infraestrutura", "Trânsito", "Prefeitura"],
-    }),
-    [],
-  );
+  const { data: article, isLoading, isError } = useQuery({
+    queryKey: ["news-detail", slug],
+    queryFn: () => fetchNewsBySlug(slug || ""),
+    enabled: !!slug,
+  });
 
-  const mostRead = useMemo(
-    () => [
-      { category: "Esportes", title: "Marau Futsal vence clássico regional e avança para a final" },
-      {
-        category: "Policial",
-        title: "Operação da Brigada Militar apreende grande quantidade de ilícitos na região",
-      },
-      { category: "Economia", title: "Nova indústria deve gerar 200 empregos diretos em Marau" },
-    ],
-    [],
-  );
+  const { data: related = [] } = useQuery({
+    queryKey: ["related-news", article?.category_slug, article?.id],
+    queryFn: () => fetchRelatedNews(article!.category_slug, article!.id),
+    enabled: !!article,
+  });
 
-  const related = useMemo<RelatedItem[]>(
-    () => [
-      {
-        when: "Há 2 dias",
-        title: "Moradores do Bairro Santa Rita pedem melhorias no asfalto",
-        href: "/noticia/melhorias-asfalto-bairro-santa-rita",
-      },
-      {
-        when: "Semana passada",
-        title: "Orçamento municipal para 2024 é aprovado na Câmara",
-        href: "/noticia/orcamento-2024-aprovado",
-      },
-    ],
-    [],
-  );
+  if (isLoading) {
+    return <div className="min-h-screen flex items-center justify-center">Carregando notícia...</div>;
+  }
+
+  if (isError || !article) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center gap-4">
+        <h1 className="text-2xl font-bold">Notícia não encontrada</h1>
+        <Button asChild><Link to="/">Voltar para a Home</Link></Button>
+      </div>
+    );
+  }
+
+  const paragraphs = article.body ? article.body.split('\n\n') : [];
 
   return (
     <div className="min-h-screen bg-background text-foreground">
       <TopBar />
-      <SiteHeader logoUrl={LOGO_URL} />
+      <SiteHeader logoUrl="/logo.png" />
 
       <main className="container px-4 py-8">
         <div className="mb-6">
           <Breadcrumb>
             <BreadcrumbList>
               <BreadcrumbItem>
-                <BreadcrumbLink asChild>
-                  <Link to="/">Home</Link>
-                </BreadcrumbLink>
+                <BreadcrumbLink asChild><Link to="/">Home</Link></BreadcrumbLink>
               </BreadcrumbItem>
-              <BreadcrumbSeparator>
-                <ChevronRight />
-              </BreadcrumbSeparator>
+              <BreadcrumbSeparator><ChevronRight /></BreadcrumbSeparator>
               <BreadcrumbItem>
                 <BreadcrumbLink asChild>
-                  <Link to="/categoria/noticias">Notícias</Link>
+                  <Link to={`/categoria/${article.category_slug}`}>
+                    {article.category_slug.charAt(0).toUpperCase() + article.category_slug.slice(1)}
+                  </Link>
                 </BreadcrumbLink>
               </BreadcrumbItem>
-              <BreadcrumbSeparator>
-                <ChevronRight />
-              </BreadcrumbSeparator>
-              <BreadcrumbItem>
-                <BreadcrumbPage>{article.category}</BreadcrumbPage>
-              </BreadcrumbItem>
+              <BreadcrumbSeparator><ChevronRight /></BreadcrumbSeparator>
+              <BreadcrumbItem><BreadcrumbPage>Notícia</BreadcrumbPage></BreadcrumbItem>
             </BreadcrumbList>
           </Breadcrumb>
-          <p className="mt-2 text-xs text-muted-foreground">slug: {slug}</p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           <article className="lg:col-span-3">
-            <header className="space-y-3">
-              <div>
-                <Badge variant="secondary" className="rounded-full px-3 py-1">
-                  {article.category}
-                </Badge>
-              </div>
+            <header className="space-y-4">
+              <Badge variant="secondary" className="rounded-full px-3 py-1 uppercase text-[10px] font-bold">
+                {article.category_slug}
+              </Badge>
 
-              <h1 className="font-serif text-3xl leading-tight tracking-tight md:text-4xl">{article.title}</h1>
-              <p className="text-base text-muted-foreground md:text-lg">{article.excerpt}</p>
+              <h1 className="font-serif text-3xl leading-tight tracking-tight md:text-5xl font-bold text-foreground">
+                {article.title}
+              </h1>
 
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <p className="text-sm text-muted-foreground">
-                  <span className="font-medium text-foreground">{article.author}</span> {article.meta}
-                </p>
+              <p className="text-lg text-muted-foreground md:text-xl font-medium">
+                {article.excerpt}
+              </p>
+
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-y py-4">
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <span className="font-bold text-foreground">Redação Marau Agora</span>
+                  <span>•</span>
+                  <span>{format(new Date(article.published_at), "dd 'de' MMMM, yyyy", { locale: ptBR })}</span>
+                </div>
 
                 <div className="flex items-center gap-2">
-                  <Button variant="secondary" size="sm" className="gap-2">
-                    <Share2 className="h-4 w-4" />
-                    Compartilhar
-                  </Button>
-                  <Button variant="outline" size="sm" className="gap-2">
-                    <BookmarkPlus className="h-4 w-4" />
-                    Salvar
-                  </Button>
+                  <Button variant="ghost" size="sm" className="gap-2"><Share2 className="h-4 w-4" /> Compartilhar</Button>
+                  <Button variant="ghost" size="sm" className="gap-2"><BookmarkPlus className="h-4 w-4" /> Salvar</Button>
                 </div>
               </div>
             </header>
 
-            <section className="mt-6">
-              <figure className="overflow-hidden rounded-lg border bg-card shadow-sm">
-                <div className="aspect-[16/9] w-full bg-muted" />
-                <figcaption className="px-4 py-3 text-sm text-muted-foreground">{article.heroCaption}</figcaption>
-              </figure>
-            </section>
-
-            <section className="mt-8 space-y-5 text-base leading-relaxed">
-              {article.paragraphs.map((p, idx) => (
-                <p key={idx} className={idx === 2 ? "border-l-4 border-primary pl-4 text-foreground" : undefined}>
-                  {p}
-                </p>
-              ))}
-            </section>
-
-            <section className="mt-10">
-              <h2 className="font-serif text-2xl tracking-tight">{article.sectionTitle}</h2>
-              <div className="mt-4 space-y-5 text-base leading-relaxed">
-                {article.sectionBody.map((p, idx) => (
-                  <p key={idx}>{p}</p>
-                ))}
-
-                <figure className="overflow-hidden rounded-lg border bg-card shadow-sm">
-                  <div className="aspect-[16/9] w-full bg-muted" />
-                  <figcaption className="px-4 py-3 text-sm text-muted-foreground">
-                    Mapa ilustrativo da área de intervenção.
-                  </figcaption>
+            <section className="mt-8">
+              {article.image_url && (
+                <figure className="overflow-hidden rounded-xl border bg-card shadow-sm mb-8">
+                  <img src={article.image_url} alt={article.title} className="w-full h-auto object-cover aspect-video" />
                 </figure>
-              </div>
+              )}
             </section>
 
-            <section className="mt-8 flex flex-wrap items-center gap-2">
-              <span className="text-sm text-muted-foreground">Tags:</span>
-              {article.tags.map((t) => (
-                <Badge key={t} variant="outline" className="rounded-full px-3 py-1">
-                  {t}
-                </Badge>
+            <section className="mt-8 space-y-6 text-lg leading-relaxed text-foreground/90">
+              {paragraphs.map((p, idx) => (
+                <p key={idx}>{p}</p>
               ))}
             </section>
 
-            <section className="mt-10">
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-lg">Relacionadas</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
+            {related.length > 0 && (
+              <section className="mt-12 pt-8 border-t">
+                <h3 className="font-serif text-2xl font-bold mb-6">Leia Também</h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   {related.map((item) => (
                     <Link
-                      key={item.href}
-                      to={item.href}
-                      className="block rounded-md border bg-card px-4 py-3 transition-colors hover:bg-accent"
+                      key={item.id}
+                      to={`/noticia/${item.slug}`}
+                      className="group block space-y-2"
                     >
-                      <p className="text-xs text-muted-foreground">{item.when}</p>
-                      <p className="mt-1 font-medium text-foreground">{item.title}</p>
+                      <div className="aspect-video bg-muted rounded-lg overflow-hidden border">
+                        {/* Placeholder para imagem de relacionada se não houver no SELECT */}
+                        <div className="w-full h-full bg-primary/5 flex items-center justify-center text-primary/20 font-serif font-bold text-3xl">MA</div>
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        {format(new Date(item.published_at), "dd MMM, yyyy", { locale: ptBR })}
+                      </p>
+                      <h4 className="font-bold text-foreground group-hover:text-primary transition-colors line-clamp-2">
+                        {item.title}
+                      </h4>
                     </Link>
                   ))}
-                </CardContent>
-              </Card>
-            </section>
+                </div>
+              </section>
+            )}
           </article>
 
-          <aside className="space-y-6">
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-base">Buscar no Portal</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center gap-2">
-                  <div className="relative w-full">
-                    <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                    <Input placeholder="Buscar..." className="pl-9" />
-                  </div>
-                  <Button size="icon" variant="secondary" aria-label="Buscar">
-                    <ChevronRight className="h-4 w-4" />
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-
+          <aside className="space-y-8">
             <AdSlot />
-
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="flex items-center gap-2 text-base">
-                  <TrendingUp className="h-4 w-4 text-primary" />
-                  Mais Lidas
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                {mostRead.map((item, idx) => (
-                  <div key={`${item.title}-${idx}`} className="flex gap-3">
-                    <div className="flex h-7 w-7 items-center justify-center rounded-full bg-muted text-xs font-semibold text-foreground">
-                      {idx + 1}
-                    </div>
-                    <div>
-                      <p className="text-xs text-muted-foreground">{item.category}</p>
-                      <p className="text-sm font-medium leading-snug">{item.title}</p>
-                    </div>
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
-
             <Sidebar />
           </aside>
         </div>
       </main>
 
-      <Footer logoUrl={LOGO_URL} />
+      <Footer logoUrl="/logo.png" />
     </div>
   );
 }

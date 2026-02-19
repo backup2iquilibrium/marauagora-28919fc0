@@ -1,52 +1,20 @@
-import { useState, useEffect } from "react";
-import { HeroSlide } from "./types";
+import { useState, useEffect, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import { useSettings } from "@/context/SettingsContext";
+import { Link } from "react-router-dom";
 
-const slides: HeroSlide[] = [
-  {
-    tag: "Destaque",
-    title: "Marau investe R$ 5 milhões em nova infraestrutura urbana no centro da cidade",
-    excerpt:
-      "Prefeitura anuncia pacote de obras que inclui pavimentação, iluminação LED e revitalização das praças centrais para o próximo semestre.",
-    imageUrl:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuDHfsuTxaLnq-IjQZ2WQ60RkG0VcAXorigTSVn_p2DGseu0Lfsxzf6Zy3x3QtLp73-dNxFVGYBqM_tVdJdu8fcSstOS51LqBd_Fu-Z5D_ZS13jtYN2Ef-Y3pOpAwoUT7qSVQHZR71V8PHXhd4DwFb98MoVXZmH7s4hK9pGA7z6LraUiVfIPa7fblAtt9qZto92TNPK5hxiUyQo43PTtTjFKM8x3Nn970GbWdwRpOLLmnQqiiM-FgshiIuXN4HK4VgyJWcq8IZdw",
-    tagTone: "secondary",
-  },
-  {
-    tag: "Cultura",
-    title: "Inauguração do novo Centro Cultural deve atrair turistas da região",
-    excerpt:
-      "Espaço conta com teatro, salas de exposição e biblioteca pública moderna, prometendo ser o novo ponto de encontro da cidade.",
-    imageUrl: "https://lh3.googleusercontent.com/aida-public/AB6AXuCjIeEmnFpMGbhVofcf4w3QfR360Ydr1tuwhCxlSnMzKHBNld7vkOIdiKiDHf4TKngsqEGz_p8raiRMHCUYOBdRk9J1wrAq_nR-ZxlCpjnD7ARSH0gQdLlNwTeeGifWfPGlqPql_T5XQJTcaO5mNf4vd5XmHctg9ssCEHc2FtZZVjE3I1RgurM3Dwokv7YzvO8Wr2U0xD1e7K8gx94f9xfWe1cUFJP3wuDYfoFBM1X0fr12ovYBpe9MSqPNt1aC-BTIQyWucEm1",
-    tagTone: "primary",
-  },
-  {
-    tag: "Agronegócio",
-    title: "Safra recorde de soja impulsiona economia local e gera novos empregos",
-    excerpt:
-      "Produtores rurais celebram os números positivos da colheita deste ano, superando as expectativas iniciais do setor.",
-    imageUrl:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuC7qI9PveiJbDuREDPKV5Q_3S8nAS945Z77aId7qlfk70p5YxTAeXNhBYl38KtA--nJg88BhkvGHIluQicG3sRDnx27rdU6UMxXq839h-95LIGEpGCMF-b0q7pqYQTaLOxlbL1fptTFIc6eVReoZ7LW9eUtgluWApyc2mbiPyGL68UyvyDsk3YD_OItPxI22CNfBv0-z1ihmXUu83VXnHfqzidH0ChCSgy-8CUh0juW8RW76EBv2yMOfDs-gWYY2DY1RPM5TGa1",
-    tagTone: "muted",
-  },
-];
+async function fetchHeroNews() {
+  const { data, error } = await supabase
+    .from("news")
+    .select("*")
+    .order("published_at", { ascending: false })
+    .limit(5);
+  if (error) throw error;
+  return data || [];
+}
 
-const sideCards = [
-  {
-    category: "Economia",
-    title: "Feira industrial de Marau deve movimentar milhões em negócios",
-    imageUrl:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuB6EpRHegf1zNgg5E8-ugngTu_V7MzqD0hclfuIffQZ4EiJsC7vQi9EQ4hMEs9rhSiclYqb6ZsuYrPFWyZHe42S9ilIEsPXGuE2iL2mFoKrYGO3Ldt1lIS-fgzXrQ36ZfEesVG0rbKJrtvp31dsG_m4FDehpwUvQL1nj6KBgyqnZcjrFpW0zFsTSo2a3AOPdt_sS6niVwZHt6kdkakNDfewr0Ws4XUUmxoz4LSe3OH8lYE06HEgW1T2DXj7m6fXswyZpMDZkgMk",
-  },
-  {
-    category: "Esportes",
-    title: "Equipe de futsal local avança para a final estadual",
-    imageUrl:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuDBBgy-5RnxRj5wV7vukYyP9QRZxpWtdZEdGwQxtehbbbMw1gdytlBv9zLlsM6n0AXgViRupize5Qj5pSJEwWHQ9yntzVy_dKPbu761-FHBlaTRsEp1XftPPGSepFQfdGO-NUsR5ZgadiAO0l1FonQrCOz2o7VGtnsswJgtZ8FDUUMs2m_-ucQGYDDcNblgcTgl9rO2hqxMmJ68GyySmj7_ZU6Vel706VOUvB7MFEuAGVKl_dbwtbUQV6CUAvJ9F4On2Vent3f7",
-  },
-];
-
-function Tag({ tone, children }: { tone?: HeroSlide["tagTone"]; children: string }) {
+function Tag({ tone, children }: { tone?: "primary" | "secondary" | "muted"; children: string }) {
   const cls =
     tone === "secondary"
       ? "bg-secondary text-secondary-foreground"
@@ -55,7 +23,7 @@ function Tag({ tone, children }: { tone?: HeroSlide["tagTone"]; children: string
         : "bg-muted text-foreground";
 
   return (
-    <span className={`${cls} text-xs font-bold px-2 py-1 rounded uppercase tracking-wider inline-block shadow-sm`}>
+    <span className={`${cls} text-[10px] md:text-xs font-bold px-2 py-1 rounded uppercase tracking-wider inline-block shadow-sm`}>
       {children}
     </span>
   );
@@ -65,69 +33,100 @@ export function Hero() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const { carouselSpeed } = useSettings();
 
+  const { data: news = [], isLoading } = useQuery({
+    queryKey: ["hero-news"],
+    queryFn: fetchHeroNews,
+  });
+
+  const slides = useMemo(() => news.slice(0, 3), [news]);
+  const sideCards = useMemo(() => news.slice(3, 5), [news]);
+
   useEffect(() => {
+    if (slides.length <= 1) return;
     const timer = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % slides.length);
-    }, carouselSpeed);
+    }, carouselSpeed || 5000);
 
     return () => clearInterval(timer);
-  }, [carouselSpeed]);
+  }, [slides.length, carouselSpeed]);
+
+  if (isLoading) {
+    return <div className="h-[500px] w-full bg-muted animate-pulse rounded-lg mb-12" />;
+  }
+
+  if (news.length === 0) return null;
 
   return (
     <section className="mb-12">
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <article className="lg:col-span-2 group cursor-pointer relative rounded-lg overflow-hidden shadow-sm h-96 lg:h-[500px] bg-muted">
+        <article className="lg:col-span-2 group relative rounded-lg overflow-hidden shadow-sm h-96 lg:h-[500px] bg-muted">
           {slides.map((s, idx) => (
             <div
-              key={s.title}
+              key={s.id}
               className={`absolute inset-0 w-full h-full transition-opacity duration-1000 ${idx === currentSlide ? "opacity-100 z-10" : "opacity-0 z-0"
                 }`}
             >
-              <img src={s.imageUrl} alt={s.title} className="absolute inset-0 w-full h-full object-cover" loading="lazy" />
-              <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/20 to-transparent" />
-              <div className="absolute bottom-0 left-0 p-6 md:p-8 w-full">
-                <Tag tone={s.tagTone}>{s.tag}</Tag>
-                <h1 className="mt-2 text-2xl md:text-4xl font-serif font-bold text-primary-foreground leading-tight drop-shadow-sm">
-                  {s.title}
-                </h1>
-                <p className="mt-2 text-primary-foreground/90 text-sm md:text-base line-clamp-2">{s.excerpt}</p>
-              </div>
+              <Link to={`/noticia/${s.slug}`} className="block h-full">
+                <img
+                  src={s.image_url || "https://images.unsplash.com/photo-1495020689067-958852a7765e?q=80&w=2070&auto=format&fit=crop"}
+                  alt={s.title}
+                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-background/95 via-background/40 to-transparent" />
+                <div className="absolute bottom-0 left-0 p-6 md:p-8 w-full">
+                  <Tag tone={idx === 0 ? "secondary" : "primary"}>
+                    {s.category_slug || "Notícia"}
+                  </Tag>
+                  <h1 className="mt-2 text-2xl md:text-3xl lg:text-4xl font-serif font-bold text-foreground leading-tight">
+                    {s.title}
+                  </h1>
+                  <p className="mt-2 text-foreground/80 text-sm md:text-base line-clamp-2 max-w-2xl">{s.excerpt}</p>
+                </div>
+              </Link>
             </div>
           ))}
 
-          <div className="absolute bottom-4 right-4 z-20 flex space-x-2" aria-hidden="true">
-            {slides.map((_, idx) => (
-              <button
-                key={idx}
-                type="button"
-                className={`w-2 h-2 rounded-full transition-colors ${idx === currentSlide ? "bg-primary-foreground/90" : "bg-primary-foreground/50 hover:bg-primary-foreground/75"
-                  }`}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setCurrentSlide(idx);
-                }}
-                aria-label={`Ir para slide ${idx + 1}`}
-              />
-            ))}
-          </div>
+          {slides.length > 1 && (
+            <div className="absolute bottom-4 right-4 z-20 flex space-x-2">
+              {slides.map((_, idx) => (
+                <button
+                  key={idx}
+                  type="button"
+                  className={`w-2 h-2 rounded-full transition-colors ${idx === currentSlide ? "bg-primary" : "bg-primary/30 hover:bg-primary/60"
+                    }`}
+                  onClick={() => setCurrentSlide(idx)}
+                />
+              ))}
+            </div>
+          )}
         </article>
 
-        <div className="flex flex-col gap-6 h-[500px]">
+        <div className="flex flex-col gap-6 h-auto lg:h-[500px]">
           {sideCards.map((c) => (
-            <article key={c.title} className="relative flex-1 rounded-lg overflow-hidden shadow-sm group cursor-pointer">
-              <img
-                alt={c.title}
-                className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                src={c.imageUrl}
-                loading="lazy"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/20 to-transparent" />
-              <div className="absolute bottom-0 left-0 p-4">
-                <span className="text-secondary text-xs font-bold uppercase mb-1 block">{c.category}</span>
-                <h3 className="text-primary-foreground font-serif font-bold text-lg leading-snug drop-shadow-sm">{c.title}</h3>
-              </div>
+            <article key={c.id} className="relative flex-1 min-h-[180px] rounded-lg overflow-hidden shadow-sm group border">
+              <Link to={`/noticia/${c.slug}`} className="block h-full">
+                <img
+                  alt={c.title}
+                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                  src={c.image_url || "https://images.unsplash.com/photo-1504711434969-e33886168f5c?q=80&w=2070&auto=format&fit=crop"}
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-background/95 via-background/30 to-transparent" />
+                <div className="absolute bottom-0 left-0 p-4">
+                  <span className="text-secondary text-[10px] font-bold uppercase mb-1 block">
+                    {c.category_slug}
+                  </span>
+                  <h3 className="text-foreground font-serif font-bold text-base md:text-lg leading-tight line-clamp-2">
+                    {c.title}
+                  </h3>
+                </div>
+              </Link>
             </article>
           ))}
+          {sideCards.length === 0 && (
+            <div className="flex-1 rounded-lg border border-dashed flex items-center justify-center text-muted-foreground text-sm p-8 text-center bg-muted/30">
+              Mais notícias em breve...
+            </div>
+          )}
         </div>
       </div>
     </section>

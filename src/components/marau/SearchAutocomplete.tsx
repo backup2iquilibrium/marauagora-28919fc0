@@ -5,19 +5,15 @@ import {
     MapPin, Calendar, ShoppingBag, X,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { searchMockData, type MockSearchResult, type MockItemType } from "@/services/mockSearchData";
-
-type SearchItemType = MockItemType | "news" | "jobs" | "points" | "events";
 
 type SearchSuggestion = {
-    item_type: SearchItemType;
+    item_type: "news" | "jobs" | "points" | "events" | "classifieds";
     item_id: string;
     title: string;
     excerpt: string | null;
     route: string;
     published_at: string;
     rank: number;
-    source: "db" | "mock";
 };
 
 const categoryIcon: Record<string, React.ReactNode> = {
@@ -45,17 +41,6 @@ function useDebounce<T>(value: T, delay: number): T {
     return debouncedValue;
 }
 
-/** Deduplica por item_id+item_type mantendo o de maior rank */
-function dedup(items: SearchSuggestion[]): SearchSuggestion[] {
-    const seen = new Map<string, SearchSuggestion>();
-    for (const item of items) {
-        const key = `${item.item_type}-${item.item_id}`;
-        const prev = seen.get(key);
-        if (!prev || item.rank > prev.rank) seen.set(key, item);
-    }
-    return Array.from(seen.values());
-}
-
 export function SearchAutocomplete() {
     const navigate = useNavigate();
     const [q, setQ] = React.useState("");
@@ -64,11 +49,11 @@ export function SearchAutocomplete() {
     const [loading, setLoading] = React.useState(false);
     const [activeIndex, setActiveIndex] = React.useState(-1);
 
-    const debouncedQ = useDebounce(q.trim(), 280);
+    const debouncedQ = useDebounce(q.trim(), 400);
     const containerRef = React.useRef<HTMLDivElement>(null);
     const inputRef = React.useRef<HTMLInputElement>(null);
 
-    // ── Busca principal ──────────────────────────────────────────────────────────
+    // ── Busca principal via Supabase RPC ───────────────────────────────────────
     React.useEffect(() => {
         if (debouncedQ.length < 2) {
             setSuggestions([]);
@@ -79,19 +64,6 @@ export function SearchAutocomplete() {
         let cancelled = false;
         setLoading(true);
 
-        // 1. Busca local (mock) — SÍNCRONA e imediata
-        const mockResults: SearchSuggestion[] = searchMockData(debouncedQ, 8).map((r) => ({
-            ...r,
-            source: "mock" as const,
-        }));
-
-        if (!cancelled) {
-            setSuggestions(mockResults);
-            setOpen(mockResults.length > 0);
-            setActiveIndex(-1);
-        }
-
-        // 2. Busca no Supabase (assíncrona) — substitui/complementa se retornar dados
         (supabase as any)
             .rpc("search_portal", {
                 q: debouncedQ,
@@ -100,31 +72,25 @@ export function SearchAutocomplete() {
                 page_size: 8,
                 page_offset: 0,
             })
-            .then(({ data, error }: { data: any[] | null; error: any }) => {
+            .then(({ data, error }: { data: SearchSuggestion[] | null; error: any }) => {
                 if (cancelled) return;
                 setLoading(false);
 
-                if (!error && data && data.length > 0) {
-                    const dbResults: SearchSuggestion[] = data.map((r) => ({
-                        ...r,
-                        source: "db" as const,
-                    }));
-
-                    // Prioriza resultados reais do banco, complementa com mocks
-                    const combined = dedup([...dbResults, ...mockResults])
-                        .sort((a, b) => b.rank - a.rank)
-                        .slice(0, 8);
-
-                    setSuggestions(combined);
-                    setOpen(combined.length > 0);
+                if (!error && data) {
+                    setSuggestions(data);
+                    setOpen(data.length > 0);
                     setActiveIndex(-1);
                 } else {
-                    // Supabase vazio: mantém somente os mocks
-                    setLoading(false);
+                    setSuggestions([]);
+                    setOpen(false);
                 }
             })
             .catch(() => {
-                if (!cancelled) setLoading(false);
+                if (!cancelled) {
+                    setLoading(false);
+                    setSuggestions([]);
+                    setOpen(false);
+                }
             });
 
         return () => {

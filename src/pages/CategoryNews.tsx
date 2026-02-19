@@ -83,9 +83,31 @@ function ClassifiedCard({ item }: { item: CategoryItem }) {
   );
 }
 
+async function fetchNewsByCategory(categorySlug: string) {
+  const { data, error } = await supabase
+    .from("news")
+    .select("*")
+    .eq("category_slug", categorySlug)
+    .order("published_at", { ascending: false });
+  if (error) throw error;
+  return data || [];
+}
+
 export default function CategoryNews() {
   const { slug } = useParams();
   const sanitizedSlug = (slug || "").trim().toLowerCase();
+
+  const adsQuery = useQuery({
+    queryKey: ["active_classified_ads", sanitizedSlug],
+    queryFn: fetchActiveAds,
+    enabled: sanitizedSlug === "classificados",
+  });
+
+  const newsQuery = useQuery({
+    queryKey: ["news", sanitizedSlug],
+    queryFn: () => fetchNewsByCategory(sanitizedSlug),
+    enabled: sanitizedSlug !== "classificados",
+  });
 
   const categoryLabel = useMemo(() => {
     if (!sanitizedSlug) return "Notícias";
@@ -116,158 +138,53 @@ export default function CategoryNews() {
   }, [sanitizedSlug]);
 
   const highlight = useMemo(() => {
-    if (sanitizedSlug === "agronegocio") {
+    if (sanitizedSlug === "classificados" && adsQuery.data?.[0]) {
+      const ad = adsQuery.data[0];
       return {
-        title: "Safra recorde de soja impulsiona economia local e gera novos empregos",
-        excerpt: "Produtores rurais de Marau celebram números positivos da colheita, superando expectativas iniciais do setor.",
-        authorLine: "Por Redação",
-        time: "Há 1 dia",
-        href: "/noticia/safra-recorde-soja-marau",
+        title: ad.title,
+        excerpt: ad.description || ad.excerpt || "",
+        authorLine: ad.advertiser_name || "Anunciante",
+        time: format(new Date(ad.created_at), "dd MMM"),
+        href: `/categoria/classificados`,
       };
     }
-    if (sanitizedSlug === "classificados") {
+    if (newsQuery.data?.[0]) {
+      const n = newsQuery.data[0];
       return {
-        title: "Mercado imobiliário em Marau apresenta alta procura por aluguéis no centro",
-        excerpt: "Levantamento aponta que a proximidade com serviços e comércio é o principal fator de decisão para novos moradores.",
-        authorLine: "Por Redação",
-        time: "Há 5 horas",
-        href: "/categoria/classificados",
+        title: n.title,
+        excerpt: n.excerpt || "",
+        authorLine: "Redação",
+        time: format(new Date(n.published_at), "dd MMM"),
+        href: `/noticia/${n.slug}`,
       };
     }
-    if (sanitizedSlug === "politica") {
-      return {
-        title: "Câmara de Vereadores debate novo plano diretor para o desenvolvimento de Marau",
-        excerpt: "Audiência pública reuniu especialistas e comunidade para discutir o futuro urbano do município nos próximos 10 anos.",
-        authorLine: "Por Luiz Abreu",
-        time: "Há 3 horas",
-        href: "/noticia/plano-diretor-marau",
-      };
-    }
-    return {
-      title: "Vôlei Marau conquista título regional histórico em noite de ginásio lotado",
-      excerpt: "A equipe local superou os adversários de Passo Fundo em uma partida emocionante de cinco sets neste domingo.",
-      authorLine: "Por Lucas Silva",
-      time: "Há 2 horas",
-      href: "/noticia/volei-marau-conquista-titulo",
-    };
-  }, [sanitizedSlug]);
-
-  const adsQuery = useQuery({
-    queryKey: ["active_classified_ads"],
-    queryFn: fetchActiveAds,
-    enabled: sanitizedSlug === "classificados",
-  });
+    return null;
+  }, [sanitizedSlug, adsQuery.data, newsQuery.data]);
 
   const items = useMemo<CategoryItem[]>(() => {
-    if (sanitizedSlug === "agronegocio") {
-      return [
-        {
-          tag: "Tecnologia",
-          title: "Drones transformam o monitoramento de safras no interior de Marau",
-          excerpt: "Novos equipamentos permitem identificar pragas e falhas na irrigação com precisão milimétrica.",
-          authorLine: "",
-          date: "25 Out, 2023",
-          href: "/noticia/drones-campo-marau",
-        },
-        {
-          tag: "Mercado",
-          title: "Preço do milho apresenta estabilidade após oscilações na bolsa",
-          excerpt: "Análise econômica mostra o impacto direto nos produtores da região norte do estado.",
-          authorLine: "",
-          date: "24 Out, 2023",
-          href: "/noticia/preco-milho-estabilidade",
-        },
-      ];
-    }
     if (sanitizedSlug === "classificados") {
-      const dbAds = (adsQuery.data || []).map((ad: any) => ({
+      return (adsQuery.data || []).map((ad: any) => ({
         tag: ad.category_slug.charAt(0).toUpperCase() + ad.category_slug.slice(1),
         title: ad.title,
-        excerpt: ad.description || "",
-        authorLine: ad.advertiser_name,
+        excerpt: ad.description || ad.excerpt || "",
+        authorLine: ad.advertiser_name || "",
         date: format(new Date(ad.created_at), "dd MMM, yyyy"),
         href: `/categoria/classificados`,
         price: ad.price,
         whatsapp: ad.whatsapp,
         imageUrl: ad.classified_ad_media?.[0]?.media_url || ad.classified_ad_media?.[0]?.thumbnail_url,
       }));
-
-      const mockClassifieds = [
-        {
-          tag: "Veículos",
-          title: "Vende-se Caminhonete Hilux 2022 - Único dono",
-          excerpt: "Veículo em estado de novo, com todas as revisões feitas em concessionária. Completa e pronta para uso.",
-          authorLine: "",
-          date: "26 Out, 2023",
-          href: "/categoria/classificados",
-          price: "R$ 245.000,00",
-          whatsapp: "5554999999999",
-        },
-        {
-          tag: "Imóveis",
-          title: "Apartamento de 2 dormitórios para locação próxima à Praça Central",
-          excerpt: "Excelente localização, mobiliado e com box de garagem. Ideal para estudantes ou casais novos.",
-          authorLine: "",
-          date: "25 Out, 2023",
-          href: "/categoria/classificados",
-          price: "R$ 1.800,00 / mês",
-          whatsapp: "5554999999988",
-        },
-        {
-          tag: "Serviços",
-          title: "Aulas Particulares de Inglês e Reforço Escolar",
-          excerpt: "Professor com experência internacional atende em domicílio ou online. Metodologia personalizada.",
-          authorLine: "",
-          date: "23 Out, 2023",
-          href: "/categoria/classificados",
-          price: "Consulte valor",
-          whatsapp: "5554999999977",
-        },
-        {
-          tag: "Imóveis",
-          title: "Terreno em Loteamento Novo - Pronto para construir",
-          excerpt: "Lote de 360m² em área alta com infraestrutura completa e ótima vista da cidade.",
-          authorLine: "",
-          date: "22 Out, 2023",
-          href: "/categoria/classificados",
-          price: "R$ 120.000,00",
-          whatsapp: "5554999999966",
-        },
-      ];
-
-      return [...dbAds, ...mockClassifieds];
     }
-    if (sanitizedSlug === "politica") {
-      return [
-        {
-          tag: "Municipal",
-          title: "Prefeitura anuncia novos investimentos para a rede municipal de educação",
-          excerpt: "Recursos serão destinados à reforma de escolas e aquisição de novos equipamentos tecnológicos.",
-          authorLine: "",
-          date: "24 Out, 2023",
-          href: "/noticia/investimentos-educacao",
-        },
-      ];
-    }
-    return [
-      {
-        tag: "Futebol",
-        title: "Campeonato Municipal de Futebol inicia neste final de semana com 12 equipes",
-        excerpt: "Jogos de abertura acontecem no Estádio Municipal Carlos Renato Bebber com entrada franca.",
-        authorLine: "",
-        date: "24 Out, 2023",
-        href: "/noticia/campeonato-municipal-futebol",
-      },
-      {
-        tag: "Atletismo",
-        title: "Maratona Escolar reúne mais de 500 estudantes da rede pública",
-        excerpt: "Evento promove saúde e integração entre as escolas do município.",
-        authorLine: "",
-        date: "23 Out, 2023",
-        href: "/noticia/maratona-escolar-500-estudantes",
-      },
-    ];
-  }, [sanitizedSlug]);
+
+    return (newsQuery.data || []).map((n) => ({
+      tag: categoryLabel,
+      title: n.title,
+      excerpt: n.excerpt || "",
+      authorLine: "",
+      date: format(new Date(n.published_at), "dd MMM, yyyy"),
+      href: `/noticia/${n.slug}`,
+    }));
+  }, [sanitizedSlug, adsQuery.data, newsQuery.data, categoryLabel]);
 
   const mostRead = useMemo(
     () => [

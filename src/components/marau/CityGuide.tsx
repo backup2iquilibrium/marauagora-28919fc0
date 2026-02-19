@@ -1,43 +1,56 @@
-import { CityGuideItem } from "./types";
+import { Link } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
-const items: CityGuideItem[] = [
-  {
-    label: "Gastronomia",
-    imageUrl:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuAmbWGZzhyhdXQucDD8Z2HEgzu9lUl4nQXBu5S2yX1SQxP7v814bKPMH8qhLP64o9DmJhc7vbubwI6WF53l_bpZkA2mPXl1LWdiZUDdF1BlowjuTGm2YfEPH4tlUMf2S2tu-3KFLdtcBubhBpfJc1QPkB5vnZyPrlJ0ascl8YTGc7BUnveX-vwrs0v6PopnxWu-EOYQZPtu9xEvoos9IOPqwN6ts3Jbt2WAQUWTVMiJokqga6Xd7uhq_B03C4-pBYTm5EeQCifp",
-  },
-  {
-    label: "Hotelaria",
-    imageUrl:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuCbSRgXkjwCJ_gAWTNyekFqYpxXqPTO4v_PstSWizcyl_r1TL051oRt5x0wbm_YJVlBqNzGJDySQJDQoDIT6wtjtRG_gzifhz32QJXjwerE3URihGkuNTrccMDYxHNYUlUhmVBIBBqO0X5PRtZ2yMRV-f73RgLHI6EIBGLErS5GaxVm1xaVcnuvO8HFl5J2F5GSshCgkZcOBK2n066cJCEDO9e7HX7dFFFxkmt0ukYMdRt6-e1TBA8FxHn8qKTufNRGDWw0kiAv",
-  },
-  {
-    label: "Vida Noturna",
-    imageUrl:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuCzwmgI9rSA_AjRGt_-44xNwj0heat5FDW6haan3zl-vHVm2N11Q2Zsvfy71FS1DfMqazkY9W0whk482Q1bzH3OhwR_hZWJ_RlHMWsDKDDU7VZvqk8OAkzIA_tjCqUh9TMs2VsBCHASXH589x5dqm2hpk6TemRdySFNVaxVyomtwkENuryjggZhyDNz96TsJBQoZ67LuXUGRqYaHmLPlF2FGbYhPMPzA66VvgPU8mQIFtvrKvC8MgzCQVSpNqR52hvqb4J2ASt-",
-  },
-  {
-    label: "Turismo",
-    imageUrl:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuAOZ8bKdzq7bs_v_TMt7XP18MthgFgvx3c9VwZoDrRqqZ3Vmypp1yZ32D2t2wvZcDUxj_CfVUhdZNTa2FdcEl_D8m_C3jTDqY2kneITq0avboc7wzTleUjLhTJq_QPJtaLf1MiSDKjkJHSgFIyCJKNu6-LlxBLY-yzphO1CLRX4fgPHzc-RNH7Z0IHPukbxjEwIO4nlYW-z-1a9EBYL86MaWhJ-5NMFobvqSWH4GW_crsyZmaSmrkVEdnMu_bfiIYfqc931wPpW",
-  },
-];
+async function fetchServiceCategories() {
+  const { data, error } = await supabase
+    .from("public_service_categories")
+    .select("*")
+    .order("sort_order", { ascending: true })
+    .limit(4);
+  if (error) throw error;
+  return data || [];
+}
 
 export function CityGuide() {
+  const { data: categories = [], isLoading } = useQuery({
+    queryKey: ["home-service-categories"],
+    queryFn: fetchServiceCategories,
+  });
+
+  if (isLoading) {
+    return <div className="h-24 bg-muted animate-pulse rounded-lg" />;
+  }
+
+  if (categories.length === 0) return null;
+
   return (
     <section>
       <div className="flex justify-between items-center mb-6 border-b pb-2">
         <h2 className="text-2xl font-serif font-bold text-primary">Guia da Cidade</h2>
+        <Link className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors" to="/guia-da-cidade">
+          Ver guia completo
+        </Link>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {items.map((i) => (
-          <a key={i.label} className="group block text-center" href="#">
-            <div className="rounded-full overflow-hidden w-24 h-24 mx-auto mb-2 border-4 border-card shadow-sm group-hover:border-secondary transition-colors">
-              <img alt={i.label} className="w-full h-full object-cover" src={i.imageUrl} loading="lazy" />
+        {categories.map((i) => (
+          <Link
+            key={i.id}
+            className="group block text-center"
+            to={`/guia-da-cidade#${i.slug}`}
+          >
+            <div className="rounded-full overflow-hidden w-20 h-20 md:w-24 md:h-24 mx-auto mb-2 border-4 border-card shadow-sm group-hover:border-secondary transition-colors bg-muted flex items-center justify-center">
+              {i.icon ? (
+                <img alt={i.name} className="w-full h-full object-cover" src={i.icon} loading="lazy" />
+              ) : (
+                <span className="text-primary font-bold text-xl">{i.name.charAt(0)}</span>
+              )}
             </div>
-            <span className="font-medium text-sm text-foreground group-hover:text-primary transition-colors">{i.label}</span>
-          </a>
+            <span className="font-medium text-xs md:text-sm text-foreground group-hover:text-primary transition-colors block px-1">
+              {i.name}
+            </span>
+          </Link>
         ))}
       </div>
     </section>

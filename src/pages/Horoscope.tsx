@@ -1,6 +1,8 @@
 import { ArrowRight, Sparkles } from "lucide-react";
 import * as React from "react";
 import { Link } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import { format, addDays, subDays } from "date-fns";
 
 import { TopBar } from "@/components/marau/TopBar";
 import { SiteHeader } from "@/components/marau/SiteHeader";
@@ -10,197 +12,133 @@ import { HoroscopeSidebar } from "@/components/marau/horoscope/HoroscopeSidebar"
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { supabase } from "@/integrations/supabase/client";
 
-const LOGO_URL = "/logo.png";
-
-type DayKey = "ontem" | "hoje" | "amanha";
-type SignItem = {
-  sign: string;
-  dateRange: string;
-  summary: string;
-};
-
-const BASE_SIGNS: SignItem[] = [
-  {
-    sign: "Áries",
-    dateRange: "21 mar - 19 abr",
-    summary:
-      "A energia favorece a iniciativa. No trabalho, apresente novas ideias. No amor, exercite paciência. A saúde pede atenção com excessos.",
-  },
-  {
-    sign: "Touro",
-    dateRange: "20 abr - 20 mai",
-    summary:
-      "Foco na estabilidade. Organize finanças e revise orçamentos. No amor, a segurança emocional será prioridade.",
-  },
-  {
-    sign: "Gêmeos",
-    dateRange: "21 mai - 20 jun",
-    summary: "Comunicação é a chave. Resolva mal-entendidos e encontre soluções criativas para questões domésticas.",
-  },
-  {
-    sign: "Câncer",
-    dateRange: "21 jun - 22 jul",
-    summary: "Sensibilidade em alta. Conecte-se com a família. A intuição pode guiar decisões importantes hoje.",
-  },
-  {
-    sign: "Leão",
-    dateRange: "23 jul - 22 ago",
-    summary:
-      "Carisma em alta. Fortaleça laços sociais. Financeiramente, evite gastos impulsivos com luxos desnecessários.",
-  },
-  {
-    sign: "Virgem",
-    dateRange: "23 ago - 22 set",
-    summary:
-      "Detalhes contam. Um projeto antigo pode ser concluído. Cuidado para não ser crítico demais com os outros.",
-  },
-  {
-    sign: "Libra",
-    dateRange: "23 set - 22 out",
-    summary:
-      "Busque equilíbrio nas relações. No trabalho, a diplomacia será sua melhor ferramenta. Um encontro pode ser promissor.",
-  },
-  {
-    sign: "Escorpião",
-    dateRange: "23 out - 21 nov",
-    summary:
-      "Intensidade e transformação. Um ciclo se encerra para outro começar. Confie na sua força para superar desafios.",
-  },
-  {
-    sign: "Sagitário",
-    dateRange: "22 nov - 21 dez",
-    summary:
-      "Ótimo dia para planejar viagens ou estudos. A mente está aberta para novos conhecimentos. Surpresas agradáveis podem acontecer.",
-  },
-  {
-    sign: "Capricórnio",
-    dateRange: "22 dez - 19 jan",
-    summary:
-      "Ambição em destaque. Defina metas claras e use a disciplina para superar obstáculos. Reserve um tempo para relaxar.",
-  },
-  {
-    sign: "Aquário",
-    dateRange: "20 jan - 18 fev",
-    summary:
-      "Ideias originais surgem. O momento favorece tecnologia e inovação. Amigos podem trazer boas notícias.",
-  },
-  {
-    sign: "Peixes",
-    dateRange: "19 fev - 20 mar",
-    summary:
-      "Dia sonhador. Criatividade artística favorecida. Evite fugir da realidade e mantenha compromissos práticos em dia.",
-  },
+const SIGNS_LIST = [
+  { sign: "Áries", slug: "aries", dateRange: "21 mar - 19 abr" },
+  { sign: "Touro", slug: "touro", dateRange: "20 abr - 20 mai" },
+  { sign: "Gêmeos", slug: "gemeos", dateRange: "21 mai - 20 jun" },
+  { sign: "Câncer", slug: "cancer", dateRange: "21 jun - 22 jul" },
+  { sign: "Leão", slug: "leao", dateRange: "23 jul - 22 ago" },
+  { sign: "Virgem", slug: "virgem", dateRange: "23 ago - 22 set" },
+  { sign: "Libra", slug: "libra", dateRange: "23 set - 22 out" },
+  { sign: "Escorpião", slug: "escorpiao", dateRange: "23 out - 21 nov" },
+  { sign: "Sagitário", slug: "sagitario", dateRange: "22 nov - 21 dez" },
+  { sign: "Capricórnio", slug: "capricornio", dateRange: "22 dez - 19 jan" },
+  { sign: "Aquário", slug: "aquario", dateRange: "20 jan - 18 fev" },
+  { sign: "Peixes", slug: "peixes", dateRange: "19 fev - 20 mar" },
 ];
 
-const MOST_READ = [
-  { title: "Prefeitura anuncia novas obras no centro da cidade para 2024." },
-  { title: "Festival de gastronomia atrai milhares de turistas neste fim de semana." },
-  { title: "Confira a previsão do tempo para o feriado em Marau." },
-];
-
-function dayLabel(day: DayKey) {
-  if (day === "ontem") return "Ontem";
-  if (day === "amanha") return "Amanhã";
-  return "Hoje";
+async function fetchHoroscope(date: string) {
+  const { data, error } = await supabase
+    .from("horoscopes")
+    .select("*")
+    .eq("for_date", date)
+    .eq("is_published", true);
+  if (error) throw error;
+  return data || [];
 }
 
-function dayVariantSummary(base: string, day: DayKey) {
-  if (day === "ontem") return `${base} Reflita sobre escolhas recentes e ajuste o ritmo.`;
-  if (day === "amanha") return `${base} Prepare-se: pequenas oportunidades podem aparecer cedo.`;
-  return base;
-}
-
-function chunk<T>(arr: T[], size: number) {
-  const out: T[][] = [];
-  for (let i = 0; i < arr.length; i += size) out.push(arr.slice(i, i + size));
-  return out;
+async function fetchMostReadNews() {
+  const { data, error } = await supabase
+    .from("news")
+    .select("title")
+    .order("published_at", { ascending: false })
+    .limit(3);
+  if (error) throw error;
+  return data || [];
 }
 
 export default function Horoscope() {
-  const [day, setDay] = React.useState<DayKey>("hoje");
+  const [dayOffset, setDayOffset] = React.useState<string>("hoje");
 
-  const signs = React.useMemo(
-    () => BASE_SIGNS.map((s) => ({ ...s, summary: dayVariantSummary(s.summary, day) })),
-    [day],
-  );
+  const targetDate = React.useMemo(() => {
+    const now = new Date();
+    if (dayOffset === "ontem") return format(subDays(now, 1), "yyyy-MM-dd");
+    if (dayOffset === "amanha") return format(addDays(now, 1), "yyyy-MM-dd");
+    return format(now, "yyyy-MM-dd");
+  }, [dayOffset]);
 
-  const rows = React.useMemo(() => chunk(signs, 3), [signs]);
+  const { data: predictions = [], isLoading } = useQuery({
+    queryKey: ["horoscope", targetDate],
+    queryFn: () => fetchHoroscope(targetDate),
+  });
+
+  const { data: mostRead = [] } = useQuery({
+    queryKey: ["sidebar-most-read-titles"],
+    queryFn: fetchMostReadNews,
+  });
+
+  const getPrediction = (slug: string) => {
+    return predictions.find(p => p.sign_slug === slug)?.content ||
+      "As estrelas estão alinhando sua energia. Aproveite o dia para refletir sobre seus objetivos e cultivar o equilíbrio emocional.";
+  };
+
+  const rows = React.useMemo(() => {
+    const result = [];
+    for (let i = 0; i < SIGNS_LIST.length; i += 3) {
+      result.push(SIGNS_LIST.slice(i, i + 3));
+    }
+    return result;
+  }, []);
 
   return (
     <div className="min-h-screen bg-background text-foreground">
       <TopBar />
-      <SiteHeader logoUrl={LOGO_URL} />
+      <SiteHeader logoUrl="/logo.png" />
 
       <main className="container px-4 py-8">
-        <nav className="text-sm text-muted-foreground">
-          <Link to="/" className="hover:text-foreground">
-            Início
-          </Link>
-          <span className="mx-2">/</span>
-          <span className="text-foreground">Horóscopo</span>
-        </nav>
-
-        <div className="mt-6">
-          <AdSlot label="Banner Principal (728x90)" />
-        </div>
-
-        <header className="mt-8">
+        <header className="mb-8">
           <div className="flex items-center gap-2">
-            <Sparkles className="h-5 w-5 text-primary" aria-hidden="true" />
-            <p className="text-sm font-semibold text-primary">Astrologia</p>
+            <Sparkles className="h-5 w-5 text-primary" />
+            <p className="text-sm font-semibold text-primary">Horóscopo</p>
           </div>
-          <h1 className="mt-3 font-serif text-3xl tracking-tight md:text-4xl">Horóscopo do Dia</h1>
-          <p className="mt-2 text-muted-foreground">Descubra o que os astros revelam para você hoje.</p>
+          <h1 className="mt-3 font-serif text-3xl md:text-5xl font-bold">Previsões Astrais</h1>
+          <p className="mt-2 text-muted-foreground text-lg">O que os astros reservam para o seu caminho.</p>
         </header>
 
         <section className="mt-6 grid grid-cols-1 lg:grid-cols-4 gap-8">
-          <div className="lg:col-span-3 space-y-6">
-            <Tabs value={day} onValueChange={(v) => setDay(v as DayKey)}>
-              <TabsList>
-                <TabsTrigger value="ontem">Ontem</TabsTrigger>
-                <TabsTrigger value="hoje">Hoje</TabsTrigger>
-                <TabsTrigger value="amanha">Amanhã</TabsTrigger>
+          <div className="lg:col-span-3 space-y-8">
+            <Tabs value={dayOffset} onValueChange={setDayOffset}>
+              <TabsList className="rounded-full p-1 bg-muted">
+                <TabsTrigger value="ontem" className="rounded-full px-6">Ontem</TabsTrigger>
+                <TabsTrigger value="hoje" className="rounded-full px-6">Hoje</TabsTrigger>
+                <TabsTrigger value="amanha" className="rounded-full px-6">Amanhã</TabsTrigger>
               </TabsList>
             </Tabs>
 
-            <div className="flex items-center justify-between">
-              <p className="text-sm text-muted-foreground">{dayLabel(day)}</p>
-              <span className="text-xs text-muted-foreground">Atualizado diariamente</span>
-            </div>
-
-            <div className="space-y-6">
-              {rows.map((row, idx) => (
-                <React.Fragment key={idx}>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    {row.map((s) => (
-                      <Card key={s.sign} className="hover:shadow-md transition-shadow">
-                        <CardContent className="p-6 space-y-3">
-                          <div>
-                            <p className="font-bold text-lg">{s.sign}</p>
-                            <p className="text-xs text-muted-foreground">{s.dateRange}</p>
-                          </div>
-                          <p className="text-sm text-muted-foreground leading-relaxed">{s.summary}</p>
-                          <Button variant="secondary" className="w-full gap-2">
-                            Ler mais
-                            <ArrowRight className="h-4 w-4" />
-                          </Button>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
-
-                  {idx === 0 ? <AdSlot label="Espaço Publicitário Horizontal" /> : null}
-                </React.Fragment>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {SIGNS_LIST.map((s) => (
+                <Card key={s.slug} className="hover:shadow-lg transition-all duration-300 border-primary/10 group overflow-hidden">
+                  <CardContent className="p-8 space-y-4">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <h3 className="text-2xl font-bold text-foreground group-hover:text-primary transition-colors">{s.sign}</h3>
+                        <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">{s.dateRange}</p>
+                      </div>
+                      <div className="w-12 h-12 bg-primary/5 rounded-full flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-all">
+                        <Sparkles className="h-6 w-6" />
+                      </div>
+                    </div>
+                    <p className="text-sm text-muted-foreground leading-relaxed line-clamp-4">
+                      {isLoading ? "Consultando os astros..." : getPrediction(s.slug)}
+                    </p>
+                    <Button variant="link" className="p-0 text-primary font-bold gap-2 group-hover:translate-x-1 transition-transform">
+                      Ver previsão completa <ArrowRight className="h-4 w-4" />
+                    </Button>
+                  </CardContent>
+                </Card>
               ))}
             </div>
+
+            <AdSlot label="Espaço Publicitário" />
           </div>
 
-          <HoroscopeSidebar mostRead={MOST_READ} />
+          <HoroscopeSidebar mostRead={mostRead} />
         </section>
       </main>
 
-      <Footer logoUrl={LOGO_URL} />
+      <Footer logoUrl="/logo.png" />
     </div>
   );
 }

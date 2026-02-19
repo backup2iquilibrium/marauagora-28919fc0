@@ -1,41 +1,39 @@
 import { Link } from "react-router-dom";
-import { NewsItem } from "./types";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { formatDistanceToNow } from "date-fns";
+import { ptBR } from "date-fns/locale";
 
-const items: NewsItem[] = [
-  {
-    category: "Agronegócio",
-    time: "Há 2 horas",
-    title: "Tecnologia no campo: Produtores de Marau adotam drones para monitoramento de safras",
-    excerpt:
-      "A utilização de novas tecnologias tem aumentado a produtividade nas lavouras da região. Especialistas apontam crescimento de 15% na eficiência.",
-    imageUrl:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuBJENOrvTKtFOCjkx12_vX5s0e38aaeuwQSc0p_wsR4KFjg4eKgAdWcSd2gus0h_s0XN9kc6q8Csd8r4a_MgZwGjwF3DdMipy7llmifCVIgGeOBHq_JDShWWCgoW8IVMcniWBDa8Q0-SCbt47hcZFNk0_mLXo8dyRFwwtiORtL7jnc21seRrCzOb9_VdjTfDkmyL3P_vmHu6li3YYhneeuxI8jvyXSAOgOH-isrMj8ZvtmmvBU75gRDsTiSRqLVuAIE6CNdFFd6",
-  },
-  {
-    category: "Política",
-    time: "Há 4 horas",
-    title: "Câmara de Vereadores aprova projeto para revitalização do Parque Municipal",
-    excerpt:
-      "Sessão extraordinária definiu o orçamento para as obras que devem iniciar no próximo mês, visando melhorar as áreas de lazer da comunidade.",
-    imageUrl:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuCDDZSqtdmEFel7nMOQ9pEB2aWWEbjd-Z8FF4I4ZukbtQk3J_iUN-ssSx7iPRexQHB9DmdE891y4_s-qPJufimzjnuVV6jwI3D1k_yGi6hvHeoVVDzv7VUXkBfMiT6EdaRRwKPLTVKxawL5OD5d_TbDUc5unPumElzIkdzz4PnDjk0zEjwi7OgR9axyzmJVbdImDHvdYo2h4pm_KZE4PKx2Y8wehoacrctwfGwnUs-qw5VYYLtT-f_hxk3Olc4JX5S7g_tHxDDw",
-  },
-  {
-    category: "Cultura & Lazer",
-    time: "Ontem",
-    title: "Festival Gastronômico de Marau confirma data para a edição deste ano",
-    excerpt:
-      "O evento tradicional reunirá os principais restaurantes da cidade na praça central, oferecendo pratos típicos e shows ao vivo.",
-    imageUrl:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuDqV3kLZTBBXR9cTpYIacfqpOa5OXYgkX5cxRueaxYxqzqTf4P1sWPrcPb0_SVlOlih69nDjGZTM0PSi66OcMiCV60r7YIfMuVLJ7mXvi6rzmvQ_VD87oqVd2TNUw0h6gMWHpi32G3Pa8eFl4DiG_zRHdp7-_sZY8ItzQ-HfyOjdjfHnwQFeI-TmOGjLgbR1ANyh0tqLY8stR9c8IxgsUdRlMVGek1EYnFzs-iThVD0HtcTMw1F0MbQMgsE-fDXcsw9P2UOcKri",
-  },
-];
+async function fetchLatestNews() {
+  const { data, error } = await supabase
+    .from("news")
+    .select("*")
+    .order("published_at", { ascending: false })
+    .range(5, 12); // Pula as 5 primeiras do Hero
+  if (error) throw error;
+  return data || [];
+}
 
 export function LatestNews() {
+  const { data: items = [], isLoading } = useQuery({
+    queryKey: ["latest-news-list"],
+    queryFn: fetchLatestNews,
+  });
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        {[1, 2, 3].map((i) => (
+          <div key={i} className="h-40 bg-muted animate-pulse rounded-lg" />
+        ))}
+      </div>
+    );
+  }
+
   return (
     <section>
       <div className="flex justify-between items-center mb-6 border-b pb-2">
-        <h2 className="text-2xl font-serif font-bold text-primary">Últimas Notícias</h2>
+        <h2 className="text-2xl font-serif font-bold text-primary">Mais Recentes</h2>
         <Link className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors" to="/categoria/noticias">
           Ver todas
         </Link>
@@ -44,34 +42,43 @@ export function LatestNews() {
       <div className="space-y-6">
         {items.map((n) => (
           <article
-            key={n.title}
-            className="flex flex-col sm:flex-row gap-4 bg-card p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow border"
+            key={n.id}
+            className="flex flex-col sm:flex-row gap-4 bg-card p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow border group"
           >
-            <div className="sm:w-1/3 h-48 sm:h-auto overflow-hidden rounded-md relative">
+            <Link to={`/noticia/${n.slug}`} className="sm:w-1/3 h-48 sm:h-auto overflow-hidden rounded-md relative shrink-0">
               <img
                 alt={n.title}
-                className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
-                src={n.imageUrl}
+                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                src={n.image_url || "https://images.unsplash.com/photo-1495020689067-958852a7765e?q=80&w=2070&auto=format&fit=crop"}
                 loading="lazy"
               />
-            </div>
+            </Link>
 
-            <div className="sm:w-2/3 flex flex-col justify-center">
-              <div className="flex items-center text-xs text-muted-foreground mb-2 gap-2">
-                <Link to={`/categoria/${n.category.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")}`} className="text-primary font-bold uppercase hover:underline">
-                  {n.category}
+            <div className="flex-1 flex flex-col justify-center min-w-0">
+              <div className="flex items-center text-[10px] md:text-xs text-muted-foreground mb-2 gap-2">
+                <Link
+                  to={`/categoria/${n.category_slug}`}
+                  className="text-primary font-bold uppercase hover:underline whitespace-nowrap"
+                >
+                  {n.category_slug}
                 </Link>
                 <span aria-hidden="true">•</span>
-                <span>{n.time}</span>
+                <span>{formatDistanceToNow(new Date(n.published_at), { addSuffix: true, locale: ptBR })}</span>
               </div>
 
-              <h3 className="text-xl font-bold font-serif mb-2 text-foreground hover:text-primary transition-colors">
-                <Link to={`/noticia/${n.title.toLowerCase().split(' ').join('-')}`}>{n.title}</Link>
+              <h3 className="text-lg md:text-xl font-bold font-serif mb-2 text-foreground group-hover:text-primary transition-colors line-clamp-2">
+                <Link to={`/noticia/${n.slug}`}>{n.title}</Link>
               </h3>
-              <p className="text-muted-foreground text-sm line-clamp-3">{n.excerpt}</p>
+              <p className="text-muted-foreground text-sm line-clamp-2">{n.excerpt}</p>
             </div>
           </article>
         ))}
+
+        {items.length === 0 && (
+          <div className="py-12 text-center text-muted-foreground border-2 border-dashed rounded-xl">
+            Nenhuma outra notícia encontrada no momento.
+          </div>
+        )}
       </div>
     </section>
   );
