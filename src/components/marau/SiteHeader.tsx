@@ -69,14 +69,14 @@ export function SiteHeader({
               >
                 <Instagram className="h-5 w-5" />
               </a>
-              <a
-                className="hover:opacity-80 cursor-pointer"
-                href="mailto:marauagorars@gmail.com"
+              <button
+                className="hover:opacity-80 cursor-pointer bg-transparent border-none p-0 text-primary"
                 aria-label="Enviar e-mail para Marau Agora"
-                title="marauagorars@gmail.com"
+                title="Enviar e-mail: marauagorars@gmail.com"
+                onClick={() => window.open("mailto:marauagorars@gmail.com", "_self")}
               >
                 <Mail className="h-5 w-5" />
-              </a>
+              </button>
               <button
                 className="hover:opacity-80 cursor-pointer bg-transparent border-none p-0 text-primary"
                 aria-label="YouTube - Em Breve"
