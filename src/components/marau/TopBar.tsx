@@ -24,20 +24,29 @@ export function TopBar() {
 
   return (
     <div className="bg-primary text-primary-foreground py-2 shadow-sm relative z-50">
-      <div className="container flex flex-col md:flex-row justify-between items-center gap-2">
-        <div className="flex items-center text-xs md:text-sm text-primary-foreground/80 font-medium">
+      <div className="container flex flex-col md:flex-row justify-between items-center gap-3">
+        <div className="flex items-center text-xs md:text-sm text-primary-foreground/80 font-medium shrink-0">
           <CalendarDays className="h-4 w-4 mr-2 text-secondary" aria-hidden="true" />
           {dateLabel}
         </div>
 
-        <div className="flex items-center gap-3 overflow-x-auto max-w-full no-scrollbar text-sm font-medium">
-          <span className="text-primary-foreground/90 font-bold mr-1 hidden sm:inline">Cotações</span>
-          {tickers.map((t) => (
-            <span key={t.label} className="flex items-center gap-2 bg-background/10 px-3 py-1 rounded-full whitespace-nowrap">
-              <span className="text-secondary font-bold">{t.label}</span>
-              <span className="text-primary-foreground">{t.value}</span>
-            </span>
-          ))}
+        <div className="flex items-center gap-4 text-sm font-medium w-full md:w-auto overflow-hidden">
+          <span className="text-primary-foreground font-bold shrink-0">Cotações</span>
+
+          <div className="flex-1 overflow-hidden relative group">
+            {/* Fade effect on edges */}
+            <div className="absolute left-0 top-0 bottom-0 w-4 bg-gradient-to-r from-primary to-transparent z-10" />
+            <div className="absolute right-0 top-0 bottom-0 w-4 bg-gradient-to-l from-primary to-transparent z-10" />
+
+            <div className="animate-ticker flex items-center gap-3">
+              {[...tickers, ...tickers, ...tickers].map((t, idx) => (
+                <span key={`${t.label}-${idx}`} className="flex items-center gap-2 bg-background/10 px-3 py-1 rounded-full whitespace-nowrap">
+                  <span className="text-secondary font-bold">{t.label}</span>
+                  <span className="text-primary-foreground">{t.value}</span>
+                </span>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     </div>
