@@ -9,7 +9,7 @@ async function fetchLatestNews() {
     .from("news")
     .select("*")
     .order("published_at", { ascending: false })
-    .range(5, 12); // Pula as 5 primeiras do Hero
+    .limit(10);
   if (error) throw error;
   return data || [];
 }
