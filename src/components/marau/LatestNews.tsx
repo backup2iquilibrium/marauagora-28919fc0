@@ -18,6 +18,8 @@ export function LatestNews() {
   const { data: items = [], isLoading } = useQuery({
     queryKey: ["latest-news-list"],
     queryFn: fetchLatestNews,
+    staleTime: 0,
+    gcTime: 0,
   });
 
   if (isLoading) {
@@ -63,7 +65,7 @@ export function LatestNews() {
                   {n.category_slug}
                 </Link>
                 <span aria-hidden="true">•</span>
-                <span>{formatDistanceToNow(new Date(n.published_at), { addSuffix: true, locale: ptBR })}</span>
+                <span>{n.published_at ? formatDistanceToNow(new Date(n.published_at), { addSuffix: true, locale: ptBR }) : ""}</span>
               </div>
 
               <h3 className="text-lg md:text-xl font-bold font-serif mb-2 text-foreground group-hover:text-primary transition-colors line-clamp-2">
@@ -76,7 +78,7 @@ export function LatestNews() {
 
         {items.length === 0 && (
           <div className="py-12 text-center text-muted-foreground border-2 border-dashed rounded-xl">
-            Nenhuma outra notícia encontrada no momento.
+            Nenhuma notícia recente encontrada no momento.
           </div>
         )}
       </div>

@@ -157,6 +157,8 @@ export default function AdminNewsEditor() {
         onSuccess: () => {
             toast.success(isEditing ? "Notícia atualizada!" : "Notícia criada!");
             queryClient.invalidateQueries({ queryKey: ["admin_news"] });
+            queryClient.invalidateQueries({ queryKey: ["hero-news"] });
+            queryClient.invalidateQueries({ queryKey: ["latest-news-list"] });
             navigate("/admin/conteudo");
         },
         onError: (error) => {
