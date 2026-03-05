@@ -114,6 +114,8 @@ export default function AdminAdManagement() {
   const queryClient = useQueryClient();
   const [autoAds, setAutoAds] = React.useState(true);
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
+  const [isSpaceDialogOpen, setIsSpaceDialogOpen] = React.useState(false);
+  const [editingSpace, setEditingSpace] = React.useState<any>(null);
   const [newAd, setNewAd] = React.useState({
     title: "",
     client_name: "",
@@ -122,6 +124,15 @@ export default function AdminAdManagement() {
     starts_at: "",
     ends_at: "",
     notes: "",
+  });
+  const [spaceFormData, setSpaceFormData] = React.useState({
+    name: "",
+    slug: "",
+    size_label: "",
+    device_label: "",
+    monthly_price: "0",
+    is_active: true,
+    sort_order: 0,
   });
 
   const { data, isLoading } = useQuery({
@@ -171,6 +182,80 @@ export default function AdminAdManagement() {
       return;
     }
     createAdMutation.mutate(newAd);
+  };
+
+  const saveSpaceMutation = useMutation({
+    mutationFn: async (fd: typeof spaceFormData) => {
+      const payload = {
+        name: fd.name,
+        slug: fd.slug || fd.name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, ""),
+        size_label: fd.size_label,
+        device_label: fd.device_label,
+        monthly_price_cents: Math.round(parseFloat(fd.monthly_price.replace(",", ".")) * 100),
+        is_active: fd.is_active,
+        sort_order: fd.sort_order,
+      };
+
+      if (editingSpace) {
+        const { error } = await supabase
+          .from("ad_spaces")
+          .update(payload)
+          .eq("id", editingSpace.id);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase
+          .from("ad_spaces")
+          .insert([payload]);
+        if (error) throw error;
+      }
+    },
+    onSuccess: () => {
+      toast.success(editingSpace ? "Espaço atualizado!" : "Espaço criado!");
+      setIsSpaceDialogOpen(false);
+      setEditingSpace(null);
+      queryClient.invalidateQueries({ queryKey: ["admin-ad-management"] });
+    },
+    onError: (error) => {
+      console.error("Erro ao salvar espaço:", error);
+      toast.error("Erro ao salvar espaço. Verifique se o slug é único.");
+    },
+  });
+
+  const handleSpaceSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!spaceFormData.name || !spaceFormData.size_label || !spaceFormData.device_label) {
+      toast.error("Por favor, preencha os campos obrigatórios.");
+      return;
+    }
+    saveSpaceMutation.mutate(spaceFormData);
+  };
+
+  const handleAddSpace = () => {
+    setEditingSpace(null);
+    setSpaceFormData({
+      name: "",
+      slug: "",
+      size_label: "",
+      device_label: "Desktop",
+      monthly_price: "0",
+      is_active: true,
+      sort_order: spaces.length,
+    });
+    setIsSpaceDialogOpen(true);
+  };
+
+  const handleEditSpace = (space: any) => {
+    setEditingSpace(space);
+    setSpaceFormData({
+      name: space.name,
+      slug: space.slug,
+      size_label: space.size_label,
+      device_label: space.device_label,
+      monthly_price: (space.monthly_price_cents / 100).toString(),
+      is_active: space.is_active,
+      sort_order: space.sort_order,
+    });
+    setIsSpaceDialogOpen(true);
   };
 
   const onCopyPublisherId = async () => {
@@ -297,22 +382,35 @@ export default function AdminAdManagement() {
             <CardHeader className="pb-2">
               <div className="flex items-center justify-between gap-3">
                 <CardTitle className="text-base">Inventário de Espaços</CardTitle>
-                <Button variant="ghost" size="icon" aria-label="Configurar inventário">
-                  <Settings2 className="h-4 w-4" />
-                </Button>
+                <div className="flex items-center gap-1">
+                  <Button variant="ghost" size="icon" aria-label="Adicionar espaço" onClick={handleAddSpace}>
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                  <Button variant="ghost" size="icon" aria-label="Configurar inventário">
+                    <Settings2 className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
             </CardHeader>
             <CardContent className="space-y-3">
               {spaces.map((space) => {
                 const activeCampaign = campaigns.find(c => c.space_id === space.id && c.status === "active");
                 return (
-                  <div key={space.id} className="flex items-start justify-between gap-3 rounded-lg border bg-card p-4">
-                    <div className="flex items-start gap-2">
+                  <div key={space.id} className="group relative flex items-start justify-between gap-3 rounded-lg border bg-card p-4 hover:border-primary/50 transition-colors">
+                    <button
+                      onClick={() => handleEditSpace(space)}
+                      className="absolute inset-0 z-0 opacity-0 group-hover:opacity-10"
+                      aria-label={`Editar ${space.name}`}
+                    />
+                    <div className="flex items-start gap-2 z-10">
                       <div className="h-10 w-10 rounded-lg bg-muted grid place-items-center shrink-0">
                         {getSpaceIcon(space.device_label)}
                       </div>
                       <div className="min-w-0">
-                        <div className="font-medium truncate">{space.name}</div>
+                        <div className="font-medium truncate flex items-center gap-2">
+                          {space.name}
+                          {!space.is_active && <Badge variant="outline" className="text-[8px] h-3 px-1 uppercase">Inativo</Badge>}
+                        </div>
                         <div className="text-[10px] text-muted-foreground uppercase flex gap-2">
                           <span>{space.size_label}</span>
                           <span>•</span>
@@ -321,13 +419,21 @@ export default function AdminAdManagement() {
                       </div>
                     </div>
 
-                    <div className="text-right shrink-0">
+                    <div className="text-right shrink-0 z-10 flex flex-col items-end">
                       <Badge variant={activeCampaign ? "destructive" : "secondary"} className="rounded-full text-[10px]">
                         {activeCampaign ? "Ocupado" : "Livre"}
                       </Badge>
                       <div className="mt-1 text-[10px] font-bold text-muted-foreground">
-                        {activeCampaign ? activeCampaign.client_name : (space.monthly_price_cents ? `R$ ${(space.monthly_price_cents / 100)}` : "-")}
+                        {activeCampaign ? activeCampaign.client_name : (space.monthly_price_cents ? `R$ ${(space.monthly_price_cents / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}` : "-")}
                       </div>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-6 w-6 mt-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                        onClick={() => handleEditSpace(space)}
+                      >
+                        <Pencil className="h-3 w-3" />
+                      </Button>
                     </div>
                   </div>
                 );
@@ -530,6 +636,103 @@ export default function AdminAdManagement() {
               </Button>
               <Button type="submit" disabled={createAdMutation.isPending}>
                 {createAdMutation.isPending ? "Criando..." : "Criar Anúncio"}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isSpaceDialogOpen} onOpenChange={setIsSpaceDialogOpen}>
+        <DialogContent className="sm:max-w-[450px]">
+          <DialogHeader>
+            <DialogTitle>{editingSpace ? "Editar Espaço" : "Novo Espaço Publicitário"}</DialogTitle>
+            <DialogDescription>
+              Configure um novo local no portal para exibição de banners.
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleSpaceSubmit} className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="space_name">Nome do Espaço</Label>
+              <Input
+                id="space_name"
+                placeholder="Ex: Banner Topo Home"
+                value={spaceFormData.name}
+                onChange={(e) => setSpaceFormData({ ...spaceFormData, name: e.target.value })}
+                required
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="space_size">Dimensões (Label)</Label>
+                <Input
+                  id="space_size"
+                  placeholder="Ex: 728x90"
+                  value={spaceFormData.size_label}
+                  onChange={(e) => setSpaceFormData({ ...spaceFormData, size_label: e.target.value })}
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="space_device">Dispositivo/Posição</Label>
+                <Select
+                  value={spaceFormData.device_label}
+                  onValueChange={(v) => setSpaceFormData({ ...spaceFormData, device_label: v })}
+                >
+                  <SelectTrigger id="space_device">
+                    <SelectValue placeholder="Selecione" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Desktop">Desktop</SelectItem>
+                    <SelectItem value="Mobile">Mobile</SelectItem>
+                    <SelectItem value="Responsivo">Responsivo</SelectItem>
+                    <SelectItem value="Lateral">Lateral (Sidebar)</SelectItem>
+                    <SelectItem value="Topo">Topo</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="space_price">Preço Mensal (R$)</Label>
+                <Input
+                  id="space_price"
+                  type="text"
+                  placeholder="0,00"
+                  value={spaceFormData.monthly_price}
+                  onChange={(e) => setSpaceFormData({ ...spaceFormData, monthly_price: e.target.value })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="space_order">Ordem de Exibição</Label>
+                <Input
+                  id="space_order"
+                  type="number"
+                  value={spaceFormData.sort_order}
+                  onChange={(e) => setSpaceFormData({ ...spaceFormData, sort_order: parseInt(e.target.value) || 0 })}
+                />
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between gap-4 p-3 border rounded-lg bg-muted/30">
+              <div className="space-y-0.5">
+                <Label htmlFor="space_active">Espaço Ativo</Label>
+                <p className="text-[10px] text-muted-foreground">Define se o espaço pode receber novos anúncios.</p>
+              </div>
+              <Switch
+                id="space_active"
+                checked={spaceFormData.is_active}
+                onCheckedChange={(v) => setSpaceFormData({ ...spaceFormData, is_active: v })}
+              />
+            </div>
+
+            <DialogFooter className="pt-4">
+              <Button type="button" variant="outline" onClick={() => setIsSpaceDialogOpen(false)}>
+                Cancelar
+              </Button>
+              <Button type="submit" disabled={saveSpaceMutation.isPending}>
+                {saveSpaceMutation.isPending ? "Salvando..." : "Salvar Espaço"}
               </Button>
             </DialogFooter>
           </form>
