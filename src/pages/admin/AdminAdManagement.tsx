@@ -30,6 +30,25 @@ import {
 } from "@/components/ui/table";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 type MetricCardProps = {
   title: string;
@@ -92,12 +111,67 @@ function getSpaceIcon(device: string) {
 }
 
 export default function AdminAdManagement() {
+  const queryClient = useQueryClient();
   const [autoAds, setAutoAds] = React.useState(true);
+  const [isDialogOpen, setIsDialogOpen] = React.useState(false);
+  const [newAd, setNewAd] = React.useState({
+    title: "",
+    client_name: "",
+    space_id: "",
+    status: "active" as const,
+    starts_at: "",
+    ends_at: "",
+    notes: "",
+  });
 
   const { data, isLoading } = useQuery({
     queryKey: ["admin-ad-management"],
     queryFn: fetchAdManagementData,
   });
+
+  const createAdMutation = useMutation({
+    mutationFn: async (ad: typeof newAd) => {
+      const { error } = await supabase.from("ad_campaigns").insert([
+        {
+          title: ad.title,
+          client_name: ad.client_name,
+          space_id: ad.space_id,
+          status: ad.status,
+          starts_at: ad.starts_at || null,
+          ends_at: ad.ends_at || null,
+          notes: ad.notes || null,
+        },
+      ]);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Anúncio criado com sucesso!");
+      setIsDialogOpen(false);
+      setNewAd({
+        title: "",
+        client_name: "",
+        space_id: "",
+        status: "active",
+        starts_at: "",
+        ends_at: "",
+        notes: "",
+      });
+      queryClient.invalidateQueries({ queryKey: ["admin-ad-management"] });
+    },
+    onError: (error) => {
+      console.error("Erro ao criar anúncio:", error);
+      toast.error("Erro ao criar anúncio. Verifique os dados e tente novamente.");
+    },
+  });
+
+  const handleSumbit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newAd.title || !newAd.client_name || !newAd.space_id) {
+      toast.error("Por favor, preencha o título, cliente e espaço.");
+      return;
+    }
+    createAdMutation.mutate(newAd);
+  };
 
   const onCopyPublisherId = async () => {
     try {
@@ -141,7 +215,7 @@ export default function AdminAdManagement() {
           <p className="mt-1 text-muted-foreground">Controle de banners, parcerias e análise de desempenho.</p>
         </div>
 
-        <Button className="gap-2">
+        <Button className="gap-2" onClick={() => setIsDialogOpen(true)}>
           <Plus className="h-4 w-4" aria-hidden="true" />
           Novo Anúncio
         </Button>
@@ -356,6 +430,111 @@ export default function AdminAdManagement() {
           </Table>
         </CardContent>
       </Card>
+
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Novo Anúncio</DialogTitle>
+            <DialogDescription>
+              Preencha as informações para cadastrar uma nova campanha publicitária.
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleSumbit} className="space-y-4 py-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2 col-span-2">
+                <Label htmlFor="title">Título do Anúncio</Label>
+                <Input
+                  id="title"
+                  placeholder="Ex: Banner Natal 2024"
+                  value={newAd.title}
+                  onChange={(e) => setNewAd({ ...newAd, title: e.target.value })}
+                  required
+                />
+              </div>
+              <div className="space-y-2 col-span-2">
+                <Label htmlFor="client_name">Nome do Cliente</Label>
+                <Input
+                  id="client_name"
+                  placeholder="Ex: Empresa Exemplo LTDA"
+                  value={newAd.client_name}
+                  onChange={(e) => setNewAd({ ...newAd, client_name: e.target.value })}
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="space">Espaço Publicitário</Label>
+                <Select
+                  value={newAd.space_id}
+                  onValueChange={(v) => setNewAd({ ...newAd, space_id: v })}
+                >
+                  <SelectTrigger id="space">
+                    <SelectValue placeholder="Selecione o espaço" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {spaces.filter(s => s.is_active).map((space) => (
+                      <SelectItem key={space.id} value={space.id}>
+                        {space.name} ({space.size_label})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="status">Status Inicial</Label>
+                <Select
+                  value={newAd.status}
+                  onValueChange={(v: any) => setNewAd({ ...newAd, status: v })}
+                >
+                  <SelectTrigger id="status">
+                    <SelectValue placeholder="Selecione o status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="draft">Rascunho</SelectItem>
+                    <SelectItem value="active">Ativo</SelectItem>
+                    <SelectItem value="paused">Pausado</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="starts_at">Data de Início</Label>
+                <Input
+                  id="starts_at"
+                  type="date"
+                  value={newAd.starts_at}
+                  onChange={(e) => setNewAd({ ...newAd, starts_at: e.target.value })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="ends_at">Data de Término</Label>
+                <Input
+                  id="ends_at"
+                  type="date"
+                  value={newAd.ends_at}
+                  onChange={(e) => setNewAd({ ...newAd, ends_at: e.target.value })}
+                />
+              </div>
+              <div className="space-y-2 col-span-2">
+                <Label htmlFor="notes">Observações</Label>
+                <Textarea
+                  id="notes"
+                  placeholder="Detalhes adicionais sobre a campanha..."
+                  value={newAd.notes}
+                  onChange={(e) => setNewAd({ ...newAd, notes: e.target.value })}
+                  className="min-h-[80px]"
+                />
+              </div>
+            </div>
+            <DialogFooter className="pt-4">
+              <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
+                Cancelar
+              </Button>
+              <Button type="submit" disabled={createAdMutation.isPending}>
+                {createAdMutation.isPending ? "Criando..." : "Criar Anúncio"}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
