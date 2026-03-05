@@ -38,8 +38,16 @@ export function Hero() {
     queryFn: fetchHeroNews,
   });
 
-  const slides = useMemo(() => news.slice(0, 3), [news]);
-  const sideCards = useMemo(() => news.slice(3, 5), [news]);
+  // Lógica dinâmica: Se tiver pouca notícia, não esconde no carrossel, joga pra lateral
+  const slides = useMemo(() => {
+    if (news.length <= 3) return news.slice(0, 1);
+    return news.slice(0, 3);
+  }, [news]);
+
+  const sideCards = useMemo(() => {
+    if (news.length <= 3) return news.slice(1, 3);
+    return news.slice(3, 5);
+  }, [news]);
 
   useEffect(() => {
     if (slides.length <= 1) return;
@@ -59,7 +67,7 @@ export function Hero() {
   return (
     <section className="mb-12">
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <article className="lg:col-span-2 group relative rounded-lg overflow-hidden shadow-sm h-96 lg:h-[500px] bg-muted">
+        <article className={`${sideCards.length > 0 ? "lg:col-span-2" : "lg:col-span-3"} group relative rounded-lg overflow-hidden shadow-sm h-96 lg:h-[500px] bg-muted`}>
           {slides.map((s, idx) => (
             <div
               key={s.id}
@@ -101,33 +109,30 @@ export function Hero() {
           )}
         </article>
 
-        <div className="flex flex-col gap-6 h-auto lg:h-[500px]">
-          {sideCards.map((c) => (
-            <article key={c.id} className="relative flex-1 min-h-[180px] rounded-lg overflow-hidden shadow-sm group border">
-              <Link to={`/noticia/${c.slug}`} className="block h-full">
-                <img
-                  alt={c.title}
-                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                  src={c.image_url || "https://images.unsplash.com/photo-1504711434969-e33886168f5c?q=80&w=2070&auto=format&fit=crop"}
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-background/95 via-background/30 to-transparent" />
-                <div className="absolute bottom-0 left-0 p-4">
-                  <span className="text-secondary text-[10px] font-bold uppercase mb-1 block">
-                    {c.category_slug}
-                  </span>
-                  <h3 className="text-foreground font-serif font-bold text-base md:text-lg leading-tight line-clamp-2">
-                    {c.title}
-                  </h3>
-                </div>
-              </Link>
-            </article>
-          ))}
-          {sideCards.length === 0 && (
-            <div className="flex-1 rounded-lg border border-dashed flex items-center justify-center text-muted-foreground text-sm p-8 text-center bg-muted/30">
-              Mais notícias em breve...
-            </div>
-          )}
-        </div>
+        {sideCards.length > 0 && (
+          <div className="flex flex-col gap-6 h-auto lg:h-[500px]">
+            {sideCards.map((c) => (
+              <article key={c.id} className="relative flex-1 min-h-[180px] rounded-lg overflow-hidden shadow-sm group border">
+                <Link to={`/noticia/${c.slug}`} className="block h-full">
+                  <img
+                    alt={c.title}
+                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                    src={c.image_url || "https://images.unsplash.com/photo-1504711434969-e33886168f5c?q=80&w=2070&auto=format&fit=crop"}
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-background/95 via-background/30 to-transparent" />
+                  <div className="absolute bottom-0 left-0 p-4">
+                    <span className="text-secondary text-[10px] font-bold uppercase mb-1 block">
+                      {c.category_slug}
+                    </span>
+                    <h3 className="text-foreground font-serif font-bold text-base md:text-lg leading-tight line-clamp-2">
+                      {c.title}
+                    </h3>
+                  </div>
+                </Link>
+              </article>
+            ))}
+          </div>
+        )}
       </div>
     </section>
   );
