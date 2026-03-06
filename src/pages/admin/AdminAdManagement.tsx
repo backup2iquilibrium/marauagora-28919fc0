@@ -134,6 +134,7 @@ export default function AdminAdManagement() {
     monthly_price: "0",
     is_active: true,
     sort_order: 0,
+    notes: "",
   });
 
   const { data, isLoading } = useQuery({
@@ -195,6 +196,7 @@ export default function AdminAdManagement() {
         monthly_price_cents: Math.round(parseFloat(fd.monthly_price.replace(",", ".")) * 100),
         is_active: fd.is_active,
         sort_order: fd.sort_order,
+        description: fd.notes || null,
       };
 
       if (editingSpace) {
@@ -241,6 +243,7 @@ export default function AdminAdManagement() {
       monthly_price: "0",
       is_active: true,
       sort_order: spaces.length,
+      notes: "",
     });
     setIsSpaceDialogOpen(true);
   };
@@ -255,6 +258,7 @@ export default function AdminAdManagement() {
       monthly_price: (space.monthly_price_cents / 100).toString(),
       is_active: space.is_active,
       sort_order: space.sort_order,
+      notes: space.description || "",
     });
     setIsSpaceDialogOpen(true);
   };
@@ -411,6 +415,9 @@ export default function AdminAdManagement() {
                         <div className="font-medium truncate flex items-center gap-2">
                           {space.name}
                           {!space.is_active && <Badge variant="outline" className="text-[8px] h-3 px-1 uppercase">Inativo</Badge>}
+                        </div>
+                        <div className="text-[9px] font-mono text-primary/70 bg-primary/5 px-1 rounded inline-block mb-1">
+                          ID: {space.slug}
                         </div>
                         <div className="text-[10px] text-muted-foreground uppercase flex gap-2">
                           <span>{space.size_label}</span>
@@ -714,6 +721,28 @@ export default function AdminAdManagement() {
                   onChange={(e) => setSpaceFormData({ ...spaceFormData, sort_order: parseInt(e.target.value) || 0 })}
                 />
               </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="space_notes">Referência de Localização (Dica)</Label>
+              <Input
+                id="space_notes"
+                placeholder="Ex: Abaixo das notícias principais / Lateral direita"
+                value={spaceFormData.notes}
+                onChange={(e) => setSpaceFormData({ ...spaceFormData, notes: e.target.value })}
+              />
+              <p className="text-[10px] text-muted-foreground">Isso ajuda a identificar onde o anúncio aparecerá no site.</p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="space_slug">Identificador Técnico (Slug)</Label>
+              <Input
+                id="space_slug"
+                placeholder="Ex: home-topo"
+                value={spaceFormData.slug}
+                onChange={(e) => setSpaceFormData({ ...spaceFormData, slug: e.target.value })}
+              />
+              <p className="text-[10px] text-muted-foreground">Obrigatório para vincular ao código do site (ex: home-topo, sidebar-top).</p>
             </div>
 
             <div className="flex items-center justify-between gap-4 p-3 border rounded-lg bg-muted/30">

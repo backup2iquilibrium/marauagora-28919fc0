@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { AdSlot } from "./AdSlot";
 
 async function fetchTopReadNews() {
   const { data, error } = await supabase
@@ -29,15 +30,7 @@ export function Sidebar() {
           <h3 className="font-bold text-sm text-muted-foreground uppercase tracking-wider">Publicidade</h3>
         </div>
 
-        <div className="w-full bg-muted/30 border-2 border-dashed rounded-lg flex items-center justify-center relative overflow-hidden group hover:border-primary hover:bg-card transition-all cursor-pointer">
-          <div className="text-center p-8">
-            <p className="font-serif font-bold text-xl text-primary mb-2">Sua Marca Aqui</p>
-            <p className="text-sm text-muted-foreground mb-4">Alcance milhares de leitores em Marau e região.</p>
-            <Button className="rounded-full" size="sm" asChild>
-              <a href="mailto:comercial@marauagora.com.br">Anunciar Agora</a>
-            </Button>
-          </div>
-        </div>
+        <AdSlot slug="sidebar-top" />
       </div>
 
       <Link
