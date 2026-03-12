@@ -1,5 +1,5 @@
-import { useMemo } from "react";
-import { Link, useParams } from "react-router-dom";
+import { useMemo, useState, useEffect } from "react";
+import { Link, useParams, useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
@@ -96,6 +96,15 @@ async function fetchNewsByCategory(categorySlug: string) {
 export default function CategoryNews() {
   const { slug } = useParams();
   const sanitizedSlug = (slug || "").trim().toLowerCase();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchTerm, setSearchTerm] = useState(searchParams.get("q") || "");
+  const [activeFilter, setActiveFilter] = useState("Todos");
+
+  // Sync state with URL search params
+  useEffect(() => {
+    const q = searchParams.get("q");
+    if (q !== null) setSearchTerm(q);
+  }, [searchParams]);
 
   const adsQuery = useQuery({
     queryKey: ["active_classified_ads", sanitizedSlug],
@@ -177,7 +186,7 @@ export default function CategoryNews() {
       }));
     }
 
-    return (newsQuery.data || []).map((n) => ({
+    const allItems = (newsQuery.data || []).map((n) => ({
       tag: categoryLabel,
       title: n.title,
       excerpt: n.excerpt || "",
@@ -186,7 +195,25 @@ export default function CategoryNews() {
       href: `/noticia/${n.slug}`,
       imageUrl: n.image_url,
     }));
-  }, [sanitizedSlug, adsQuery.data, newsQuery.data, categoryLabel]);
+
+    let filtered = allItems;
+    if (activeFilter !== "Todos") {
+      filtered = allItems.filter(item => 
+        item.title.toLowerCase().includes(activeFilter.toLowerCase()) || 
+        item.excerpt.toLowerCase().includes(activeFilter.toLowerCase())
+      );
+    }
+
+    if (searchTerm.trim()) {
+      const q = searchTerm.toLowerCase();
+      filtered = filtered.filter(item => 
+        item.title.toLowerCase().includes(q) || 
+        item.excerpt.toLowerCase().includes(q)
+      );
+    }
+
+    return filtered;
+  }, [sanitizedSlug, adsQuery.data, newsQuery.data, categoryLabel, activeFilter, searchTerm]);
 
   const mostRead = useMemo(
     () => [
@@ -239,25 +266,45 @@ export default function CategoryNews() {
               </div>
 
               <div className="flex items-center gap-2 md:max-w-sm md:w-full">
-                <div className="relative w-full">
+                <form 
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    setSearchParams({ q: searchTerm });
+                  }}
+                  className="relative w-full"
+                >
                   <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                  <Input placeholder="Buscar" className="pl-9" />
-                </div>
-                <Button size="icon" variant="secondary" aria-label="Buscar">
+                  <Input 
+                    placeholder="Buscar nesta categoria" 
+                    className="pl-9" 
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                  />
+                </form>
+                <Button 
+                  size="icon" 
+                  variant="secondary" 
+                  aria-label="Buscar"
+                  onClick={() => setSearchParams({ q: searchTerm })}
+                >
                   <ArrowRight className="h-4 w-4" />
                 </Button>
               </div>
             </header>
 
             <div className="mt-6 flex flex-wrap gap-2">
-              {filters.map((f, idx) => (
-                <Badge
+              {filters.map((f) => (
+                <button 
                   key={f}
-                  variant={idx === 0 ? "secondary" : "outline"}
-                  className="rounded-full px-3 py-1"
+                  onClick={() => setActiveFilter(f)}
                 >
-                  {f}
-                </Badge>
+                  <Badge
+                    variant={activeFilter === f ? "secondary" : "outline"}
+                    className="rounded-full px-3 py-1 cursor-pointer hover:bg-accent transition-colors"
+                  >
+                    {f}
+                  </Badge>
+                </button>
               ))}
             </div>
 

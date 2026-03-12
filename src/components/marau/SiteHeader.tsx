@@ -34,7 +34,15 @@ const defaultNav: NavItem[] = [
       { label: "Ocorrências", href: "/categoria/policial" },
     ]
   },
-  { label: "Política", href: "/categoria/politica" },
+  { 
+    label: "Política", 
+    href: "/categoria/politica",
+    children: [
+      { label: "Notícias de Política", href: "/categoria/politica" },
+      { label: "Câmara de Vereadores", href: "/categoria/politica?q=Camara" },
+      { label: "Prefeitura", href: "/categoria/politica?q=Prefeitura" },
+    ]
+  },
   { label: "Esportes", href: "/categoria/esportes" },
   { label: "Serviços Públicos", href: "/servicos" },
   { label: "Horóscopo", href: "/horoscopo" },
