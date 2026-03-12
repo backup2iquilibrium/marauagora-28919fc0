@@ -19,7 +19,7 @@ const defaultNav: NavItem[] = [
     href: "/categoria/cidade",
     children: [
       { label: "Notícias da Cidade", href: "/categoria/cidade" },
-      { label: "Guia da Cidade", href: "/pontos" },
+      { label: "Guia da Cidade", href: "/guia-da-cidade" },
       { label: "Vagas de Emprego", href: "/vagas" },
       { label: "Agenda de Eventos", href: "/agenda" },
       { label: "Quem Somos", href: "/quem-somos" },

@@ -70,6 +70,8 @@ const App = () => (
                 <Route path="/vagas/:id" element={<JobDetails />} />
                 <Route path="/pontos" element={<CityPoints />} />
                 <Route path="/points" element={<CityPoints />} />
+                <Route path="/guia-da-cidade" element={<CityPoints />} />
+                <Route path="/guia-da-cidade/:id" element={<CityPoints />} />
                 <Route path="/contato" element={<Contact />} />
                 <Route path="/quem-somos" element={<QuemSomos />} />
                 <Route path="/busca" element={<SearchResults />} />
