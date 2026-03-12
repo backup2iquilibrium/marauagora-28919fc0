@@ -7,11 +7,16 @@ const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiO
 const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY)
 
 async function test() {
-  const { data, count, error } = await supabase.from('news').select('*', { count: 'exact' }).eq('category_slug', 'cidade')
+  const { data, count, error } = await supabase.from('news').select('category_slug', { count: 'exact' });
   if (error) console.error(error)
   else {
-    console.log('News in cidade category:', count);
-    console.log('Sample news:', data.map(n => ({ title: n.title, slug: n.slug })));
+    const categories = [...new Set(data.map(i => i.category_slug))];
+    console.log('Categories found in database:', categories);
+    
+    for (const cat of categories) {
+        const catCount = data.filter(i => i.category_slug === cat).length;
+        console.log(`- ${cat}: ${catCount} news`);
+    }
   }
 }
 

@@ -25,7 +25,15 @@ const defaultNav: NavItem[] = [
       { label: "Quem Somos", href: "/quem-somos" },
     ]
   },
-  { label: "Polícia", href: "/categoria/policia" },
+  { 
+    label: "Polícia", 
+    href: "/categoria/policia",
+    children: [
+      { label: "Notícias de Polícia", href: "/categoria/policia" },
+      { label: "Telefones Úteis", href: "/guia-da-cidade" },
+      { label: "Ocorrências", href: "/categoria/policial" },
+    ]
+  },
   { label: "Política", href: "/categoria/politica" },
   { label: "Esportes", href: "/categoria/esportes" },
   { label: "Serviços Públicos", href: "/servicos" },
