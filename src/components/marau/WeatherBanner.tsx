@@ -1,11 +1,16 @@
-import { CloudSun, Droplets, MapPin, Wind, Cloud, CloudRain, Sun } from "lucide-react";
+import { CloudSun, Droplets, MapPin, Wind, Cloud, CloudRain, Sun, CloudLightning, Snowflake } from "lucide-react";
 import { useWeather } from "@/hooks/useWeather";
 
 const getWeatherIcon = (description: string) => {
   const desc = description.toLowerCase();
-  if (desc.includes('chuva') || desc.includes('rain')) return CloudRain;
-  if (desc.includes('nublado') || desc.includes('cloud')) return Cloud;
-  if (desc.includes('sol') || desc.includes('clear')) return Sun;
+  
+  if (desc.includes('tempestade') || desc.includes('trovoada') || desc.includes('thunderstorm')) return CloudLightning;
+  if (desc.includes('chuva') || desc.includes('rain') || desc.includes('chuvisco') || desc.includes('drizzle')) return CloudRain;
+  if (desc.includes('neve') || desc.includes('snow')) return Snowflake;
+  if (desc.includes('nublado') || desc.includes('nuvens dispersas') || desc.includes('nuvens fragmentadas') || desc.includes('clouds')) return Cloud;
+  if (desc.includes('poucas nuvens') || desc.includes('parcialmente nublado')) return CloudSun;
+  if (desc.includes('sol') || desc.includes('céu limpo') || desc.includes('clear') || desc.includes('ensolarado')) return Sun;
+  
   return CloudSun;
 };
 
@@ -28,17 +33,18 @@ export function WeatherBanner() {
   const current = weather?.current || { temp: 24, feelsLike: 26, humidity: 62, windSpeed: 12, description: 'Carregando...' };
   const forecast = weather?.forecast || [];
   const today = new Date();
+  const CurrentIcon = getWeatherIcon(current.description);
 
   return (
     <section className="mb-8 bg-card rounded-xl shadow-sm border overflow-hidden">
       <div className="bg-gradient-to-r from-primary to-primary-glow p-6 text-primary-foreground relative">
         <div className="absolute top-0 right-0 p-4 opacity-10">
-          <CloudSun className="h-24 w-24" aria-hidden="true" />
+          <CurrentIcon className="h-24 w-24" aria-hidden="true" />
         </div>
 
         <div className="flex flex-col lg:flex-row items-center justify-between gap-6 relative z-10">
           <div className="flex items-center gap-4">
-            <CloudSun className="h-14 w-14 text-secondary" aria-hidden="true" />
+            <CurrentIcon className="h-14 w-14 text-secondary" aria-hidden="true" />
             <div>
               <h2 className="text-2xl font-bold font-serif leading-none flex items-center gap-2">
                 <MapPin className="h-5 w-5 text-secondary" aria-hidden="true" />
@@ -97,17 +103,20 @@ export function WeatherBanner() {
             ) : (
               // Fallback forecast while loading
               [
-                { day: "Qui", temp: "22°" },
-                { day: "Sex", temp: "19°" },
-                { day: "Sáb", temp: "25°" },
-                { day: "Dom", temp: "27°" },
-              ].map((f) => (
-                <div key={f.day} className="text-center bg-background/10 rounded p-2 min-w-[70px] border border-background/10">
-                  <span className="text-xs text-primary-foreground/70 block mb-1">{f.day}</span>
-                  <CloudSun className="h-5 w-5 mx-auto mb-1 text-secondary" aria-hidden="true" />
-                  <span className="font-bold text-sm block">{f.temp}</span>
-                </div>
-              ))
+                { day: "Qui", temp: "22°", description: "sol" },
+                { day: "Sex", temp: "19°", description: "nublado" },
+                { day: "Sáb", temp: "25°", description: "chuva" },
+                { day: "Dom", temp: "27°", description: "parcialmente nublado" },
+              ].map((f) => {
+                const WeatherIcon = getWeatherIcon(f.description);
+                return (
+                  <div key={f.day} className="text-center bg-background/10 rounded p-2 min-w-[70px] border border-background/10">
+                    <span className="text-xs text-primary-foreground/70 block mb-1">{f.day}</span>
+                    <WeatherIcon className="h-5 w-5 mx-auto mb-1 text-secondary" aria-hidden="true" />
+                    <span className="font-bold text-sm block">{f.temp}</span>
+                  </div>
+                );
+              })
             )}
           </div>
         </div>
