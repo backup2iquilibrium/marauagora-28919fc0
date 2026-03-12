@@ -139,7 +139,7 @@ export default function CategoryNews() {
 
   const highlight = useMemo(() => {
     if (sanitizedSlug === "classificados" && adsQuery.data?.[0]) {
-      const ad = adsQuery.data[0];
+      const ad = adsQuery.data[0] as any;
       return {
         title: ad.title,
         excerpt: ad.description || ad.excerpt || "",
@@ -156,6 +156,7 @@ export default function CategoryNews() {
         authorLine: "Redação",
         time: format(new Date(n.published_at), "dd MMM"),
         href: `/noticia/${n.slug}`,
+        imageUrl: n.image_url,
       };
     }
     return null;
@@ -183,6 +184,7 @@ export default function CategoryNews() {
       authorLine: "",
       date: format(new Date(n.published_at), "dd MMM, yyyy"),
       href: `/noticia/${n.slug}`,
+      imageUrl: n.image_url,
     }));
   }, [sanitizedSlug, adsQuery.data, newsQuery.data, categoryLabel]);
 
@@ -268,31 +270,43 @@ export default function CategoryNews() {
                 </div>
               ) : (
                 <div className="space-y-8">
-                  <section>
-                    <Card>
-                      <CardContent className="p-0">
-                        <div className="grid grid-cols-1 md:grid-cols-5">
-                          <div className="md:col-span-2 bg-muted aspect-[16/10] md:aspect-auto" />
-                          <div className="md:col-span-3 p-6">
-                            <p className="text-xs text-muted-foreground">Destaque</p>
-                            <h2 className="mt-2 font-serif text-2xl leading-tight">{highlight.title}</h2>
-                            <p className="mt-2 text-muted-foreground">{highlight.excerpt}</p>
-                            <p className="mt-4 text-sm text-muted-foreground">
-                              <span className="text-foreground font-medium">{highlight.authorLine}</span> • {highlight.time}
-                            </p>
-                            <div className="mt-4">
-                              <Button asChild variant="secondary" className="gap-2">
-                                <Link to={highlight.href}>
-                                  Ler matéria
-                                  <ArrowRight className="h-4 w-4" />
-                                </Link>
-                              </Button>
+                  {!highlight && items.length === 0 && (
+                    <div className="py-20 text-center border-2 border-dashed rounded-xl">
+                      <p className="text-muted-foreground">Nenhuma notícia encontrada para "{categoryLabel}" no momento.</p>
+                    </div>
+                  )}
+
+                  {highlight && (
+                    <section>
+                      <Card>
+                        <CardContent className="p-0">
+                          <div className="grid grid-cols-1 md:grid-cols-5">
+                            <div className="md:col-span-2 bg-muted aspect-[16/10] md:aspect-auto">
+                              {highlight.imageUrl && (
+                                <img src={highlight.imageUrl} alt={highlight.title} className="w-full h-full object-cover" />
+                              )}
+                            </div>
+                            <div className="md:col-span-3 p-6">
+                              <p className="text-xs text-muted-foreground">Destaque</p>
+                              <h2 className="mt-2 font-serif text-2xl leading-tight">{highlight.title}</h2>
+                              <p className="mt-2 text-muted-foreground">{highlight.excerpt}</p>
+                              <p className="mt-4 text-sm text-muted-foreground">
+                                <span className="text-foreground font-medium">{highlight.authorLine}</span> • {highlight.time}
+                              </p>
+                              <div className="mt-4">
+                                <Button asChild variant="secondary" className="gap-2">
+                                  <Link to={highlight.href}>
+                                    Ler matéria
+                                    <ArrowRight className="h-4 w-4" />
+                                  </Link>
+                                </Button>
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </section>
+                        </CardContent>
+                      </Card>
+                    </section>
+                  )}
 
                   <section className="space-y-6">
                     {items.map((item) => (
@@ -309,7 +323,13 @@ export default function CategoryNews() {
                               <p className="mt-2 text-muted-foreground">{item.excerpt}</p>
                               <p className="mt-3 text-sm text-muted-foreground">{item.date}</p>
                             </div>
-                            <div className="hidden sm:block h-20 w-28 rounded-md bg-muted" />
+                            <div className="hidden sm:block h-20 w-28 rounded-md bg-muted overflow-hidden shrink-0">
+                                {item.imageUrl ? (
+                                    <img src={item.imageUrl} alt={item.title} className="w-full h-full object-cover" />
+                                ) : (
+                                    <div className="w-full h-full flex items-center justify-center text-primary/10 font-serif font-black text-xl">MA</div>
+                                )}
+                            </div>
                           </div>
                         </CardContent>
                       </Card>
@@ -361,7 +381,7 @@ export default function CategoryNews() {
               </CardContent>
             </Card>
 
-            <AdSlot />
+            <AdSlot slug="category-sidebar" />
             <Separator />
             <Sidebar />
           </aside>
