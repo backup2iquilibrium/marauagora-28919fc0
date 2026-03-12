@@ -7,6 +7,7 @@ export type NavItem = {
   label: string;
   href: string;
   accent?: boolean;
+  children?: { label: string; href: string }[];
 };
 
 export type HeroSlide = {

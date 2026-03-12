@@ -1,13 +1,30 @@
-import { Facebook, Instagram, Mail, Youtube } from "lucide-react";
+import { Facebook, Instagram, Mail, Youtube, ChevronDown } from "lucide-react";
 import * as React from "react";
+import { Link } from "react-router-dom";
 
 import { NavLink } from "@/components/NavLink";
 import { SearchAutocomplete } from "./SearchAutocomplete";
 import { NavItem } from "./types";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const defaultNav: NavItem[] = [
   { label: "Início", href: "/" },
-  { label: "Cidade", href: "/categoria/cidade" },
+  { 
+    label: "Cidade", 
+    href: "/categoria/cidade",
+    children: [
+      { label: "Notícias da Cidade", href: "/categoria/cidade" },
+      { label: "Guia da Cidade", href: "/pontos" },
+      { label: "Vagas de Emprego", href: "/vagas" },
+      { label: "Agenda de Eventos", href: "/agenda" },
+      { label: "Quem Somos", href: "/quem-somos" },
+    ]
+  },
   { label: "Polícia", href: "/categoria/policia" },
   { label: "Política", href: "/categoria/politica" },
   { label: "Esportes", href: "/categoria/esportes" },
@@ -88,16 +105,34 @@ export function SiteHeader({
           <ul className="flex overflow-x-auto no-scrollbar gap-6 py-3 text-sm font-medium text-muted-foreground whitespace-nowrap">
             {navItems.map((item) => (
               <li key={item.label} className={item.accent ? "ml-auto" : undefined}>
-                <NavLink
-                  to={item.href}
-                  className={
-                    item.accent
-                      ? "text-primary font-bold inline-flex items-center"
-                      : "hover:text-primary transition-colors"
-                  }
-                >
-                  {item.label}
-                </NavLink>
+                {item.children ? (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger className="flex items-center gap-1 hover:text-primary transition-colors outline-none">
+                      {item.label}
+                      <ChevronDown className="h-3 w-3 opacity-50" />
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="start" className="min-w-[180px]">
+                      {item.children.map((child) => (
+                        <DropdownMenuItem key={child.label} asChild>
+                          <Link to={child.href} className="w-full cursor-pointer">
+                            {child.label}
+                          </Link>
+                        </DropdownMenuItem>
+                      ))}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                ) : (
+                  <NavLink
+                    to={item.href}
+                    className={
+                      item.accent
+                        ? "text-primary font-bold inline-flex items-center"
+                        : "hover:text-primary transition-colors"
+                    }
+                  >
+                    {item.label}
+                  </NavLink>
+                )}
               </li>
             ))}
           </ul>
