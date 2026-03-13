@@ -12,6 +12,7 @@ import { HoroscopeSidebar } from "@/components/marau/horoscope/HoroscopeSidebar"
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 
 const SIGNS_LIST = [
@@ -69,9 +70,17 @@ export default function Horoscope() {
     queryFn: fetchMostReadNews,
   });
 
-  const getPrediction = (slug: string) => {
-    return predictions.find(p => p.sign_slug === slug)?.content ||
-      "As estrelas estão alinhando sua energia para este momento. Um ciclo de renovação se inicia, trazendo clareza para suas decisões e harmonia nos relacionamentos. Aproveite a vibração do dia para manifestar seus desejos mais profundos.";
+  const getPrediction = (slug: string, signName: string) => {
+    const existing = predictions.find(p => p.sign_slug === slug)?.content;
+    if (existing) return existing;
+
+    if (dayOffset === "ontem") {
+      return `As estrelas revelam que ontem foi um dia de intensa reflexão cósmica para ${signName}. As energias do passado recente ajudaram a consolidar seus desejos mais profundos, preparando terreno para o seu momento atual.`;
+    }
+    if (dayOffset === "amanha") {
+      return `As posições astrais indicam que amanhã será um dia de novas descobertas e intuição afiada para ${signName}. Prepare-se para colher bons frutos e aproveite as oportunidades que o universo colocará no seu caminho.`;
+    }
+    return `As estrelas estão alinhando sua energia para este momento. Um ciclo de renovação se inicia para ${signName}, trazendo muita clareza para suas decisões e harmonia nas ações. Aproveite a vibração deste dia para agir.`;
   };
 
   return (
@@ -130,18 +139,36 @@ export default function Horoscope() {
                     
                     <div className="relative">
                       <p className="text-sm text-foreground/80 leading-relaxed min-h-[5.5rem] line-clamp-4 group-hover:line-clamp-none transition-all duration-300">
-                        {isLoading ? "Consultando os astros..." : getPrediction(s.slug)}
+                        {isLoading ? "Consultando os astros..." : getPrediction(s.slug, s.sign)}
                       </p>
                     </div>
 
                     <div className="mt-6 flex items-center justify-between">
-                      <Link 
-                        to={`/horoscopo/${s.slug}`}
-                        className="inline-flex items-center gap-2 text-xs font-black uppercase tracking-widest text-primary hover:gap-3 transition-all"
-                      >
-                        Ler Previsão Completa
-                        <ArrowRight className="h-3 w-3" />
-                      </Link>
+                      <Dialog>
+                        <DialogTrigger asChild>
+                          <button className="inline-flex items-center gap-2 text-xs font-black uppercase tracking-widest text-primary hover:gap-3 transition-all cursor-pointer">
+                            Ler Previsão Completa
+                            <ArrowRight className="h-3 w-3" />
+                          </button>
+                        </DialogTrigger>
+                        <DialogContent className="sm:max-w-md bg-gradient-to-br from-background to-primary/5 border-primary/20">
+                          <DialogHeader>
+                            <DialogTitle className="flex items-center gap-3 text-2xl font-black text-primary">
+                              <span className="text-4xl filter opacity-80">{s.symbol}</span>
+                              {s.sign}
+                            </DialogTitle>
+                            <DialogDescription className="text-xs font-bold uppercase tracking-widest text-muted-foreground pt-1 border-t border-primary/10">
+                              {s.dateRange} • Previsão para {dayOffset}
+                            </DialogDescription>
+                          </DialogHeader>
+                          <div className="py-6 relative overflow-hidden">
+                            <Sparkles className="absolute top-0 right-0 h-24 w-24 text-primary/5 -mr-4 -mt-4 animate-pulse" />
+                            <p className="text-base text-foreground/90 leading-relaxed z-10 relative">
+                              {isLoading ? "Consultando os astros..." : getPrediction(s.slug, s.sign)}
+                            </p>
+                          </div>
+                        </DialogContent>
+                      </Dialog>
                       <div className="h-1 w-12 bg-primary/20 rounded-full overflow-hidden">
                         <div className="h-full w-0 group-hover:w-full bg-primary transition-all duration-700" />
                       </div>
