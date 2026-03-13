@@ -30,6 +30,69 @@ const SIGNS_LIST = [
   { sign: "Peixes", slug: "peixes", dateRange: "19 fev - 20 mar", symbol: "♓", color: "from-indigo-400/20 to-purple-500/20" },
 ];
 
+const FALLBACK_PREDICTIONS: Record<string, { ontem: string, hoje: string, amanha: string }> = {
+  aries: {
+    ontem: "Ontem, Marte impulsionou sua energia, forçando você a enfrentar medos com coragem. As faíscas que soltaram podem ter gerado bons resultados profissionais.",
+    hoje: "Sua determinação está em alta! Hoje é o momento de focar em objetivos que exigem iniciativa e ousadia. Cuidado para não atropelar quem está ao seu redor.",
+    amanha: "O universo pede paciência para o dia de amanhã. Grandes conquistas levarão tempo para amadurecer. Escute mais e aja por impulso apenas se a intuição falar alto."
+  },
+  touro: {
+    ontem: "As energias de Vênus trouxeram calma e necessidade de conforto no dia de ontem. Você pode ter sentido uma forte necessidade de apreciar as pequenas coisas.",
+    hoje: "Hoje, sua resiliência e foco no prático são seus maiores trunfos. Momentos a dois ou em família serão particularmente reconfortantes. Organize suas finanças.",
+    amanha: "Amanhã, surpresas no campo material podem surgir. Mantenha os pés no chão, mas permita-se pequenas inovações na sua rotina habitual."
+  },
+  gemeos: {
+    ontem: "Sua mente não parou ontem. A comunicação foi a chave para resolver mal-entendidos e estabelecer novos e interessantes contatos.",
+    hoje: "A curiosidade guia seus passos hoje. Excelente momento para aprender algo novo, ler e interagir. Sua versatilidade será exigida de forma positiva.",
+    amanha: "Evite a dispersão amanhã. O dia exigirá foco em um único objetivo para que você não perca energia tentando abraçar o mundo inteiro de uma vez."
+  },
+  cancer: {
+    ontem: "Ontem foi um dia em que os laços familiares e seu mundo interno chamaram muita atenção. Emoções passadas podem ter retornado para cura.",
+    hoje: "Sua intuição está aguçadíssima hoje. Confie nos instintos, especialmente em decisões difíceis. Procure um refúgio acolhedor no final do dia.",
+    amanha: "Amanhã, não deixe a vulnerabilidade te paralisar. Use sua sensibilidade para se conectar profundamente com alguém importante."
+  },
+  leao: {
+    ontem: "O seu magnetismo pessoal esteve radiante ontem. Pequenos gestos seus foram observados e elogiados por pessoas ao seu redor.",
+    hoje: "O sol brilha na sua essência! Hoje, assumir a liderança num projeto ou em casa trará muito orgulho. Expresse sua criatividade livremente.",
+    amanha: "Amanhã, lembre-se de dividir o palco. Elogiar o esforço alheio garantirá a lealdade de quem caminha junto com você."
+  },
+  virgem: {
+    ontem: "Ontem exigiu de você um olhar analítico e muito método para resolver um problema complexo que estava parado.",
+    hoje: "O foco nos detalhes te colocará em vantagem hoje. Uma ótima jornada para colocar a rotina e a saúde em perfeita ordem. O cuidado com o corpo é essencial.",
+    amanha: "Amanhã, cuidado com a necessidade de perfeição. Acolha alguns erros como parte do aprendizado, não seja tão carrasco consigo mesmo."
+  },
+  libra: {
+    ontem: "A necessidade de harmonia falou alto ontem. Intervenções pacíficas que você realizou evitaram grandes conflitos ao seu redor.",
+    hoje: "As relações estão no foco de hoje. Parcerias (tanto românticas quanto profissionais) estão extremamente favorecidas pela energia de Vênus.",
+    amanha: "Amanhã poderá ser um dia de escolhas difíceis. Balanceie a razão e o coração, mas saiba que a decisão final deve sempre trazer paz de espírito."
+  },
+  escorpiao: {
+    ontem: "Intensidade foi a palavra de ontem. Algo que estava escondido ou ignorado pediu sua atenção imediata para ser transmutado.",
+    hoje: "Seu poder de regeneração e foco cirúrgico estão ativos hoje. É o dia perfeito para resolver enigmas e ir ao fundo de questões pendentes.",
+    amanha: "As emoções podem fervilhar amanhã. Use esse poder para criar e não para destruir. A vulnerabilidade consciente curará muitas feridas."
+  },
+  sagitario: {
+    ontem: "O seu desejo de mudança e expansão movimentou o seu dia ontem. Buscar novos conhecimentos foi mais forte do que a rotina.",
+    hoje: "A sorte acompanha o humor! Otimismo será seu melhor veículo hoje. Enxergue além dos horizontes comuns e inspire as pessoas com sua visão de mundo.",
+    amanha: "Amanhã, o senso de aventura te chamará, mas não pule etapas. A liberdade que você busca só vem junto com uma dose necessária de responsabilidade."
+  },
+  capricornio: {
+    ontem: "O trabalho sério e a construção de alicerces sólidos geraram bons retornos ou pelo menos uma ótima sensação de dever cumprido ontem.",
+    hoje: "Ambição na medida exata! Hoje é um momento incrível para estruturar os próximos passos de um plano de longo prazo. Confie no seu próprio tempo.",
+    amanha: "Amanhã, reserve um instante para reconhecer as pequenas vitórias em vez de olhar apenas para o topo da montanha. O reconhecimento alheio te fará bem."
+  },
+  aquario: {
+    ontem: "Um dia de ideias fora da caixa que te ajudou a visualizar a solução para um impasse coletivo ou de grupo.",
+    hoje: "Originalidade e um pouco de rebeldia guiam seu dia de hoje. Não tenha medo de mostrar sua visão futurista e abraçar causas maiores.",
+    amanha: "Amanhã será importante alinhar o ideal com a prática, caso contrário a frustração baterá à porta. Fazer networking será de imenso valor."
+  },
+  peixes: {
+    ontem: "A intuição sussurrou no seu ouvido, e seguir esse caminho mais fluido e desapegado evitou dores de cabeça no dia de ontem.",
+    hoje: "Muita empatia e conexão espiritual no dia de hoje. Atividades criativas ligadas à música, artes ou cura trarão enorme contentamento à alma.",
+    amanha: "Tente não escapar demais da realidade amanhã. Use sua compaixão natural por um propósito tangível em vez de sonhar com o que não pode ser alcançado agora."
+  }
+};
+
 async function fetchHoroscope(date: string) {
   const { data, error } = await supabase
     .from("horoscopes")
@@ -51,7 +114,7 @@ async function fetchMostReadNews() {
 }
 
 export default function Horoscope() {
-  const [dayOffset, setDayOffset] = React.useState<string>("hoje");
+  const [dayOffset, setDayOffset] = React.useState<"ontem" | "hoje" | "amanha">("hoje");
 
   const targetDate = React.useMemo(() => {
     const now = new Date();
@@ -74,13 +137,12 @@ export default function Horoscope() {
     const existing = predictions.find(p => p.sign_slug === slug)?.content;
     if (existing) return existing;
 
-    if (dayOffset === "ontem") {
-      return `As estrelas revelam que ontem foi um dia de intensa reflexão cósmica para ${signName}. As energias do passado recente ajudaram a consolidar seus desejos mais profundos, preparando terreno para o seu momento atual.`;
+    const fallbackForSign = FALLBACK_PREDICTIONS[slug];
+    if (fallbackForSign) {
+      return fallbackForSign[dayOffset];
     }
-    if (dayOffset === "amanha") {
-      return `As posições astrais indicam que amanhã será um dia de novas descobertas e intuição afiada para ${signName}. Prepare-se para colher bons frutos e aproveite as oportunidades que o universo colocará no seu caminho.`;
-    }
-    return `As estrelas estão alinhando sua energia para este momento. Um ciclo de renovação se inicia para ${signName}, trazendo muita clareza para suas decisões e harmonia nas ações. Aproveite a vibração deste dia para agir.`;
+    
+    return `As estrelas estão alinhando sua energia para este momento. Um ciclo de renovação se inicia para ${signName}, trazendo muita clareza para suas decisões.`;
   };
 
   return (
