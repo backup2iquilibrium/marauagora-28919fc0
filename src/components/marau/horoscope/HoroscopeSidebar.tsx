@@ -1,4 +1,4 @@
-import { Mail } from "lucide-react";
+import { Mail, Sparkles } from "lucide-react";
 import { Link } from "react-router-dom";
 
 import { AdSlot } from "@/components/marau/AdSlot";
@@ -13,19 +13,29 @@ export function HoroscopeSidebar({ mostRead }: { mostRead: MostReadItem[] }) {
     <aside className="lg:col-span-1 space-y-8">
       <AdSlot label="Anúncio (300x250)" />
 
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-base">Signo do Mês</CardTitle>
+      <Card className="border-primary/20 bg-gradient-to-br from-background to-primary/5 overflow-hidden relative">
+        <CardHeader className="pb-3 relative z-10">
+          <CardTitle className="text-base flex items-center gap-2">
+            <Sparkles className="h-4 w-4 text-primary" />
+            Signo do Mês
+          </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-3">
-          <div className="rounded-lg border bg-card p-4">
-            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Escorpião</p>
-            <p className="mt-2 text-sm text-muted-foreground">É tempo de transformação profunda e intensidade emocional.</p>
-            <Button asChild variant="secondary" className="mt-4 w-full">
-              <a href="#">Ler Perfil Completo</a>
+        <CardContent className="space-y-3 relative z-10">
+          <div className="rounded-xl border border-primary/10 bg-card/50 backdrop-blur-sm p-6 shadow-sm group">
+            <div className="flex items-center justify-between mb-4">
+              <p className="text-xl font-black text-primary uppercase tracking-tighter">Peixes</p>
+              <span className="text-3xl opacity-50 group-hover:opacity-100 transition-opacity">♓</span>
+            </div>
+            <p className="text-sm text-muted-foreground leading-relaxed italic">
+              "É tempo de navegar nas águas profundas da intuição e da criatividade. O universo convida você a sonhar alto."
+            </p>
+            <Button asChild variant="outline" className="mt-6 w-full border-primary/20 hover:bg-primary hover:text-white transition-all font-bold text-xs uppercase tracking-widest">
+              <a href="#">Ver Perfil Completo</a>
             </Button>
           </div>
         </CardContent>
+        {/* Decorative background element */}
+        <div className="absolute top-0 right-0 -mt-8 -mr-8 w-32 h-32 bg-primary/10 rounded-full blur-3xl" />
       </Card>
 
       <Card>
