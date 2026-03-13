@@ -15,18 +15,18 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 
 const SIGNS_LIST = [
-  { sign: "Áries", slug: "aries", dateRange: "21 mar - 19 abr" },
-  { sign: "Touro", slug: "touro", dateRange: "20 abr - 20 mai" },
-  { sign: "Gêmeos", slug: "gemeos", dateRange: "21 mai - 20 jun" },
-  { sign: "Câncer", slug: "cancer", dateRange: "21 jun - 22 jul" },
-  { sign: "Leão", slug: "leao", dateRange: "23 jul - 22 ago" },
-  { sign: "Virgem", slug: "virgem", dateRange: "23 ago - 22 set" },
-  { sign: "Libra", slug: "libra", dateRange: "23 set - 22 out" },
-  { sign: "Escorpião", slug: "escorpiao", dateRange: "23 out - 21 nov" },
-  { sign: "Sagitário", slug: "sagitario", dateRange: "22 nov - 21 dez" },
-  { sign: "Capricórnio", slug: "capricornio", dateRange: "22 dez - 19 jan" },
-  { sign: "Aquário", slug: "aquario", dateRange: "20 jan - 18 fev" },
-  { sign: "Peixes", slug: "peixes", dateRange: "19 fev - 20 mar" },
+  { sign: "Áries", slug: "aries", dateRange: "21 mar - 19 abr", symbol: "♈", color: "from-red-500/20 to-orange-500/20" },
+  { sign: "Touro", slug: "touro", dateRange: "20 abr - 20 mai", symbol: "♉", color: "from-green-500/20 to-emerald-500/20" },
+  { sign: "Gêmeos", slug: "gemeos", dateRange: "21 mai - 20 jun", symbol: "♊", color: "from-yellow-400/20 to-amber-500/20" },
+  { sign: "Câncer", slug: "cancer", dateRange: "21 jun - 22 jul", symbol: "♋", color: "from-blue-400/20 to-indigo-500/20" },
+  { sign: "Leão", slug: "leao", dateRange: "23 jul - 22 ago", symbol: "♌", color: "from-orange-500/20 to-yellow-600/20" },
+  { sign: "Virgem", slug: "virgem", dateRange: "23 ago - 22 set", symbol: "♍", color: "from-teal-500/20 to-green-600/20" },
+  { sign: "Libra", slug: "libra", dateRange: "23 set - 22 out", symbol: "♎", color: "from-pink-400/20 to-rose-500/20" },
+  { sign: "Escorpião", slug: "escorpiao", dateRange: "23 out - 21 nov", symbol: "♏", color: "from-purple-600/20 to-indigo-900/20" },
+  { sign: "Sagitário", slug: "sagitario", dateRange: "22 nov - 21 dez", symbol: "♐", color: "from-purple-500/20 to-blue-600/20" },
+  { sign: "Capricórnio", slug: "capricornio", dateRange: "22 dez - 19 jan", symbol: "♑", color: "from-gray-600/20 to-slate-800/20" },
+  { sign: "Aquário", slug: "aquario", dateRange: "20 jan - 18 fev", symbol: "♒", color: "from-cyan-400/20 to-blue-500/20" },
+  { sign: "Peixes", slug: "peixes", dateRange: "19 fev - 20 mar", symbol: "♓", color: "from-indigo-400/20 to-purple-500/20" },
 ];
 
 async function fetchHoroscope(date: string) {
@@ -71,62 +71,85 @@ export default function Horoscope() {
 
   const getPrediction = (slug: string) => {
     return predictions.find(p => p.sign_slug === slug)?.content ||
-      "As estrelas estão alinhando sua energia. Aproveite o dia para refletir sobre seus objetivos e cultivar o equilíbrio emocional.";
+      "As estrelas estão alinhando sua energia para este momento. Um ciclo de renovação se inicia, trazendo clareza para suas decisões e harmonia nos relacionamentos. Aproveite a vibração do dia para manifestar seus desejos mais profundos.";
   };
-
-  const rows = React.useMemo(() => {
-    const result = [];
-    for (let i = 0; i < SIGNS_LIST.length; i += 3) {
-      result.push(SIGNS_LIST.slice(i, i + 3));
-    }
-    return result;
-  }, []);
 
   return (
     <div className="min-h-screen bg-background text-foreground">
       <TopBar />
       <SiteHeader logoUrl="/logo.png" />
 
-      <main className="container px-4 py-8">
-        <header className="mb-8">
-          <div className="flex items-center gap-2">
-            <Sparkles className="h-5 w-5 text-primary" />
-            <p className="text-sm font-semibold text-primary">Horóscopo</p>
+      <main className="container px-4 py-12">
+        <header className="mb-12 text-center max-w-2xl mx-auto">
+          <div className="flex items-center justify-center gap-2 mb-4">
+            <div className="h-px w-8 bg-primary/30" />
+            <span className="flex items-center gap-1.5 text-sm font-bold text-primary uppercase tracking-[0.2em]">
+              <Sparkles className="h-4 w-4" />
+              Conexão Astral
+              <Sparkles className="h-4 w-4" />
+            </span>
+            <div className="h-px w-8 bg-primary/30" />
           </div>
-          <h1 className="mt-3 font-serif text-3xl md:text-5xl font-bold">Previsões Astrais</h1>
-          <p className="mt-2 text-muted-foreground text-lg">O que os astros reservam para o seu caminho.</p>
+          <h1 className="font-serif text-4xl md:text-6xl font-black mb-4 bg-gradient-to-r from-primary via-purple-600 to-primary bg-clip-text text-transparent">
+            Horóscopo do Dia
+          </h1>
+          <p className="text-muted-foreground text-lg leading-relaxed">
+            Descubra as mensagens que o universo reservou para você hoje. 
+            Sintonize sua energia com o movimento dos astros e encontre o seu caminho.
+          </p>
         </header>
 
-        <section className="mt-6 grid grid-cols-1 lg:grid-cols-4 gap-8">
-          <div className="lg:col-span-3 space-y-8">
-            <Tabs value={dayOffset} onValueChange={setDayOffset}>
-              <TabsList className="rounded-full p-1 bg-muted">
-                <TabsTrigger value="ontem" className="rounded-full px-6">Ontem</TabsTrigger>
-                <TabsTrigger value="hoje" className="rounded-full px-6">Hoje</TabsTrigger>
-                <TabsTrigger value="amanha" className="rounded-full px-6">Amanhã</TabsTrigger>
-              </TabsList>
-            </Tabs>
+        <section className="mt-6 grid grid-cols-1 lg:grid-cols-4 gap-12">
+          <div className="lg:col-span-3 space-y-10">
+            <div className="flex justify-center mb-8">
+              <Tabs value={dayOffset} onValueChange={setDayOffset} className="w-full max-w-md">
+                <TabsList className="grid w-full grid-cols-3 p-1 bg-muted/50 backdrop-blur-sm border rounded-full">
+                  <TabsTrigger value="ontem" className="rounded-full data-[state=active]:bg-primary data-[state=active]:text-white transition-all">Ontem</TabsTrigger>
+                  <TabsTrigger value="hoje" className="rounded-full data-[state=active]:bg-primary data-[state=active]:text-white transition-all">Hoje</TabsTrigger>
+                  <TabsTrigger value="amanha" className="rounded-full data-[state=active]:bg-primary data-[state=active]:text-white transition-all">Amanhã</TabsTrigger>
+                </TabsList>
+              </Tabs>
+            </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
               {SIGNS_LIST.map((s) => (
-                <Card key={s.slug} className="hover:shadow-lg transition-all duration-300 border-primary/10 group overflow-hidden">
-                  <CardContent className="p-8 space-y-4">
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <h3 className="text-2xl font-bold text-foreground group-hover:text-primary transition-colors">{s.sign}</h3>
-                        <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">{s.dateRange}</p>
+                <Card 
+                  key={s.slug} 
+                  className={`relative group overflow-hidden border-primary/5 hover:border-primary/40 transition-all duration-500 hover:shadow-2xl hover:shadow-primary/10 bg-gradient-to-br ${s.color} hover:scale-[1.02] cursor-pointer`}
+                >
+                  <CardContent className="p-8">
+                    <div className="flex justify-between items-start mb-6">
+                      <div className="space-y-1">
+                        <h3 className="text-2xl font-black tracking-tight group-hover:text-primary transition-colors">{s.sign}</h3>
+                        <p className="text-xs font-bold text-muted-foreground/80 uppercase tracking-widest">{s.dateRange}</p>
                       </div>
-                      <div className="w-12 h-12 bg-primary/5 rounded-full flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-all">
-                        <Sparkles className="h-6 w-6" />
+                      <span className="text-4xl filter grayscale group-hover:grayscale-0 transition-all duration-500 opacity-60 group-hover:opacity-100 transform group-hover:scale-110">
+                        {s.symbol}
+                      </span>
+                    </div>
+                    
+                    <div className="relative">
+                      <p className="text-sm text-foreground/80 leading-relaxed min-h-[5.5rem] line-clamp-4 group-hover:line-clamp-none transition-all duration-300">
+                        {isLoading ? "Consultando os astros..." : getPrediction(s.slug)}
+                      </p>
+                    </div>
+
+                    <div className="mt-6 flex items-center justify-between">
+                      <Link 
+                        to={`/horoscopo/${s.slug}`}
+                        className="inline-flex items-center gap-2 text-xs font-black uppercase tracking-widest text-primary hover:gap-3 transition-all"
+                      >
+                        Ler Previsão Completa
+                        <ArrowRight className="h-3 w-3" />
+                      </Link>
+                      <div className="h-1 w-12 bg-primary/20 rounded-full overflow-hidden">
+                        <div className="h-full w-0 group-hover:w-full bg-primary transition-all duration-700" />
                       </div>
                     </div>
-                    <p className="text-sm text-muted-foreground leading-relaxed line-clamp-4">
-                      {isLoading ? "Consultando os astros..." : getPrediction(s.slug)}
-                    </p>
-                    <Button variant="link" className="p-0 text-primary font-bold gap-2 group-hover:translate-x-1 transition-transform">
-                      Ver previsão completa <ArrowRight className="h-4 w-4" />
-                    </Button>
                   </CardContent>
+                  
+                  {/* Decorative element */}
+                  <div className="absolute -right-4 -bottom-4 w-24 h-24 bg-primary/5 rounded-full blur-2xl group-hover:bg-primary/10 transition-colors" />
                 </Card>
               ))}
             </div>
