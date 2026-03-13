@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import { AdSlot } from "@/components/marau/AdSlot";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 
 type MostReadItem = { title: string; href?: string };
@@ -29,9 +30,39 @@ export function HoroscopeSidebar({ mostRead }: { mostRead: MostReadItem[] }) {
             <p className="text-sm text-muted-foreground leading-relaxed italic">
               "É tempo de navegar nas águas profundas da intuição e da criatividade. O universo convida você a sonhar alto."
             </p>
-            <Button asChild variant="outline" className="mt-6 w-full border-primary/20 hover:bg-primary hover:text-white transition-all font-bold text-xs uppercase tracking-widest">
-              <a href="#">Ver Perfil Completo</a>
-            </Button>
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button variant="outline" className="mt-6 w-full border-primary/20 hover:bg-primary hover:text-white transition-all font-bold text-xs uppercase tracking-widest cursor-pointer">
+                  Ver Perfil Completo
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-md bg-gradient-to-br from-background to-primary/5 border-primary/20">
+                <DialogHeader>
+                  <DialogTitle className="flex items-center gap-3 text-2xl font-black text-primary">
+                    <span className="text-4xl filter opacity-80">♓</span>
+                    Peixes - Perfil Completo
+                  </DialogTitle>
+                  <DialogDescription className="text-xs font-bold uppercase tracking-widest text-muted-foreground pt-1 border-t border-primary/10">
+                    19 Fev - 20 Mar • Elemento Água • Mutável
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="py-4 space-y-4 relative overflow-hidden">
+                  <Sparkles className="absolute top-0 right-0 h-32 w-32 text-primary/5 -mr-4 -mt-4 animate-pulse pointer-events-none" />
+                  <p className="text-sm text-foreground/90 leading-relaxed z-10 relative">
+                    <strong className="text-primary font-black uppercase text-xs tracking-wider">Personalidade:</strong><br />
+                    Compassivos e empáticos, os piscianos possuem a capacidade inata de sentir a dor e a alegria dos outros. Com uma profunda imaginação, encontram na arte, música e espiritualidade sua forma de expressão.
+                  </p>
+                  <p className="text-sm text-foreground/90 leading-relaxed z-10 relative">
+                    <strong className="text-primary font-black uppercase text-xs tracking-wider">No Amor:</strong><br />
+                    Extremamente românticos e sonhadores. Quando se apaixonam, buscam uma profunda conexão de almas, entregando-se de forma pura e muitas vezes incondicional.
+                  </p>
+                  <p className="text-sm text-foreground/90 leading-relaxed z-10 relative">
+                    <strong className="text-primary font-black uppercase text-xs tracking-wider">Missão:</strong><br />
+                    Trazer cura e empatia para um mundo que muitas vezes carece de sensibilidade e compreensão mútua. Ensinar a magia da intuição.
+                  </p>
+                </div>
+              </DialogContent>
+            </Dialog>
           </div>
         </CardContent>
         {/* Decorative background element */}
