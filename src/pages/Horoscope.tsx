@@ -134,10 +134,10 @@ async function fetchMostReadNews() {
   return data || [];
 }
 
-function SignCard({ s, dayOffset }: { s: typeof SIGNS_LIST[0], dayOffset: "ontem" | "hoje" | "amanha" }) {
+function SignCard({ s }: { s: typeof SIGNS_LIST[0] }) {
   const { data: prediction, isLoading } = useQuery({
-    queryKey: ["horoscope-api", s.slug, dayOffset],
-    queryFn: () => fetchRealHoroscope(s.slug, dayOffset),
+    queryKey: ["horoscope-api", s.slug, "hoje"],
+    queryFn: () => fetchRealHoroscope(s.slug, "hoje"),
     staleTime: 1000 * 60 * 60, // Cache para não sobrecarregar as APIs gratuitas (1 hora)
     refetchOnWindowFocus: false,
   });
@@ -193,7 +193,7 @@ function SignCard({ s, dayOffset }: { s: typeof SIGNS_LIST[0], dayOffset: "ontem
                   </div>
                 </DialogTitle>
                 <div className="text-xs font-bold uppercase tracking-widest text-muted-foreground pt-3 border-t border-primary/10 mt-2 flex flex-col gap-3">
-                  <span>{s.dateRange} • Previsão para {dayOffset}</span>
+                  <span>{s.dateRange} • Previsão para Hoje</span>
                   <div className="flex flex-wrap gap-2">
                     <span className="bg-primary/10 text-primary px-2.5 py-1 rounded-md text-[10px] break-keep">Elemento: {s.element}</span>
                     <span className="bg-primary/10 text-primary px-2.5 py-1 rounded-md text-[10px] break-keep">Planeta: {s.planet}</span>
@@ -238,7 +238,7 @@ function SignCard({ s, dayOffset }: { s: typeof SIGNS_LIST[0], dayOffset: "ontem
 }
 
 export default function Horoscope() {
-  const [dayOffset, setDayOffset] = React.useState<"ontem" | "hoje" | "amanha">("hoje");
+
 
   const { data: mostRead = [] } = useQuery({
     queryKey: ["sidebar-most-read-titles"],
@@ -272,19 +272,11 @@ export default function Horoscope() {
 
         <section className="mt-6 grid grid-cols-1 lg:grid-cols-4 gap-12">
           <div className="lg:col-span-3 space-y-10">
-            <div className="flex justify-center mb-8">
-              <Tabs value={dayOffset} onValueChange={setDayOffset} className="w-full max-w-md">
-                <TabsList className="grid w-full grid-cols-3 p-1 bg-muted/50 backdrop-blur-sm border rounded-full">
-                  <TabsTrigger value="ontem" className="rounded-full data-[state=active]:bg-primary data-[state=active]:text-white transition-all">Ontem</TabsTrigger>
-                  <TabsTrigger value="hoje" className="rounded-full data-[state=active]:bg-primary data-[state=active]:text-white transition-all">Hoje</TabsTrigger>
-                  <TabsTrigger value="amanha" className="rounded-full data-[state=active]:bg-primary data-[state=active]:text-white transition-all">Amanhã</TabsTrigger>
-                </TabsList>
-              </Tabs>
-            </div>
+
 
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
               {SIGNS_LIST.map((s) => (
-                <SignCard key={`${s.slug}-${dayOffset}`} s={s} dayOffset={dayOffset} />
+                <SignCard key={s.slug} s={s} />
               ))}
             </div>
 
