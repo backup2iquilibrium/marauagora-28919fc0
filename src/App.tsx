@@ -25,6 +25,7 @@ const Galleries = lazy(() => import("./pages/Galleries"));
 const GalleryDetails = lazy(() => import("./pages/GalleryDetails"));
 const Services = lazy(() => import("./pages/Services"));
 const Horoscope = lazy(() => import("./pages/Horoscope"));
+const Live = lazy(() => import("./pages/Live"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const AdminLogin = lazy(() => import("./pages/admin/AdminLogin"));
@@ -82,6 +83,7 @@ const App = () => (
                 <Route path="/galerias/:slug" element={<GalleryDetails />} />
                 <Route path="/servicos" element={<Services />} />
                 <Route path="/horoscopo" element={<Horoscope />} />
+                <Route path="/ao-vivo" element={<Live />} />
 
                 {/* Admin */}
                 <Route path="/admin/login" element={<AdminLogin />} />
