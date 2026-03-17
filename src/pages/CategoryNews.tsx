@@ -262,7 +262,7 @@ export default function CategoryNews() {
             <header className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
               <div className="space-y-2">
                 <p className="text-xs text-muted-foreground">{slug ? `categoria: ${slug}` : ""}</p>
-                <h1 className="font-serif text-3xl tracking-tight md:text-4xl">{categoryLabel} em Marau</h1>
+                <h1 className="font-serif text-3xl tracking-tight md:text-4xl">{categoryLabel}</h1>
               </div>
 
               <div className="flex items-center gap-2 md:max-w-sm md:w-full">

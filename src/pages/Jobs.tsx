@@ -249,7 +249,7 @@ export default function Jobs() {
         <header className="rounded-xl border bg-card shadow-sm p-6 md:p-8">
           <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
             <div className="space-y-2">
-              <h1 className="font-serif text-3xl tracking-tight md:text-4xl">Vagas de Emprego em Marau</h1>
+              <h1 className="font-serif text-3xl tracking-tight md:text-4xl">Vagas de Emprego</h1>
               <p className="text-muted-foreground">
                 Confira as oportunidades mais recentes em nossa cidade e região. Conectamos talentos locais a grandes empresas.
               </p>
