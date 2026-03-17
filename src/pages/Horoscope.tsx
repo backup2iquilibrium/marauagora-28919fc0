@@ -16,18 +16,18 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { supabase } from "@/integrations/supabase/client";
 
 const SIGNS_LIST = [
-  { sign: "Áries", slug: "aries", dateRange: "21 mar - 20 abr", symbol: "♈", color: "from-red-500/20 to-orange-500/20" },
-  { sign: "Touro", slug: "touro", dateRange: "21 abr - 20 mai", symbol: "♉", color: "from-green-500/20 to-emerald-500/20" },
-  { sign: "Gêmeos", slug: "gemeos", dateRange: "21 mai - 20 jun", symbol: "♊", color: "from-yellow-400/20 to-amber-500/20" },
-  { sign: "Câncer", slug: "cancer", dateRange: "21 jun - 22 jul", symbol: "♋", color: "from-blue-400/20 to-indigo-500/20" },
-  { sign: "Leão", slug: "leao", dateRange: "23 jul - 22 ago", symbol: "♌", color: "from-orange-500/20 to-yellow-600/20" },
-  { sign: "Virgem", slug: "virgem", dateRange: "23 ago - 22 set", symbol: "♍", color: "from-teal-500/20 to-green-600/20" },
-  { sign: "Libra", slug: "libra", dateRange: "23 set - 22 out", symbol: "♎", color: "from-pink-400/20 to-rose-500/20" },
-  { sign: "Escorpião", slug: "escorpiao", dateRange: "23 out - 21 nov", symbol: "♏", color: "from-purple-600/20 to-indigo-900/20" },
-  { sign: "Sagitário", slug: "sagitario", dateRange: "22 nov - 21 dez", symbol: "♐", color: "from-purple-500/20 to-blue-600/20" },
-  { sign: "Capricórnio", slug: "capricornio", dateRange: "22 dez - 20 jan", symbol: "♑", color: "from-gray-600/20 to-slate-800/20" },
-  { sign: "Aquário", slug: "aquario", dateRange: "21 jan - 18 fev", symbol: "♒", color: "from-cyan-400/20 to-blue-500/20" },
-  { sign: "Peixes", slug: "peixes", dateRange: "19 fev - 20 mar", symbol: "♓", color: "from-indigo-400/20 to-purple-500/20" },
+  { sign: "Áries", slug: "aries", dateRange: "21 mar - 20 abr", symbol: "♈", color: "from-red-500/20 to-orange-500/20", element: "Fogo", planet: "Marte", traits: "Espontaneidade, coragem e energia", profileDesc: "Pioneiros e intensos, vivem no agora com grande prazer de existir. Ação e decisão são as marcas registradas de Áries." },
+  { sign: "Touro", slug: "touro", dateRange: "21 abr - 20 mai", symbol: "♉", color: "from-green-500/20 to-emerald-500/20", element: "Terra", planet: "Vênus", traits: "Persistência, sensualidade e teimosia", profileDesc: "Focados no conforto e bem-estar, prezam pela beleza e pela segurança. A satisfação vem do contato com os cinco sentidos." },
+  { sign: "Gêmeos", slug: "gemeos", dateRange: "21 mai - 20 jun", symbol: "♊", color: "from-yellow-400/20 to-amber-500/20", element: "Ar", planet: "Mercúrio", traits: "Curiosidade, inteligência e liberdade", profileDesc: "Amam explorar novas ideias e ambientes. Com muito carisma e agilidade mental, estabelecem conexões facilmente através da comunicação e intercâmbio." },
+  { sign: "Câncer", slug: "cancer", dateRange: "21 jun - 22 jul", symbol: "♋", color: "from-blue-400/20 to-indigo-500/20", element: "Água", planet: "Lua", traits: "Sensibilidade, carinho e família", profileDesc: "Guiados pelo instinto e pela emoção. Têm necessidade de segurança e um laço forte com o lar, compreendendo o que não precisa ser dito pelas amizades." },
+  { sign: "Leão", slug: "leao", dateRange: "23 jul - 22 ago", symbol: "♌", color: "from-orange-500/20 to-yellow-600/20", element: "Fogo", planet: "Sol", traits: "Criatividade, autoestima e nobreza", profileDesc: "Donos de um brilho que atrai o sucesso. Destacam-se pela generosidade, senso de humor apurado e uma presença magnética nata e de liderança." },
+  { sign: "Virgem", slug: "virgem", dateRange: "23 ago - 22 set", symbol: "♍", color: "from-teal-500/20 to-green-600/20", element: "Terra", planet: "Mercúrio", traits: "Objetividade, humanidade e organização", profileDesc: "Mestres do detalhe e da ordem em busca do aprimoramento. Conseguem identificar pequenas falhas de maneira rápida, sendo extremamente prestativos na ajuda ao próximo." },
+  { sign: "Libra", slug: "libra", dateRange: "23 set - 22 out", symbol: "♎", color: "from-pink-400/20 to-rose-500/20", element: "Ar", planet: "Vênus", traits: "Vaidade, empatia e diplomacia", profileDesc: "Buscando o equilíbrio em todas as frentes da vida. A compaixão e a conexão interpessoal fazem de Libra o mestre da conciliação e do charme natural em parcerias." },
+  { sign: "Escorpião", slug: "escorpiao", dateRange: "23 out - 21 nov", symbol: "♏", color: "from-purple-600/20 to-indigo-900/20", element: "Água", planet: "Marte e Plutão", traits: "Intensidade, mistério e intuição", profileDesc: "Profundos como o universo, sentem muito a energia dos locais. Leais e corajosos investigam de frente seus medos, com imenso controle emocional e transformador." },
+  { sign: "Sagitário", slug: "sagitario", dateRange: "22 nov - 21 dez", symbol: "♐", color: "from-purple-500/20 to-blue-600/20", element: "Fogo", planet: "Júpiter", traits: "Otimismo, liberdade e movimento", profileDesc: "Os grandes filósofos desbravadores da nova era. Bem-humorados ao extremo e otimistas de alma livre que buscam o sentido nas jornadas longas e ensinamentos diários." },
+  { sign: "Capricórnio", slug: "capricornio", dateRange: "22 dez - 20 jan", symbol: "♑", color: "from-gray-600/20 to-slate-800/20", element: "Terra", planet: "Saturno", traits: "Responsabilidade, ambição e persistência", profileDesc: "Práticos e construtores de bases indestrutíveis para suas vitórias com disciplina absoluta. Assumem compromissos valendo cada minuto e prosperam subindo todas as montanhas." },
+  { sign: "Aquário", slug: "aquario", dateRange: "21 jan - 18 fev", symbol: "♒", color: "from-cyan-400/20 to-blue-500/20", element: "Ar", planet: "Saturno e Urano", traits: "Inovação, originalidade e independência", profileDesc: "Idealistas do zodíaco ligados fielmente às amizades originais. Exorbitam de mentalidade comunitária na quebra de paradigmas rumo à modernidade de valor humanitário." },
+  { sign: "Peixes", slug: "peixes", dateRange: "19 fev - 20 mar", symbol: "♓", color: "from-indigo-400/20 to-purple-500/20", element: "Água", planet: "Júpiter e Netuno", traits: "Solidariedade, intuição e desapego", profileDesc: "Sentem a vida por meio da mais bela imaginação. O coração universal sem barreiras que é doado sem limites a compaixão de um mar acolhedor e poético nos bastidores." },
 ];
 
 const FALLBACK_PREDICTIONS: Record<string, { ontem: string, hoje: string, amanha: string }> = {
@@ -183,19 +183,45 @@ function SignCard({ s, dayOffset }: { s: typeof SIGNS_LIST[0], dayOffset: "ontem
             </DialogTrigger>
             <DialogContent className="sm:max-w-md bg-gradient-to-br from-background to-primary/5 border-primary/20">
               <DialogHeader>
-                <DialogTitle className="flex items-center gap-3 text-2xl font-black text-primary">
-                  <span className="text-4xl filter opacity-80">{s.symbol}</span>
-                  {s.sign}
+                <DialogTitle className="flex flex-col gap-1 items-start">
+                  <div className="flex items-center gap-3 text-2xl font-black text-primary">
+                    <span className="text-4xl filter opacity-80">{s.symbol}</span>
+                    {s.sign}
+                  </div>
+                  <div className="text-sm font-medium text-muted-foreground italic font-normal tracking-normal pt-1 break-words">
+                    {s.traits}
+                  </div>
                 </DialogTitle>
-                <DialogDescription className="text-xs font-bold uppercase tracking-widest text-muted-foreground pt-1 border-t border-primary/10">
-                  {s.dateRange} • Previsão para {dayOffset}
-                </DialogDescription>
+                <div className="text-xs font-bold uppercase tracking-widest text-muted-foreground pt-3 border-t border-primary/10 mt-2 flex flex-col gap-3">
+                  <span>{s.dateRange} • Previsão para {dayOffset}</span>
+                  <div className="flex flex-wrap gap-2">
+                    <span className="bg-primary/10 text-primary px-2.5 py-1 rounded-md text-[10px] break-keep">Elemento: {s.element}</span>
+                    <span className="bg-primary/10 text-primary px-2.5 py-1 rounded-md text-[10px] break-keep">Planeta: {s.planet}</span>
+                  </div>
+                </div>
               </DialogHeader>
-              <div className="py-6 relative overflow-hidden">
+              <div className="py-2 relative overflow-hidden">
                 <Sparkles className="absolute top-0 right-0 h-24 w-24 text-primary/5 -mr-4 -mt-4 animate-pulse" />
-                <p className="text-base text-foreground/90 leading-relaxed z-10 relative break-words">
-                  {isLoading ? "Consultando os astros e traduzindo a energia cósmica..." : prediction}
-                </p>
+                
+                <div className="mb-6 bg-muted/30 border border-primary/10 rounded-xl p-4 shadow-sm relative z-10">
+                  <h4 className="text-[11px] uppercase tracking-widest font-bold text-primary mb-2 flex items-center gap-2">
+                    Perfil do Signo
+                    <div className="h-px bg-primary/20 flex-grow"></div>
+                  </h4>
+                  <p className="text-sm text-foreground/80 leading-relaxed font-medium">
+                    {s.profileDesc}
+                  </p>
+                </div>
+
+                <div className="relative z-10">
+                  <h4 className="text-[11px] uppercase tracking-widest font-bold text-primary mb-2 flex items-center gap-2">
+                    Nas Estrelas
+                    <div className="h-px bg-primary/20 flex-grow"></div>
+                  </h4>
+                  <p className="text-base text-foreground/90 leading-relaxed break-words pl-2 border-l-2 border-primary/20">
+                    {isLoading ? "Consultando os astros e traduzindo a energia cósmica..." : prediction}
+                  </p>
+                </div>
               </div>
             </DialogContent>
           </Dialog>
