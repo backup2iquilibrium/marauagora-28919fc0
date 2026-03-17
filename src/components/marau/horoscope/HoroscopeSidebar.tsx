@@ -24,7 +24,10 @@ export function HoroscopeSidebar({ mostRead }: { mostRead: MostReadItem[] }) {
         <CardContent className="space-y-3 relative z-10">
           <div className="rounded-xl border border-primary/10 bg-card/50 backdrop-blur-sm p-6 shadow-sm group">
             <div className="flex items-center justify-between mb-4">
-              <p className="text-xl font-black text-primary uppercase tracking-tighter">Peixes</p>
+              <div className="flex flex-col">
+                <p className="text-xl font-black text-primary uppercase tracking-tighter">Peixes</p>
+                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">19 Fev - 20 Mar</p>
+              </div>
               <span className="text-3xl opacity-50 group-hover:opacity-100 transition-opacity">♓</span>
             </div>
             <p className="text-sm text-muted-foreground leading-relaxed italic">
@@ -38,28 +41,45 @@ export function HoroscopeSidebar({ mostRead }: { mostRead: MostReadItem[] }) {
               </DialogTrigger>
               <DialogContent className="sm:max-w-md bg-gradient-to-br from-background to-primary/5 border-primary/20">
                 <DialogHeader>
-                  <DialogTitle className="flex items-center gap-3 text-2xl font-black text-primary">
-                    <span className="text-4xl filter opacity-80">♓</span>
-                    Peixes - Perfil Completo
+                  <DialogTitle className="flex flex-col gap-1 items-start">
+                    <div className="flex items-center gap-3 text-2xl font-black text-primary">
+                      <span className="text-4xl filter opacity-80">♓</span>
+                      Peixes
+                    </div>
+                    <div className="text-sm font-medium text-muted-foreground italic font-normal tracking-normal pt-1 break-words">
+                      Solidariedade, intuição e desapego
+                    </div>
                   </DialogTitle>
-                  <DialogDescription className="text-xs font-bold uppercase tracking-widest text-muted-foreground pt-1 border-t border-primary/10">
-                    19 Fev - 20 Mar • Elemento Água • Mutável
-                  </DialogDescription>
+                  <div className="text-xs font-bold uppercase tracking-widest text-muted-foreground pt-3 border-t border-primary/10 mt-2 flex flex-col gap-3">
+                    <span>19 Fev - 20 Mar • Signo do Mês</span>
+                    <div className="flex flex-wrap gap-2">
+                      <span className="bg-primary/10 text-primary px-2.5 py-1 rounded-md text-[10px] break-keep">Elemento: Água</span>
+                      <span className="bg-primary/10 text-primary px-2.5 py-1 rounded-md text-[10px] break-keep">Planeta: Júpiter e Netuno</span>
+                    </div>
+                  </div>
                 </DialogHeader>
-                <div className="py-4 space-y-4 relative overflow-hidden">
-                  <Sparkles className="absolute top-0 right-0 h-32 w-32 text-primary/5 -mr-4 -mt-4 animate-pulse pointer-events-none" />
-                  <p className="text-sm text-foreground/90 leading-relaxed z-10 relative">
-                    <strong className="text-primary font-black uppercase text-xs tracking-wider">Personalidade:</strong><br />
-                    Compassivos e empáticos, os piscianos possuem a capacidade inata de sentir a dor e a alegria dos outros. Com uma profunda imaginação, encontram na arte, música e espiritualidade sua forma de expressão.
-                  </p>
-                  <p className="text-sm text-foreground/90 leading-relaxed z-10 relative">
-                    <strong className="text-primary font-black uppercase text-xs tracking-wider">No Amor:</strong><br />
-                    Extremamente românticos e sonhadores. Quando se apaixonam, buscam uma profunda conexão de almas, entregando-se de forma pura e muitas vezes incondicional.
-                  </p>
-                  <p className="text-sm text-foreground/90 leading-relaxed z-10 relative">
-                    <strong className="text-primary font-black uppercase text-xs tracking-wider">Missão:</strong><br />
-                    Trazer cura e empatia para um mundo que muitas vezes carece de sensibilidade e compreensão mútua. Ensinar a magia da intuição.
-                  </p>
+                <div className="py-2 relative overflow-hidden">
+                  <Sparkles className="absolute top-0 right-0 h-24 w-24 text-primary/5 -mr-4 -mt-4 animate-pulse pointer-events-none" />
+                  
+                  <div className="mb-6 bg-muted/30 border border-primary/10 rounded-xl p-4 shadow-sm relative z-10">
+                    <h4 className="text-[11px] uppercase tracking-widest font-bold text-primary mb-2 flex items-center gap-2">
+                      Perfil do Signo
+                      <div className="h-px bg-primary/20 flex-grow"></div>
+                    </h4>
+                    <p className="text-sm text-foreground/80 leading-relaxed font-medium">
+                      Sentem a vida por meio da mais bela imaginação. O coração universal sem barreiras que é doado sem limites a compaixão de um mar acolhedor e poético nos bastidores.
+                    </p>
+                  </div>
+
+                  <div className="relative z-10">
+                    <h4 className="text-[11px] uppercase tracking-widest font-bold text-primary mb-2 flex items-center gap-2">
+                      Energia do Mês
+                      <div className="h-px bg-primary/20 flex-grow"></div>
+                    </h4>
+                    <p className="text-base text-foreground/90 leading-relaxed break-words pl-2 border-l-2 border-primary/20">
+                      Este é o seu momento de brilhar através da sensibilidade. As águas de Peixes trazem fluidez para resolver pendências emocionais e abrir espaço para novos sonhos. Confie na sua voz interior.
+                    </p>
+                  </div>
                 </div>
               </DialogContent>
             </Dialog>
