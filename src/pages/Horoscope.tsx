@@ -16,8 +16,8 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { supabase } from "@/integrations/supabase/client";
 
 const SIGNS_LIST = [
-  { sign: "Áries", slug: "aries", dateRange: "21 mar - 19 abr", symbol: "♈", color: "from-red-500/20 to-orange-500/20" },
-  { sign: "Touro", slug: "touro", dateRange: "20 abr - 20 mai", symbol: "♉", color: "from-green-500/20 to-emerald-500/20" },
+  { sign: "Áries", slug: "aries", dateRange: "21 mar - 20 abr", symbol: "♈", color: "from-red-500/20 to-orange-500/20" },
+  { sign: "Touro", slug: "touro", dateRange: "21 abr - 20 mai", symbol: "♉", color: "from-green-500/20 to-emerald-500/20" },
   { sign: "Gêmeos", slug: "gemeos", dateRange: "21 mai - 20 jun", symbol: "♊", color: "from-yellow-400/20 to-amber-500/20" },
   { sign: "Câncer", slug: "cancer", dateRange: "21 jun - 22 jul", symbol: "♋", color: "from-blue-400/20 to-indigo-500/20" },
   { sign: "Leão", slug: "leao", dateRange: "23 jul - 22 ago", symbol: "♌", color: "from-orange-500/20 to-yellow-600/20" },
@@ -25,8 +25,8 @@ const SIGNS_LIST = [
   { sign: "Libra", slug: "libra", dateRange: "23 set - 22 out", symbol: "♎", color: "from-pink-400/20 to-rose-500/20" },
   { sign: "Escorpião", slug: "escorpiao", dateRange: "23 out - 21 nov", symbol: "♏", color: "from-purple-600/20 to-indigo-900/20" },
   { sign: "Sagitário", slug: "sagitario", dateRange: "22 nov - 21 dez", symbol: "♐", color: "from-purple-500/20 to-blue-600/20" },
-  { sign: "Capricórnio", slug: "capricornio", dateRange: "22 dez - 19 jan", symbol: "♑", color: "from-gray-600/20 to-slate-800/20" },
-  { sign: "Aquário", slug: "aquario", dateRange: "20 jan - 18 fev", symbol: "♒", color: "from-cyan-400/20 to-blue-500/20" },
+  { sign: "Capricórnio", slug: "capricornio", dateRange: "22 dez - 20 jan", symbol: "♑", color: "from-gray-600/20 to-slate-800/20" },
+  { sign: "Aquário", slug: "aquario", dateRange: "21 jan - 18 fev", symbol: "♒", color: "from-cyan-400/20 to-blue-500/20" },
   { sign: "Peixes", slug: "peixes", dateRange: "19 fev - 20 mar", symbol: "♓", color: "from-indigo-400/20 to-purple-500/20" },
 ];
 
