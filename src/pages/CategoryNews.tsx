@@ -141,10 +141,20 @@ export default function CategoryNews() {
       agronegocio: ["Todos", "Safra", "Pecuária", "Tecnologia", "Mercado"],
       politica: ["Todos", "Municipal", "Estadual", "Nacional"],
       policia: ["Todos", "Ocorrências", "Trânsito", "Investigação"],
-      classificados: ["Todos", "Veículos", "Imóveis", "Serviços", "Empregos"],
+      classificados: ["Todos", "veiculos", "imoveis", "servicos", "empregos"],
     };
     return filterMap[sanitizedSlug] ?? ["Todos", "Geral", "Destaques"];
   }, [sanitizedSlug]);
+
+  const filterLabels = useMemo(() => {
+    const labelMap: Record<string, string> = {
+      veiculos: "Veículos",
+      imoveis: "Imóveis",
+      servicos: "Serviços",
+      empregos: "Empregos",
+    };
+    return labelMap;
+  }, []);
 
   const highlight = useMemo(() => {
     if (sanitizedSlug === "classificados" && adsQuery.data?.[0]) {
@@ -173,8 +183,23 @@ export default function CategoryNews() {
 
   const items = useMemo<CategoryItem[]>(() => {
     if (sanitizedSlug === "classificados") {
-      return (adsQuery.data || []).map((ad: any) => ({
-        tag: ad.category_slug.charAt(0).toUpperCase() + ad.category_slug.slice(1),
+      let filteredAds = (adsQuery.data || []) as any[];
+
+      if (activeFilter !== "Todos") {
+        filteredAds = filteredAds.filter(ad => ad.category_slug === activeFilter);
+      }
+
+      if (searchTerm.trim()) {
+        const q = searchTerm.toLowerCase();
+        filteredAds = filteredAds.filter(ad => 
+          ad.title.toLowerCase().includes(q) || 
+          (ad.description || "").toLowerCase().includes(q) ||
+          (ad.advertiser_name || "").toLowerCase().includes(q)
+        );
+      }
+
+      return filteredAds.map((ad: any) => ({
+        tag: filterLabels[ad.category_slug] || ad.category_slug,
         title: ad.title,
         excerpt: ad.description || ad.excerpt || "",
         authorLine: ad.advertiser_name || "",
@@ -302,7 +327,7 @@ export default function CategoryNews() {
                     variant={activeFilter === f ? "secondary" : "outline"}
                     className="rounded-full px-3 py-1 cursor-pointer hover:bg-accent transition-colors"
                   >
-                    {f}
+                    {filterLabels[f] || f}
                   </Badge>
                 </button>
               ))}
