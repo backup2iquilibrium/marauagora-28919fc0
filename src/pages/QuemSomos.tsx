@@ -19,8 +19,7 @@ import {
 
 const LOGO_URL = "/logo.png";
 
-const HERO_IMAGE_URL =
-  "https://lh3.googleusercontent.com/aida-public/AB6AXuCEXsNSxDSRyUH2s6dTUNqLoLVyNDa3gyg2tJcS0NkdMfRNnVGvrBgoxVHUS-ZLTtCIKWow8f5jYSvTZH4U2Ph7Q5CRKDju-StU-1XLir4BBPQ0ZfN7B8fSXBNArNvRHFfMDuMougI6stsJF_c3HSVWB_IOkxDuSqHlPva_72_pLgjJIUuHN29DI3CGSTSWSj3Ndg3AHjqPiZzxVM5VXIFC9heiw3xg22oVOgyc6Q4fzlmxb54gLLYBy2sUa74kjvAssRgx8wGk";
+const HERO_IMAGE_URL = "/marau-hero.png";
 
 type ValueCard = {
   title: string;
