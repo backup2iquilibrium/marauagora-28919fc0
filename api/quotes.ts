@@ -1,4 +1,4 @@
-import type { VercelRequest, VercelResponse } from '@vercel/node';
+// import type { VercelRequest, VercelResponse } from '@vercel/node';
 import puppeteer from 'puppeteer-core';
 import chromium from '@sparticuz/chromium';
 import { createClient } from '@supabase/supabase-js';
@@ -12,7 +12,7 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 let cache: { soja: string; milho: string; timestamp: number } | null = null;
 const CACHE_DURATION = 30 * 60 * 1000; // 30 minutes
 
-export default async function handler(req: VercelRequest, res: VercelResponse) {
+export default async function handler(req: any, res: any) {
     // Check in-memory cache first
     if (cache && Date.now() - cache.timestamp < CACHE_DURATION) {
         return res.status(200).json(cache);
@@ -22,12 +22,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         console.log('Starting scrape...');
 
         // Launch headless browser
-        const browser = await puppeteer.launch({
+        const launchOptions: any = {
             args: chromium.args,
             defaultViewport: { width: 1280, height: 720 },
             executablePath: await chromium.executablePath(),
             headless: true,
-        });
+        };
+        const browser = await puppeteer.launch(launchOptions);
 
         const page = await browser.newPage();
 
