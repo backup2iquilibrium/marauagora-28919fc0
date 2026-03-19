@@ -284,7 +284,7 @@ export default function Horoscope() {
             <div className="h-px w-8 bg-primary/30" />
           </div>
           <h1 className="font-serif text-4xl md:text-6xl font-black mb-4 bg-gradient-to-r from-primary via-purple-600 to-primary bg-clip-text text-transparent">
-            Horóscopo do Dia
+            Horóscopo do Dia <span className="text-xs align-top opacity-30">v1.1.0</span>
           </h1>
           <p className="text-muted-foreground text-lg leading-relaxed">
             Descubra as mensagens que o universo reservou para você hoje. 

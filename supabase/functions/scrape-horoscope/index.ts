@@ -29,7 +29,8 @@ async function scrapePersonare(sign: string) {
 
   try {
     const nextData = JSON.parse(nextDataMatch[1]);
-    const prediction = nextData?.props?.pageProps?.horoscopes?.daily?.prediction;
+    const prediction = nextData?.props?.pageProps?.horoscopes?.daily?.prediction || 
+                       nextData?.props?.pageProps?.horoscopes?.daily?.solar;
     
     if (!prediction) throw new Error(`No prediction found in JSON for ${sign}`);
     
