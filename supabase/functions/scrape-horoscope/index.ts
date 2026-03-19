@@ -12,29 +12,32 @@ const SIGNS = [
   "libra", "escorpiao", "sagitario", "capricornio", "aquario", "peixes"
 ];
 
-async function scrapeAstrolink(sign: string) {
-  const url = `https://www.astrolink.com.br/horoscopo/${sign}`;
+async function scrapePersonare(sign: string) {
+  const url = `https://www.personare.com.br/horoscopo-do-dia/${sign}`;
   const res = await fetch(url, {
     headers: {
-      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36'
     }
   });
 
-  if (!res.ok) throw new Error(`Astrolink failed: ${res.status}`);
+  if (!res.ok) throw new Error(`Personare failed for ${sign}: ${res.status}`);
   const html = await res.text();
 
-  // Encontra o container da previsão diária
-  const match = html.match(/<div class="horoscope-sign__presentation-content">([\s\S]*?)<\/div>/);
-  if (!match) throw new Error(`Could not find content for ${sign}`);
+  // Procurar pelo script __NEXT_DATA__ que contém o JSON estruturado
+  const nextDataMatch = html.match(/<script id="__NEXT_DATA__" type="application\/json">([\s\S]*?)<\/script>/);
+  if (!nextDataMatch) throw new Error(`Could not find __NEXT_DATA__ for ${sign}`);
 
-  // Limpa o HTML e remove tags
-  let text = match[1]
-    .replace(/<br\s*\/?>/gi, '\n')
-    .replace(/<[^>]*>?/gm, '')
-    .replace(/\s+/g, ' ')
-    .trim();
-  
-  return text;
+  try {
+    const nextData = JSON.parse(nextDataMatch[1]);
+    const prediction = nextData?.props?.pageProps?.horoscopes?.daily?.prediction;
+    
+    if (!prediction) throw new Error(`No prediction found in JSON for ${sign}`);
+    
+    // Limpeza de tags HTML simples se houver
+    return prediction.replace(/<[^>]*>?/gm, '').trim();
+  } catch (err) {
+    throw new Error(`Failed to parse JSON for ${sign}: ${err.message}`);
+  }
 }
 
 serve(async (req: Request) => {
@@ -46,13 +49,15 @@ serve(async (req: Request) => {
     const admin = createClient(supabaseUrl, supabaseServiceKey);
 
     const now = new Date();
-    // ISO format YYYY-MM-DD
+    // No horário do Brasil -3h (aproximadamente, para o banco de dados) 
+    // ou apenas usamos o ISO, mas o importante é o sign_slug e for_date
     const forDate = now.toISOString().split('T')[0];
 
     const results = [];
     for (const sign of SIGNS) {
       try {
-        const content = await scrapeAstrolink(sign);
+        console.log(`Scraping Personare for ${sign}...`);
+        const content = await scrapePersonare(sign);
         
         // Upsert no Supabase
         const { error } = await admin
@@ -71,7 +76,8 @@ serve(async (req: Request) => {
 
         if (error) throw error;
         results.push({ sign, ok: true });
-      } catch (err) {
+        console.log(`Updated ${sign} successfully`);
+      } catch (err: any) {
         console.error(`Error scraping ${sign}:`, err);
         results.push({ sign, ok: false, error: err.message });
       }
@@ -82,7 +88,7 @@ serve(async (req: Request) => {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (err: any) {
-    console.error("Scrape error", err);
+    console.error("Scrape overall error", err);
     return new Response(JSON.stringify({ error: err.message }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },

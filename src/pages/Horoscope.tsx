@@ -93,15 +93,8 @@ const FALLBACK_PREDICTIONS: Record<string, { ontem: string, hoje: string, amanha
   }
 };
 
-async function fetchRealHoroscope(sign: string, day: "ontem" | "hoje" | "amanha") {
-  const DAY_MAP: Record<string, string> = {
-    ontem: "yesterday",
-    hoje: "today",
-    amanha: "tomorrow"
-  };
-
+async function fetchRealHoroscope(sign: string) {
   try {
-    const period = DAY_MAP[day] || "today";
     const todayStr = format(new Date(), "yyyy-MM-dd");
 
     // Tenta buscar do banco local primeiro
@@ -110,34 +103,46 @@ async function fetchRealHoroscope(sign: string, day: "ontem" | "hoje" | "amanha"
       .select("content")
       .eq("sign_slug", sign)
       .eq("for_date", todayStr)
-      .eq("period", period)
       .maybeSingle();
 
     if (error) throw error;
 
-    // Se não encontrou e for "hoje", dispara o scraping automático
-    if (!data && period === "today") {
+    // Se não encontrou para hoje, dispara o scraping automático via Edge Function
+    if (!data) {
       console.log(`Dados não encontrados para ${sign} em ${todayStr}, disparando scraping...`);
+      // Invocamos a função mas não precisamos esperar o retorno total se ela for lenta, 
+      // embora para um horóscopo seja melhor esperar os dados aparecerem.
       await supabase.functions.invoke("scrape-horoscope");
       
       // Tenta buscar novamente após o scraping
-      const retry = await supabase
+      const { data: retryData } = await supabase
         .from("horoscopes")
         .select("content")
         .eq("sign_slug", sign)
         .eq("for_date", todayStr)
-        .eq("period", period)
         .maybeSingle();
       
-      data = retry.data;
+      data = retryData;
     }
 
     if (data?.content) return data.content;
     
-    throw new Error("No data found after scrape attempt");
+    // Fallback para a última previsão disponível se a de hoje falhar completamente
+    const { data: lastAvailable } = await supabase
+      .from("horoscopes")
+      .select("content")
+      .order("for_date", { ascending: false })
+      .eq("sign_slug", sign)
+      .limit(1)
+      .maybeSingle();
+
+    if (lastAvailable?.content) return lastAvailable.content;
+
+    throw new Error("No data found in database");
   } catch (error) {
     console.error("Erro ao buscar horóscopo:", error);
-    return FALLBACK_PREDICTIONS[sign]?.[day] || "As estrelas reservam grandes energias para você. Conecte-se com sua intuição profunda neste momento.";
+    // Usamos o fallback estático apenas como última instância absoluta
+    return FALLBACK_PREDICTIONS[sign]?.hoje || "As estrelas reservam grandes energias para você hoje. Siga sua intuição.";
   }
 }
 
@@ -153,9 +158,9 @@ async function fetchMostReadNews() {
 
 function SignCard({ s }: { s: typeof SIGNS_LIST[0] }) {
   const { data: prediction, isLoading } = useQuery({
-    queryKey: ["horoscope-api", s.slug, "hoje"],
-    queryFn: () => fetchRealHoroscope(s.slug, "hoje"),
-    staleTime: 1000 * 60 * 60, // Cache para não sobrecarregar as APIs gratuitas (1 hora)
+    queryKey: ["horoscope-db", s.slug],
+    queryFn: () => fetchRealHoroscope(s.slug),
+    staleTime: 1000 * 60 * 60 * 4, // 4 hours
     refetchOnWindowFocus: false,
   });
 
