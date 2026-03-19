@@ -16,18 +16,18 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { supabase } from "@/integrations/supabase/client";
 
 const SIGNS_LIST = [
-  { sign: "Áries", slug: "aries", dateRange: "21 mar - 20 abr", symbol: "♈", color: "from-red-500/20 to-orange-500/20", element: "Fogo", planet: "Marte", traits: "Espontaneidade, coragem e energia", profileDesc: "Pioneiros e intensos, vivem no agora com grande prazer de existir. Ação e decisão são as marcas registradas de Áries." },
-  { sign: "Touro", slug: "touro", dateRange: "21 abr - 20 mai", symbol: "♉", color: "from-green-500/20 to-emerald-500/20", element: "Terra", planet: "Vênus", traits: "Persistência, sensualidade e teimosia", profileDesc: "Focados no conforto e bem-estar, prezam pela beleza e pela segurança. A satisfação vem do contato com os cinco sentidos." },
-  { sign: "Gêmeos", slug: "gemeos", dateRange: "21 mai - 20 jun", symbol: "♊", color: "from-yellow-400/20 to-amber-500/20", element: "Ar", planet: "Mercúrio", traits: "Curiosidade, inteligência e liberdade", profileDesc: "Amam explorar novas ideias e ambientes. Com muito carisma e agilidade mental, estabelecem conexões facilmente através da comunicação e intercâmbio." },
-  { sign: "Câncer", slug: "cancer", dateRange: "21 jun - 22 jul", symbol: "♋", color: "from-blue-400/20 to-indigo-500/20", element: "Água", planet: "Lua", traits: "Sensibilidade, carinho e família", profileDesc: "Guiados pelo instinto e pela emoção. Têm necessidade de segurança e um laço forte com o lar, compreendendo o que não precisa ser dito pelas amizades." },
-  { sign: "Leão", slug: "leao", dateRange: "23 jul - 22 ago", symbol: "♌", color: "from-orange-500/20 to-yellow-600/20", element: "Fogo", planet: "Sol", traits: "Criatividade, autoestima e nobreza", profileDesc: "Donos de um brilho que atrai o sucesso. Destacam-se pela generosidade, senso de humor apurado e uma presença magnética nata e de liderança." },
-  { sign: "Virgem", slug: "virgem", dateRange: "23 ago - 22 set", symbol: "♍", color: "from-teal-500/20 to-green-600/20", element: "Terra", planet: "Mercúrio", traits: "Objetividade, humanidade e organização", profileDesc: "Mestres do detalhe e da ordem em busca do aprimoramento. Conseguem identificar pequenas falhas de maneira rápida, sendo extremamente prestativos na ajuda ao próximo." },
-  { sign: "Libra", slug: "libra", dateRange: "23 set - 22 out", symbol: "♎", color: "from-pink-400/20 to-rose-500/20", element: "Ar", planet: "Vênus", traits: "Vaidade, empatia e diplomacia", profileDesc: "Buscando o equilíbrio em todas as frentes da vida. A compaixão e a conexão interpessoal fazem de Libra o mestre da conciliação e do charme natural em parcerias." },
-  { sign: "Escorpião", slug: "escorpiao", dateRange: "23 out - 21 nov", symbol: "♏", color: "from-purple-600/20 to-indigo-900/20", element: "Água", planet: "Marte e Plutão", traits: "Intensidade, mistério e intuição", profileDesc: "Profundos como o universo, sentem muito a energia dos locais. Leais e corajosos investigam de frente seus medos, com imenso controle emocional e transformador." },
-  { sign: "Sagitário", slug: "sagitario", dateRange: "22 nov - 21 dez", symbol: "♐", color: "from-purple-500/20 to-blue-600/20", element: "Fogo", planet: "Júpiter", traits: "Otimismo, liberdade e movimento", profileDesc: "Os grandes filósofos desbravadores da nova era. Bem-humorados ao extremo e otimistas de alma livre que buscam o sentido nas jornadas longas e ensinamentos diários." },
-  { sign: "Capricórnio", slug: "capricornio", dateRange: "22 dez - 20 jan", symbol: "♑", color: "from-gray-600/20 to-slate-800/20", element: "Terra", planet: "Saturno", traits: "Responsabilidade, ambição e persistência", profileDesc: "Práticos e construtores de bases indestrutíveis para suas vitórias com disciplina absoluta. Assumem compromissos valendo cada minuto e prosperam subindo todas as montanhas." },
-  { sign: "Aquário", slug: "aquario", dateRange: "21 jan - 18 fev", symbol: "♒", color: "from-cyan-400/20 to-blue-500/20", element: "Ar", planet: "Saturno e Urano", traits: "Inovação, originalidade e independência", profileDesc: "Idealistas do zodíaco ligados fielmente às amizades originais. Exorbitam de mentalidade comunitária na quebra de paradigmas rumo à modernidade de valor humanitário." },
-  { sign: "Peixes", slug: "peixes", dateRange: "19 fev - 20 mar", symbol: "♓", color: "from-indigo-400/20 to-purple-500/20", element: "Água", planet: "Júpiter e Netuno", traits: "Solidariedade, intuição e desapego", profileDesc: "Sentem a vida por meio da mais bela imaginação. O coração universal sem barreiras que é doado sem limites a compaixão de um mar acolhedor e poético nos bastidores." },
+  { sign: "Áries", slug: "aries", dateRange: "21/03 a 19/04", symbol: "♈", color: "from-red-500/20 to-orange-500/20", element: "Fogo", planet: "Marte", traits: "Espontaneidade, coragem e energia", profileDesc: "Pioneiros e intensos, vivem no agora com grande prazer de existir. Ação e decisão são as marcas registradas de Áries." },
+  { sign: "Touro", slug: "touro", dateRange: "20/04 a 20/05", symbol: "♉", color: "from-green-500/20 to-emerald-500/20", element: "Terra", planet: "Vênus", traits: "Persistência, sensualidade e teimosia", profileDesc: "Focados no conforto e bem-estar, prezam pela beleza e pela segurança. A satisfação vem do contato com os cinco sentidos." },
+  { sign: "Gêmeos", slug: "gemeos", dateRange: "21/05 a 21/06", symbol: "♊", color: "from-yellow-400/20 to-amber-500/20", element: "Ar", planet: "Mercúrio", traits: "Curiosidade, inteligência e liberdade", profileDesc: "Amam explorar novas ideias e ambientes. Com muito carisma e agilidade mental, estabelecem conexões facilmente através da comunicação e intercâmbio." },
+  { sign: "Câncer", slug: "cancer", dateRange: "22/06 a 22/07", symbol: "♋", color: "from-blue-400/20 to-indigo-500/20", element: "Água", planet: "Lua", traits: "Sensibilidade, carinho e família", profileDesc: "Guiados pelo instinto e pela emoção. Têm necessidade de segurança e um laço forte com o lar, compreendendo o que não precisa ser dito pelas amizades." },
+  { sign: "Leão", slug: "leao", dateRange: "23/07 a 22/08", symbol: "♌", color: "from-orange-500/20 to-yellow-600/20", element: "Fogo", planet: "Sol", traits: "Criatividade, autoestima e nobreza", profileDesc: "Donos de um brilho que atrai o sucesso. Destacam-se pela generosidade, senso de humor apurado e uma presença magnética nata e de liderança." },
+  { sign: "Virgem", slug: "virgem", dateRange: "23/08 a 22/09", symbol: "♍", color: "from-teal-500/20 to-green-600/20", element: "Terra", planet: "Mercúrio", traits: "Objetividade, humanidade e organização", profileDesc: "Mestres do detalhe e da ordem em busca do aprimoramento. Conseguem identificar pequenas falhas de maneira rápida, sendo extremamente prestativos na ajuda ao próximo." },
+  { sign: "Libra", slug: "libra", dateRange: "23/09 a 22/10", symbol: "♎", color: "from-pink-400/20 to-rose-500/20", element: "Ar", planet: "Vênus", traits: "Vaidade, empatia e diplomacia", profileDesc: "Buscando o equilíbrio em todas as frentes da vida. A compaixão e a conexão interpessoal fazem de Libra o mestre da conciliação e do charme natural em parcerias." },
+  { sign: "Escorpião", slug: "escorpiao", dateRange: "23/10 a 21/11", symbol: "♏", color: "from-purple-600/20 to-indigo-900/20", element: "Água", planet: "Marte e Plutão", traits: "Intensidade, mistério e intuição", profileDesc: "Profundos como o universo, sentem muito a energia dos locais. Leais e corajosos investigam de frente seus medos, com imenso controle emocional e transformador." },
+  { sign: "Sagitário", slug: "sagitario", dateRange: "22/11 a 21/12", symbol: "♐", color: "from-purple-500/20 to-blue-600/20", element: "Fogo", planet: "Júpiter", traits: "Otimismo, liberdade e movimento", profileDesc: "Os grandes filósofos desbravadores da nova era. Bem-humorados ao extremo e otimistas de alma livre que buscam o sentido nas jornadas longas e ensinamentos diários." },
+  { sign: "Capricórnio", slug: "capricornio", dateRange: "22/12 a 19/01", symbol: "♑", color: "from-gray-600/20 to-slate-800/20", element: "Terra", planet: "Saturno", traits: "Responsabilidade, ambição e persistência", profileDesc: "Práticos e construtores de bases indestrutíveis para suas vitórias com disciplina absoluta. Assumem compromissos valendo cada minuto e prosperam subindo todas as montanhas." },
+  { sign: "Aquário", slug: "aquario", dateRange: "20/01 a 18/02", symbol: "♒", color: "from-cyan-400/20 to-blue-500/20", element: "Ar", planet: "Saturno e Urano", traits: "Inovação, originalidade e independência", profileDesc: "Idealistas do zodíaco ligados fielmente às amizades originais. Exorbitam de mentalidade comunitária na quebra de paradigmas rumo à modernidade de valor humanitário." },
+  { sign: "Peixes", slug: "peixes", dateRange: "19/02 a 20/03", symbol: "♓", color: "from-indigo-400/20 to-purple-500/20", element: "Água", planet: "Júpiter e Netuno", traits: "Solidariedade, intuição e desapego", profileDesc: "Sentem a vida por meio da mais bela imaginação. O coração universal sem barreiras que é doado sem limites a compaixão de um mar acolhedor e poético nos bastidores." },
 ];
 
 const FALLBACK_PREDICTIONS: Record<string, { ontem: string, hoje: string, amanha: string }> = {
@@ -94,32 +94,49 @@ const FALLBACK_PREDICTIONS: Record<string, { ontem: string, hoje: string, amanha
 };
 
 async function fetchRealHoroscope(sign: string, day: "ontem" | "hoje" | "amanha") {
-  const DAY_TRANSLATIONS = {
+  const DAY_MAP: Record<string, string> = {
     ontem: "yesterday",
     hoje: "today",
     amanha: "tomorrow"
   };
 
   try {
-    const englishDay = DAY_TRANSLATIONS[day] || "today";
-    // We use a free English horoscopes API and natively translate it on the client for full automation.
-    const res = await fetch(`https://horoscope-app-api.vercel.app/api/v1/get-horoscope/daily?sign=${sign}&day=${englishDay}`);
-    if (!res.ok) throw new Error("Failed API");
-    const json = await res.json();
-    const textInEnglish = json?.data?.horoscope;
-    
-    if (!textInEnglish) throw new Error("No data in API response");
+    const period = DAY_MAP[day] || "today";
+    const todayStr = format(new Date(), "yyyy-MM-dd");
 
-    const translateRes = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=pt-br&dt=t&q=${encodeURIComponent(textInEnglish)}`);
-    if (!translateRes.ok) throw new Error("Failed Translation");
+    // Tenta buscar do banco local primeiro
+    let { data, error } = await supabase
+      .from("horoscopes")
+      .select("content")
+      .eq("sign_slug", sign)
+      .eq("for_date", todayStr)
+      .eq("period", period)
+      .maybeSingle();
+
+    if (error) throw error;
+
+    // Se não encontrou e for "hoje", dispara o scraping automático
+    if (!data && period === "today") {
+      console.log(`Dados não encontrados para ${sign} em ${todayStr}, disparando scraping...`);
+      await supabase.functions.invoke("scrape-horoscope");
+      
+      // Tenta buscar novamente após o scraping
+      const retry = await supabase
+        .from("horoscopes")
+        .select("content")
+        .eq("sign_slug", sign)
+        .eq("for_date", todayStr)
+        .eq("period", period)
+        .maybeSingle();
+      
+      data = retry.data;
+    }
+
+    if (data?.content) return data.content;
     
-    const translateJson = await translateRes.json();
-    const translatedText = translateJson[0].map((s: any) => s[0]).join('');
-    
-    return translatedText;
+    throw new Error("No data found after scrape attempt");
   } catch (error) {
-    console.error("Erro ao buscar horóscopo automático:", error);
-    // Em caso de instabilidade na API externa, usamos o Fallback individual imediatamente para não quebrar a página
+    console.error("Erro ao buscar horóscopo:", error);
     return FALLBACK_PREDICTIONS[sign]?.[day] || "As estrelas reservam grandes energias para você. Conecte-se com sua intuição profunda neste momento.";
   }
 }
