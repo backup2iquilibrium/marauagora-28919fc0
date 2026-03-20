@@ -1,15 +1,26 @@
 import { Mail, Sparkles } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 
 import { AdSlot } from "@/components/marau/AdSlot";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { SIGNS_LIST, fetchRealHoroscope, getCurrentSign } from "@/lib/horoscope";
 
 type MostReadItem = { title: string; href?: string };
 
 export function HoroscopeSidebar({ mostRead }: { mostRead: MostReadItem[] }) {
+  const currentSign = getCurrentSign();
+
+  const { data: prediction, isLoading } = useQuery({
+    queryKey: ["horoscope-sidebar", currentSign.slug],
+    queryFn: () => fetchRealHoroscope(currentSign.slug),
+    staleTime: 1000 * 60 * 60 * 4, // 4 hours
+    refetchOnWindowFocus: false,
+  });
+
   return (
     <aside className="lg:col-span-1 space-y-8">
       <AdSlot label="Anúncio (300x250)" />
@@ -25,14 +36,21 @@ export function HoroscopeSidebar({ mostRead }: { mostRead: MostReadItem[] }) {
           <div className="rounded-xl border border-primary/10 bg-card/50 backdrop-blur-sm p-6 shadow-sm group">
             <div className="flex items-center justify-between mb-4">
               <div className="flex flex-col">
-                <p className="text-xl font-black text-primary uppercase tracking-tighter">Peixes</p>
-                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">19 Fev - 20 Mar</p>
+                <p className="text-xl font-black text-primary uppercase tracking-tighter">{currentSign.sign}</p>
+                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">{currentSign.dateRange}</p>
               </div>
-              <span className="text-3xl opacity-50 group-hover:opacity-100 transition-opacity">♓</span>
+              <span className="text-3xl opacity-50 group-hover:opacity-100 transition-opacity">{currentSign.symbol}</span>
             </div>
-            <p className="text-sm text-muted-foreground leading-relaxed italic">
-              "É tempo de navegar nas águas profundas da intuição e da criatividade. O universo convida você a sonhar alto."
-            </p>
+            {isLoading ? (
+              <div className="space-y-2 animate-pulse">
+                <div className="h-3 bg-primary/10 rounded w-full"></div>
+                <div className="h-3 bg-primary/10 rounded w-5/6"></div>
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground leading-relaxed italic">
+                "{prediction}"
+              </p>
+            )}
             <Dialog>
               <DialogTrigger asChild>
                 <Button variant="outline" className="mt-6 w-full border-primary/20 hover:bg-primary hover:text-white transition-all font-bold text-xs uppercase tracking-widest cursor-pointer">
@@ -43,18 +61,18 @@ export function HoroscopeSidebar({ mostRead }: { mostRead: MostReadItem[] }) {
                 <DialogHeader>
                   <DialogTitle className="flex flex-col gap-1 items-start">
                     <div className="flex items-center gap-3 text-2xl font-black text-primary">
-                      <span className="text-4xl filter opacity-80">♓</span>
-                      Peixes
+                      <span className="text-4xl filter opacity-80">{currentSign.symbol}</span>
+                      {currentSign.sign}
                     </div>
                     <div className="text-sm font-medium text-muted-foreground italic font-normal tracking-normal pt-1 break-words">
-                      Solidariedade, intuição e desapego
+                      {currentSign.traits}
                     </div>
                   </DialogTitle>
                   <div className="text-xs font-bold uppercase tracking-widest text-muted-foreground pt-3 border-t border-primary/10 mt-2 flex flex-col gap-3">
-                    <span>19 Fev - 20 Mar • Signo do Mês</span>
+                    <span>{currentSign.dateRange} • Signo do Mês</span>
                     <div className="flex flex-wrap gap-2">
-                      <span className="bg-primary/10 text-primary px-2.5 py-1 rounded-md text-[10px] break-keep">Elemento: Água</span>
-                      <span className="bg-primary/10 text-primary px-2.5 py-1 rounded-md text-[10px] break-keep">Planeta: Júpiter e Netuno</span>
+                      <span className="bg-primary/10 text-primary px-2.5 py-1 rounded-md text-[10px] break-keep">Elemento: {currentSign.element}</span>
+                      <span className="bg-primary/10 text-primary px-2.5 py-1 rounded-md text-[10px] break-keep">Planeta: {currentSign.planet}</span>
                     </div>
                   </div>
                 </DialogHeader>
@@ -67,7 +85,7 @@ export function HoroscopeSidebar({ mostRead }: { mostRead: MostReadItem[] }) {
                       <div className="h-px bg-primary/20 flex-grow"></div>
                     </h4>
                     <p className="text-sm text-foreground/80 leading-relaxed font-medium">
-                      Sentem a vida por meio da mais bela imaginação. O coração universal sem barreiras que é doado sem limites a compaixão de um mar acolhedor e poético nos bastidores.
+                      {currentSign.profileDesc}
                     </p>
                   </div>
 
@@ -77,7 +95,7 @@ export function HoroscopeSidebar({ mostRead }: { mostRead: MostReadItem[] }) {
                       <div className="h-px bg-primary/20 flex-grow"></div>
                     </h4>
                     <p className="text-base text-foreground/90 leading-relaxed break-words pl-2 border-l-2 border-primary/20">
-                      Este é o seu momento de brilhar através da sensibilidade. As águas de Peixes trazem fluidez para resolver pendências emocionais e abrir espaço para novos sonhos. Confie na sua voz interior.
+                      {isLoading ? "Consultando os astros..." : prediction}
                     </p>
                   </div>
                 </div>
