@@ -79,12 +79,12 @@ export function HoroscopeSidebar({ mostRead }: { mostRead: MostReadItem[] }) {
                 <div className="py-2 relative overflow-hidden">
                   <Sparkles className="absolute top-0 right-0 h-24 w-24 text-primary/5 -mr-4 -mt-4 animate-pulse pointer-events-none" />
                   
-                  <div className="mb-6 bg-muted/30 border border-primary/10 rounded-xl p-4 shadow-sm relative z-10">
+                  <div className="mb-6 relative z-10">
                     <h4 className="text-[11px] uppercase tracking-widest font-bold text-primary mb-2 flex items-center gap-2">
                       Perfil do Signo
                       <div className="h-px bg-primary/20 flex-grow"></div>
                     </h4>
-                    <p className="text-sm text-foreground/80 leading-relaxed font-medium">
+                    <p className="text-base text-foreground/90 leading-relaxed break-words pl-2 border-l-2 border-primary/20">
                       {currentSign.profileDesc}
                     </p>
                   </div>
