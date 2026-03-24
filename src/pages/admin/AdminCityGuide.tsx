@@ -98,7 +98,21 @@ export default function AdminCityGuide() {
     const queryClient = useQueryClient();
     const [activeTab, setActiveTab] = React.useState("services");
     const [q, setQ] = React.useState("");
+    const [catQ, setCatQ] = React.useState("");
     const [categoryFilter, setCategoryFilter] = React.useState("all");
+
+    const DEFAULT_CATEGORIES = [
+        { name: "Gastronomia", slug: "gastronomia", icon: "storefront", sort_order: 10 },
+        { name: "Hospedagem", slug: "hospedagem", icon: "hotel", sort_order: 20 },
+        { name: "Saúde", slug: "saude", icon: "local_hospital", sort_order: 30 },
+        { name: "Educação", slug: "educacao", icon: "school", sort_order: 40 },
+        { name: "Comércio", slug: "comercio", icon: "shopping_bag", sort_order: 50 },
+        { name: "Turismo", slug: "turismo", icon: "map", sort_order: 60 },
+        { name: "Serviços Públicos", slug: "servicos-publicos", icon: "account_balance", sort_order: 70 },
+        { name: "Lazer", slug: "lazer", icon: "palmtree", sort_order: 80 },
+        { name: "Transporte", slug: "transporte", icon: "directions_bus", sort_order: 90 },
+        { name: "Segurança", slug: "seguranca", icon: "shield", sort_order: 100 },
+    ];
     
     // Services State
     const [isDialogOpen, setIsDialogOpen] = React.useState(false);
@@ -177,6 +191,17 @@ export default function AdminCityGuide() {
                     .eq("slug", editingCategory.slug);
                 if (error) throw error;
             } else {
+                // Check duplicate slug
+                const { data: existing } = await supabase
+                  .from("public_service_categories")
+                  .select("slug")
+                  .eq("slug", data.slug)
+                  .maybeSingle();
+
+                if (existing) {
+                  throw new Error(`A categoria com o slug "${data.slug}" já existe.`);
+                }
+
                 const { error } = await supabase
                     .from("public_service_categories")
                     .insert([data]);
@@ -192,6 +217,33 @@ export default function AdminCityGuide() {
         onError: (error: any) => {
             console.error(error);
             toast.error("Erro ao salvar categoria", { description: error.message });
+        },
+    });
+
+    const seedCategoriesMutation = useMutation({
+        mutationFn: async () => {
+          const { data: current } = await supabase.from("public_service_categories").select("slug");
+          const existingSlugs = new Set((current || []).map(c => c.slug));
+          
+          const toAdd = DEFAULT_CATEGORIES.filter(c => !existingSlugs.has(c.slug));
+          
+          if (toAdd.length === 0) return { count: 0 };
+          
+          const { error } = await supabase.from("public_service_categories").insert(toAdd);
+          if (error) throw error;
+          return { count: toAdd.length };
+        },
+        onSuccess: (res) => {
+            if (res.count > 0) {
+              toast.success(`${res.count} categorias padrão importadas!`);
+              queryClient.invalidateQueries({ queryKey: ["admin_service_categories"] });
+            } else {
+              toast.info("Todas as categorias padrão já foram cadastradas.");
+            }
+        },
+        onError: (error: any) => {
+            console.error(error);
+            toast.error("Erro ao importar categorias", { description: error.message });
         },
     });
 
@@ -329,6 +381,15 @@ export default function AdminCityGuide() {
                     <p className="text-sm text-muted-foreground transition-colors">Gerencie pontos turísticos e estabelecimentos locais.</p>
                 </div>
                 <div className="flex gap-2">
+                    <Button 
+                      variant="outline" 
+                      className="gap-2" 
+                      onClick={() => seedCategoriesMutation.mutate()}
+                      disabled={seedCategoriesMutation.isPending}
+                    >
+                        <Loader2 className={`h-4 w-4 ${seedCategoriesMutation.isPending ? "animate-spin" : ""}`} />
+                        Carregar Padrões
+                    </Button>
                     {activeTab === "services" ? (
                         <Button className="gap-2" onClick={handleOpenAdd}>
                             <Plus className="h-4 w-4" />
@@ -480,6 +541,18 @@ export default function AdminCityGuide() {
                 </TabsContent>
 
                 <TabsContent value="categories" className="space-y-6 outline-none">
+                    <Card className="p-4 bg-card">
+                        <div className="relative">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                            <Input
+                                placeholder="Filtrar categorias por nome ou slug..."
+                                className="pl-9"
+                                value={catQ}
+                                onChange={(e) => setCatQ(e.target.value)}
+                            />
+                        </div>
+                    </Card>
+
                     <div className="border rounded-lg bg-card overflow-hidden">
                         <Table>
                             <TableHeader>
@@ -501,10 +574,13 @@ export default function AdminCityGuide() {
                                     </TableRow>
                                 ) : (categoriesQuery.data || []).length === 0 ? (
                                     <TableRow>
-                                        <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">Nenhuma categoria encontrada.</TableCell>
+                                        <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">Nenhuma categoria cadastrada.</TableCell>
                                     </TableRow>
                                 ) : (
-                                    categoriesQuery.data?.map((cat: any) => (
+                                    categoriesQuery.data?.filter((c: any) => 
+                                      c.name.toLowerCase().includes(catQ.toLowerCase()) || 
+                                      c.slug.toLowerCase().includes(catQ.toLowerCase())
+                                    ).map((cat: any) => (
                                         <TableRow key={cat.slug}>
                                             <TableCell className="font-medium">{cat.name}</TableCell>
                                             <TableCell className="text-xs text-muted-foreground font-mono">{cat.slug}</TableCell>
@@ -729,11 +805,26 @@ export default function AdminCityGuide() {
                             <Label htmlFor="cat_name">Nome da Categoria</Label>
                             <Input
                                 id="cat_name"
+                                list="recommended-categories"
                                 value={categoryFormData.name}
-                                onChange={handleCategoryNameChange}
+                                onChange={(e) => {
+                                  const val = e.target.value;
+                                  handleCategoryNameChange(e);
+                                  
+                                  // Auto-fill icon if matching recommendation
+                                  const rec = DEFAULT_CATEGORIES.find(c => c.name === val);
+                                  if (rec && !editingCategory) {
+                                      setCategoryFormData(prev => ({ ...prev, icon: rec.icon }));
+                                  }
+                                }}
                                 placeholder="Ex: Gastronomia"
                                 required
                             />
+                            <datalist id="recommended-categories">
+                                {DEFAULT_CATEGORIES.map(c => (
+                                    <option key={c.slug} value={c.name} />
+                                ))}
+                            </datalist>
                         </div>
 
                         <div className="space-y-2">
