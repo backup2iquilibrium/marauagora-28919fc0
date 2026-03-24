@@ -4,5 +4,11 @@
             "source": "/(.*)",
             "destination": "/index.html"
         }
+    ],
+    "crons": [
+        {
+            "path": "/api/scrape-horoscopes",
+            "schedule": "0 6 * * *"
+        }
     ]
-}
+}

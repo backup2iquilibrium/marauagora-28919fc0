@@ -33,33 +33,57 @@ export const FALLBACK_PREDICTIONS: Record<string, { hoje: string }> = {
 
 export async function fetchRealHoroscope(sign: string) {
   try {
-    const todayStr = format(new Date(), "yyyy-MM-dd");
+    // Garantir que estamos usando o fuso horário de Brasília (UTC-3)
+    const options: Intl.DateTimeFormatOptions = {
+      timeZone: 'America/Sao_Paulo',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit'
+    };
+    const brazilDate = new Intl.DateTimeFormat('pt-BR', options).format(new Date());
+    const [d, m, y] = brazilDate.split('/');
+    const todayStr = `${y}-${m}-${d}`;
+
+    console.log(`Buscando horóscopo para ${sign} na data ${todayStr}`);
 
     let { data, error } = await supabase
       .from("horoscopes")
       .select("content")
       .eq("sign_slug", sign)
       .eq("for_date", todayStr)
+      .order("updated_at", { ascending: false })
+      .limit(1)
       .maybeSingle();
+
 
     if (error) throw error;
 
     if (!data) {
-      console.log(`Dados não encontrados para ${sign} em ${todayStr}, disparando scraping...`);
-      await supabase.functions.invoke("scrape-horoscope");
-      
-      const { data: retryData } = await supabase
-        .from("horoscopes")
-        .select("content")
-        .eq("sign_slug", sign)
-        .eq("for_date", todayStr)
-        .maybeSingle();
-      
-      data = retryData;
+      console.log(`Dados não encontrados para ${sign} em ${todayStr}, disparando atualização...`);
+      // Tentamos invocar a função de scrape. 
+      // Nota: Isso pode demorar, mas o scrap-horoscope agora limpa e atualiza todos os signos.
+      try {
+        await supabase.functions.invoke("scrape-horoscope");
+        
+        // Pequeno delay para garantir que o banco processou o upsert
+        await new Promise(resolve => setTimeout(resolve, 1500));
+
+        const { data: retryData } = await supabase
+          .from("horoscopes")
+          .select("content")
+          .eq("sign_slug", sign)
+          .eq("for_date", todayStr)
+          .maybeSingle();
+        
+        data = retryData;
+      } catch (invokeError) {
+        console.error("Falha ao invocar scrape-horoscope:", invokeError);
+      }
     }
 
     if (data?.content) return data.content;
     
+    // Fallback para a última previsão disponível se hoje falhar
     const { data: lastAvailable } = await supabase
       .from("horoscopes")
       .select("content")
@@ -68,14 +92,18 @@ export async function fetchRealHoroscope(sign: string) {
       .limit(1)
       .maybeSingle();
 
-    if (lastAvailable?.content) return lastAvailable.content;
+    if (lastAvailable?.content) {
+      console.log(`Usando fallback da última data disponível para ${sign}`);
+      return lastAvailable.content;
+    }
 
-    throw new Error("No data found in database");
+    throw new Error("Nenhum dado encontrado no banco de dados");
   } catch (error) {
     console.error("Erro ao buscar horóscopo:", error);
     return FALLBACK_PREDICTIONS[sign]?.hoje || "As estrelas reservam grandes energias para você hoje. Siga sua intuição.";
   }
 }
+
 
 export function getCurrentSign() {
   const now = new Date();
