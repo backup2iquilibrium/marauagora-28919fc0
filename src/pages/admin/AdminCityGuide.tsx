@@ -174,7 +174,7 @@ export default function AdminCityGuide() {
                 const { error } = await supabase
                     .from("public_service_categories")
                     .update(data)
-                    .eq("id", editingCategory.id);
+                    .eq("slug", editingCategory.slug);
                 if (error) throw error;
             } else {
                 const { error } = await supabase
@@ -211,7 +211,7 @@ export default function AdminCityGuide() {
 
     const categoryDeleteMutation = useMutation({
         mutationFn: async (id: string) => {
-            const { error } = await supabase.from("public_service_categories").delete().eq("id", id);
+            const { error } = await supabase.from("public_service_categories").delete().eq("slug", id);
             if (error) throw error;
         },
         onSuccess: () => {
@@ -505,7 +505,7 @@ export default function AdminCityGuide() {
                                     </TableRow>
                                 ) : (
                                     categoriesQuery.data?.map((cat: any) => (
-                                        <TableRow key={cat.id}>
+                                        <TableRow key={cat.slug}>
                                             <TableCell className="font-medium">{cat.name}</TableCell>
                                             <TableCell className="text-xs text-muted-foreground font-mono">{cat.slug}</TableCell>
                                             <TableCell>
@@ -523,7 +523,7 @@ export default function AdminCityGuide() {
                                                         variant="ghost" 
                                                         size="icon" 
                                                         className="text-destructive" 
-                                                        onClick={() => confirm("Deseja realmente excluir esta categoria? Isso pode afetar estabelecimentos vinculados a ela.") && categoryDeleteMutation.mutate(cat.id)}
+                                                        onClick={() => confirm("Deseja realmente excluir esta categoria? Isso pode afetar estabelecimentos vinculados a ela.") && categoryDeleteMutation.mutate(cat.slug)}
                                                     >
                                                         <Trash2 className="h-4 w-4" />
                                                     </Button>
