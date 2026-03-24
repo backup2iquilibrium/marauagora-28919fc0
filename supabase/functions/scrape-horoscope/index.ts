@@ -49,16 +49,27 @@ serve(async (req: Request) => {
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const admin = createClient(supabaseUrl, supabaseServiceKey);
 
-    const now = new Date();
-    // No horário do Brasil -3h (aproximadamente, para o banco de dados) 
-    // ou apenas usamos o ISO, mas o importante é o sign_slug e for_date
-    const forDate = now.toISOString().split('T')[0];
+    // Use America/Sao_Paulo timezone for consistency (Brazil -3h)
+    const brazilDate = new Intl.DateTimeFormat('pt-BR', {
+      timeZone: 'America/Sao_Paulo',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit'
+    }).format(now);
+    
+    // Format: DD/MM/YYYY -> YYYY-MM-DD
+    const [d, m, y] = brazilDate.split('/');
+    const forDate = `${y}-${m}-${d}`;
+
+    console.log(`Starting scrape for ${forDate} (Brazil time)`);
 
     const results = [];
     for (const sign of SIGNS) {
       try {
         console.log(`Scraping Personare for ${sign}...`);
         const content = await scrapePersonare(sign);
+        
+        console.log(`Successfully scraped ${sign}. Content length: ${content.length}`);
         
         // Upsert no Supabase
         const { error } = await admin
@@ -70,21 +81,28 @@ serve(async (req: Request) => {
               content: content,
               period: "today",
               is_published: true,
-              updated_at: now.toISOString(),
+              updated_at: new Date().toISOString(),
             },
             { onConflict: "sign_slug,for_date,period" }
           );
 
         if (error) throw error;
         results.push({ sign, ok: true });
-        console.log(`Updated ${sign} successfully`);
+        console.log(`Updated database for ${sign} ${forDate} successfully`);
       } catch (err: any) {
         console.error(`Error scraping ${sign}:`, err);
         results.push({ sign, ok: false, error: err.message });
       }
     }
 
-    return new Response(JSON.stringify({ ok: true, forDate, results }), {
+    const successCount = results.filter(r => r.ok).length;
+    return new Response(JSON.stringify({ 
+      ok: true, 
+      forDate, 
+      successCount,
+      totalCount: SIGNS.length,
+      results 
+    }), {
       status: 200,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
@@ -96,3 +114,4 @@ serve(async (req: Request) => {
     });
   }
 });
+
