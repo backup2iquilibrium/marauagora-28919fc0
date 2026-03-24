@@ -48,7 +48,7 @@ async function fetchPublicServices() {
       *,
       category:public_service_categories(*)
     `)
-    .eq("status", "active");
+    .eq("is_published", true);
   if (error) throw error;
   return data || [];
 }
@@ -88,8 +88,8 @@ export default function CityPoints() {
     if (searchTerm.trim()) {
       const low = searchTerm.toLowerCase();
       result = result.filter(p =>
-        p.name.toLowerCase().includes(low) ||
-        (p.description && p.description.toLowerCase().includes(low))
+        p.title.toLowerCase().includes(low) ||
+        (p.summary && p.summary.toLowerCase().includes(low))
       );
     }
 
@@ -172,7 +172,7 @@ export default function CityPoints() {
               <Card key={p.id} className="group hover:shadow-xl transition-all duration-300 border-none bg-card shadow-md overflow-hidden flex flex-col">
                 <div className="aspect-video w-full bg-muted relative overflow-hidden">
                   {p.image_url ? (
-                    <img src={p.image_url} alt={p.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                    <img src={p.image_url} alt={p.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-primary/10 font-serif font-black text-6xl">MA</div>
                   )}
@@ -183,8 +183,8 @@ export default function CityPoints() {
                 </div>
                 <CardContent className="p-6 flex-1 flex flex-col">
                   <p className="text-[10px] font-bold text-primary uppercase tracking-widest mb-1">{p.category?.name}</p>
-                  <h3 className="text-xl font-bold leading-tight mb-2 group-hover:text-primary transition-colors">{p.name}</h3>
-                  <p className="text-sm text-muted-foreground line-clamp-2 mb-4 flex-1">{p.description}</p>
+                  <h3 className="text-xl font-bold leading-tight mb-2 group-hover:text-primary transition-colors">{p.title}</h3>
+                  <p className="text-sm text-muted-foreground line-clamp-2 mb-4 flex-1">{p.summary}</p>
 
                   <div className="space-y-2 mt-auto">
                     <div className="flex items-start gap-2 text-xs text-muted-foreground">

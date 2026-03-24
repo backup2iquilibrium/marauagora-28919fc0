@@ -10,6 +10,7 @@ import {
   PenSquare,
   Upload,
   UserPlus,
+  MapPin,
 } from "lucide-react";
 import {
   Pie,
@@ -35,13 +36,14 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
 async function fetchStats() {
-  const [news, pendingAds, activeAds, users, spaces, activeAdCampaigns] = await Promise.all([
+  const [news, pendingAds, activeAds, users, spaces, activeAdCampaigns, guideItems] = await Promise.all([
     supabase.from("news").select("*", { count: "exact", head: true }),
     supabase.from("classified_ads").select("*", { count: "exact", head: true }).eq("status", "pending"),
     supabase.from("classified_ads").select("*", { count: "exact", head: true }).eq("status", "active"),
     supabase.from("profiles").select("*", { count: "exact", head: true }),
     supabase.from("ad_spaces").select("*").order("sort_order", { ascending: true }),
     supabase.from("ad_campaigns").select("*").eq("status", "active"),
+    supabase.from("public_services").select("*", { count: "exact", head: true }),
   ]);
 
   return {
@@ -49,6 +51,7 @@ async function fetchStats() {
     pendingAdsCount: pendingAds.count || 0,
     activeAdsCount: activeAds.count || 0,
     usersCount: users.count || 0,
+    guideCount: guideItems.count || 0,
     spaces: spaces.data || [],
     activeCampaigns: activeAdCampaigns.data || [],
   };
@@ -119,6 +122,13 @@ export default function AdminDashboard() {
       value: statsQuery.data?.usersCount.toString() || "0",
       helper: "Base de usuários",
       icon: <UserPlus className="h-4 w-4 text-primary" aria-hidden="true" />,
+      iconBg: "bg-muted",
+    },
+    {
+      title: "Guia da Cidade",
+      value: statsQuery.data?.guideCount.toString() || "0",
+      helper: "Estabelecimentos",
+      icon: <MapPin className="h-4 w-4 text-primary" aria-hidden="true" />,
       iconBg: "bg-muted",
     },
   ];
