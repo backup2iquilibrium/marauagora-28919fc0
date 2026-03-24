@@ -14,7 +14,9 @@ import {
     Image as ImageIcon,
     Check,
     X,
-    ExternalLink
+    ExternalLink,
+    Settings,
+    LayoutGrid
 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -54,6 +56,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 async function fetchCategories() {
     const { data, error } = await supabase
@@ -93,8 +96,11 @@ async function fetchPublicServices({
 
 export default function AdminCityGuide() {
     const queryClient = useQueryClient();
+    const [activeTab, setActiveTab] = React.useState("services");
     const [q, setQ] = React.useState("");
     const [categoryFilter, setCategoryFilter] = React.useState("all");
+    
+    // Services State
     const [isDialogOpen, setIsDialogOpen] = React.useState(false);
     const [editingItem, setEditingItem] = React.useState<any>(null);
     const [formData, setFormData] = React.useState({
@@ -112,6 +118,16 @@ export default function AdminCityGuide() {
         is_featured: false,
         sort_order: 0,
         rating: 5,
+    });
+
+    // Categories State
+    const [isCategoryDialogOpen, setIsCategoryDialogOpen] = React.useState(false);
+    const [editingCategory, setEditingCategory] = React.useState<any>(null);
+    const [categoryFormData, setCategoryFormData] = React.useState({
+        name: "",
+        slug: "",
+        icon: "",
+        sort_order: 0,
     });
 
     const categoriesQuery = useQuery({
@@ -146,9 +162,36 @@ export default function AdminCityGuide() {
             queryClient.invalidateQueries({ queryKey: ["admin_services"] });
             queryClient.invalidateQueries({ queryKey: ["public-services-list"] });
         },
-        onError: (error) => {
+        onError: (error: any) => {
             console.error(error);
             toast.error("Erro ao salvar", { description: error.message });
+        },
+    });
+
+    const categorySaveMutation = useMutation({
+        mutationFn: async (data: typeof categoryFormData) => {
+            if (editingCategory) {
+                const { error } = await supabase
+                    .from("public_service_categories")
+                    .update(data)
+                    .eq("id", editingCategory.id);
+                if (error) throw error;
+            } else {
+                const { error } = await supabase
+                    .from("public_service_categories")
+                    .insert([data]);
+                if (error) throw error;
+            }
+        },
+        onSuccess: () => {
+            toast.success(editingCategory ? "Categoria atualizada!" : "Categoria criada!");
+            setIsCategoryDialogOpen(false);
+            setEditingCategory(null);
+            queryClient.invalidateQueries({ queryKey: ["admin_service_categories"] });
+        },
+        onError: (error: any) => {
+            console.error(error);
+            toast.error("Erro ao salvar categoria", { description: error.message });
         },
     });
 
@@ -161,8 +204,22 @@ export default function AdminCityGuide() {
             toast.success("Excluído com sucesso!");
             queryClient.invalidateQueries({ queryKey: ["admin_services"] });
         },
-        onError: (error) => {
+        onError: (error: any) => {
             toast.error("Erro ao excluir", { description: error.message });
+        },
+    });
+
+    const categoryDeleteMutation = useMutation({
+        mutationFn: async (id: string) => {
+            const { error } = await supabase.from("public_service_categories").delete().eq("id", id);
+            if (error) throw error;
+        },
+        onSuccess: () => {
+            toast.success("Categoria excluída com sucesso!");
+            queryClient.invalidateQueries({ queryKey: ["admin_service_categories"] });
+        },
+        onError: (error: any) => {
+            toast.error("Erro ao excluir categoria", { description: error.message });
         },
     });
 
@@ -208,6 +265,28 @@ export default function AdminCityGuide() {
         setIsDialogOpen(true);
     };
 
+    const handleOpenAddCategory = () => {
+        setEditingCategory(null);
+        setCategoryFormData({
+            name: "",
+            slug: "",
+            icon: "storefront",
+            sort_order: (categoriesQuery.data?.length || 0) * 10,
+        });
+        setIsCategoryDialogOpen(true);
+    };
+
+    const handleOpenEditCategory = (cat: any) => {
+        setEditingCategory(cat);
+        setCategoryFormData({
+            name: cat.name || "",
+            slug: cat.slug || "",
+            icon: cat.icon || "storefront",
+            sort_order: cat.sort_order || 0,
+        });
+        setIsCategoryDialogOpen(true);
+    };
+
     const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const title = e.target.value;
         const slug = title
@@ -220,9 +299,26 @@ export default function AdminCityGuide() {
         setFormData((prev) => ({ ...prev, title, slug }));
     };
 
+    const handleCategoryNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const name = e.target.value;
+        const slug = name
+            .toLowerCase()
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "")
+            .replace(/[^\w\s-]/g, "")
+            .replace(/\s+/g, "-");
+
+        setCategoryFormData((prev) => ({ ...prev, name, slug }));
+    };
+
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         saveMutation.mutate(formData);
+    };
+
+    const handleCategorySubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        categorySaveMutation.mutate(categoryFormData);
     };
 
     return (
@@ -230,135 +326,217 @@ export default function AdminCityGuide() {
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
                     <h1 className="text-2xl font-semibold">Guia da Cidade</h1>
-                    <p className="text-sm text-muted-foreground">Gerencie pontos turísticos e estabelecimentos locais.</p>
+                    <p className="text-sm text-muted-foreground transition-colors">Gerencie pontos turísticos e estabelecimentos locais.</p>
                 </div>
-                <Button className="gap-2" onClick={handleOpenAdd}>
-                    <Plus className="h-4 w-4" />
-                    Novo Estabelecimento
-                </Button>
+                <div className="flex gap-2">
+                    {activeTab === "services" ? (
+                        <Button className="gap-2" onClick={handleOpenAdd}>
+                            <Plus className="h-4 w-4" />
+                            Novo Estabelecimento
+                        </Button>
+                    ) : (
+                        <Button className="gap-2" onClick={handleOpenAddCategory}>
+                            <Plus className="h-4 w-4" />
+                            Nova Categoria
+                        </Button>
+                    )}
+                </div>
             </div>
 
-            <Card className="p-4 bg-card">
-                <div className="flex flex-col md:flex-row gap-4">
-                    <div className="relative flex-1">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                        <Input
-                            placeholder="Buscar por nome, resumo ou endereço..."
-                            className="pl-9"
-                            value={q}
-                            onChange={(e) => setQ(e.target.value)}
-                        />
-                    </div>
-                    <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                        <SelectTrigger className="w-full md:w-[200px]">
-                            <SelectValue placeholder="Categoria" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="all">Todas as Categorias</SelectItem>
-                            {categoriesQuery.data?.map((cat: any) => (
-                                <SelectItem key={cat.slug} value={cat.slug}>{cat.name}</SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
-                </div>
-            </Card>
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+                <TabsList className="bg-card border w-full justify-start h-12 p-1 gap-1">
+                    <TabsTrigger value="services" className="gap-2 px-4 h-full data-[state=active]:bg-muted">
+                        <MapPin className="h-4 w-4" />
+                        Estabelecimentos
+                    </TabsTrigger>
+                    <TabsTrigger value="categories" className="gap-2 px-4 h-full data-[state=active]:bg-muted">
+                        <LayoutGrid className="h-4 w-4" />
+                        Categorias
+                    </TabsTrigger>
+                </TabsList>
 
-            <div className="border rounded-lg bg-card overflow-hidden">
-                <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead>Estabelecimento</TableHead>
-                            <TableHead>Categoria</TableHead>
-                            <TableHead>Local / Contato</TableHead>
-                            <TableHead>Status</TableHead>
-                            <TableHead className="text-right">Ações</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {servicesQuery.isLoading ? (
-                            <TableRow>
-                                <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
-                                    <Loader2 className="h-6 w-6 animate-spin mx-auto mb-2" />
-                                    Carregando guia...
-                                </TableCell>
-                            </TableRow>
-                        ) : servicesQuery.data?.length === 0 ? (
-                            <TableRow>
-                                <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">Nenhum item encontrado.</TableCell>
-                            </TableRow>
-                        ) : (
-                            servicesQuery.data?.map((item: any) => (
-                                <TableRow key={item.id} className="group">
-                                    <TableCell>
-                                        <div className="flex items-center gap-3">
-                                            {item.image_url ? (
-                                                <img src={item.image_url} alt={item.title} className="w-12 h-12 rounded bg-muted object-cover" />
-                                            ) : (
-                                                <div className="w-12 h-12 rounded bg-muted flex items-center justify-center">
-                                                    <ImageIcon className="h-4 w-4 text-muted-foreground" />
-                                                </div>
-                                            )}
-                                            <div>
-                                                <div className="font-semibold flex items-center gap-2">
-                                                    {item.title}
-                                                    {item.is_featured && <Badge variant="secondary" className="text-[8px] h-3 px-1 uppercase">Destaque</Badge>}
-                                                </div>
-                                                <div className="text-xs text-muted-foreground truncate max-w-[300px]">{item.summary}</div>
-                                            </div>
-                                        </div>
-                                    </TableCell>
-                                    <TableCell>
-                                        <Badge variant="outline" className="capitalize">
-                                            {item.category?.name || item.category_slug}
-                                        </Badge>
-                                    </TableCell>
-                                    <TableCell>
-                                        <div className="text-xs space-y-1">
-                                            <div className="flex items-center gap-1 text-muted-foreground">
-                                                <MapPin className="h-3 w-3" /> {item.address || "Sem endereço"}
-                                            </div>
-                                            <div className="flex items-center gap-1 text-muted-foreground">
-                                                <Phone className="h-3 w-3" /> {item.phone || "Sem telefone"}
-                                            </div>
-                                        </div>
-                                    </TableCell>
-                                    <TableCell>
-                                        {item.is_published ? (
-                                            <Badge variant="secondary" className="gap-1 bg-green-50 text-green-700 hover:bg-green-100 border-green-200">
-                                                <Check className="h-3 w-3" /> Público
-                                            </Badge>
-                                        ) : (
-                                            <Badge variant="outline" className="gap-1 text-muted-foreground">
-                                                <X className="h-3 w-3" /> Rascunho
-                                            </Badge>
-                                        )}
-                                    </TableCell>
-                                    <TableCell className="text-right">
-                                        <DropdownMenu>
-                                            <DropdownMenuTrigger asChild>
-                                                <Button variant="ghost" size="icon">
-                                                    <MoreVertical className="h-4 w-4" />
-                                                </Button>
-                                            </DropdownMenuTrigger>
-                                            <DropdownMenuContent align="end" className="w-[160px]">
-                                                <DropdownMenuItem className="gap-2" onClick={() => handleOpenEdit(item)}>
-                                                    <Pencil className="h-4 w-4" /> Editar
-                                                </DropdownMenuItem>
-                                                <DropdownMenuItem
-                                                    className="gap-2 text-destructive"
-                                                    onClick={() => confirm("Excluir?") && deleteMutation.mutate(item.id)}
-                                                >
-                                                    <Trash2 className="h-4 w-4" /> Excluir
-                                                </DropdownMenuItem>
-                                            </DropdownMenuContent>
-                                        </DropdownMenu>
-                                    </TableCell>
+                <TabsContent value="services" className="space-y-6 outline-none">
+                    <Card className="p-4 bg-card">
+                        <div className="flex flex-col md:flex-row gap-4">
+                            <div className="relative flex-1">
+                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                <Input
+                                    placeholder="Buscar por nome, resumo ou endereço..."
+                                    className="pl-9"
+                                    value={q}
+                                    onChange={(e) => setQ(e.target.value)}
+                                />
+                            </div>
+                            <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                                <SelectTrigger className="w-full md:w-[200px]">
+                                    <SelectValue placeholder="Categoria" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="all">Todas as Categorias</SelectItem>
+                                    {categoriesQuery.data?.map((cat: any) => (
+                                        <SelectItem key={cat.slug} value={cat.slug}>{cat.name}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                    </Card>
+
+                    <div className="border rounded-lg bg-card overflow-hidden">
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead>Estabelecimento</TableHead>
+                                    <TableHead>Categoria</TableHead>
+                                    <TableHead>Local / Contato</TableHead>
+                                    <TableHead>Status</TableHead>
+                                    <TableHead className="text-right">Ações</TableHead>
                                 </TableRow>
-                            ))
-                        )}
-                    </TableBody>
-                </Table>
-            </div>
+                            </TableHeader>
+                            <TableBody>
+                                {servicesQuery.isLoading ? (
+                                    <TableRow>
+                                        <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+                                            <Loader2 className="h-6 w-6 animate-spin mx-auto mb-2" />
+                                            Carregando guia...
+                                        </TableCell>
+                                    </TableRow>
+                                ) : servicesQuery.data?.length === 0 ? (
+                                    <TableRow>
+                                        <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">Nenhum item encontrado.</TableCell>
+                                    </TableRow>
+                                ) : (
+                                    servicesQuery.data?.map((item: any) => (
+                                        <TableRow key={item.id} className="group">
+                                            <TableCell>
+                                                <div className="flex items-center gap-3">
+                                                    {item.image_url ? (
+                                                        <img src={item.image_url} alt={item.title} className="w-12 h-12 rounded bg-muted object-cover" />
+                                                    ) : (
+                                                        <div className="w-12 h-12 rounded bg-muted flex items-center justify-center">
+                                                            <ImageIcon className="h-4 w-4 text-muted-foreground" />
+                                                        </div>
+                                                    )}
+                                                    <div>
+                                                        <div className="font-semibold flex items-center gap-2">
+                                                            {item.title}
+                                                            {item.is_featured && <Badge variant="secondary" className="text-[8px] h-3 px-1 uppercase">Destaque</Badge>}
+                                                        </div>
+                                                        <div className="text-xs text-muted-foreground truncate max-w-[300px]">{item.summary}</div>
+                                                    </div>
+                                                </div>
+                                            </TableCell>
+                                            <TableCell>
+                                                <Badge variant="outline" className="capitalize">
+                                                    {item.category?.name || item.category_slug}
+                                                </Badge>
+                                            </TableCell>
+                                            <TableCell>
+                                                <div className="text-xs space-y-1">
+                                                    <div className="flex items-center gap-1 text-muted-foreground">
+                                                        <MapPin className="h-3 w-3" /> {item.address || "Sem endereço"}
+                                                    </div>
+                                                    <div className="flex items-center gap-1 text-muted-foreground">
+                                                        <Phone className="h-3 w-3" /> {item.phone || "Sem telefone"}
+                                                    </div>
+                                                </div>
+                                            </TableCell>
+                                            <TableCell>
+                                                {item.is_published ? (
+                                                    <Badge variant="secondary" className="gap-1 bg-green-50 text-green-700 hover:bg-green-100 border-green-200">
+                                                        <Check className="h-3 w-3" /> Público
+                                                    </Badge>
+                                                ) : (
+                                                    <Badge variant="outline" className="gap-1 text-muted-foreground">
+                                                        <X className="h-3 w-3" /> Rascunho
+                                                    </Badge>
+                                                )}
+                                            </TableCell>
+                                            <TableCell className="text-right">
+                                                <DropdownMenu>
+                                                    <DropdownMenuTrigger asChild>
+                                                        <Button variant="ghost" size="icon">
+                                                            <MoreVertical className="h-4 w-4" />
+                                                        </Button>
+                                                    </DropdownMenuTrigger>
+                                                    <DropdownMenuContent align="end" className="w-[160px]">
+                                                        <DropdownMenuItem className="gap-2" onClick={() => handleOpenEdit(item)}>
+                                                            <Pencil className="h-4 w-4" /> Editar
+                                                        </DropdownMenuItem>
+                                                        <DropdownMenuItem
+                                                            className="gap-2 text-destructive"
+                                                            onClick={() => confirm("Excluir?") && deleteMutation.mutate(item.id)}
+                                                        >
+                                                            <Trash2 className="h-4 w-4" /> Excluir
+                                                        </DropdownMenuItem>
+                                                    </DropdownMenuContent>
+                                                </DropdownMenu>
+                                            </TableCell>
+                                        </TableRow>
+                                    ))
+                                )}
+                            </TableBody>
+                        </Table>
+                    </div>
+                </TabsContent>
+
+                <TabsContent value="categories" className="space-y-6 outline-none">
+                    <div className="border rounded-lg bg-card overflow-hidden">
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead>Nome</TableHead>
+                                    <TableHead>Slug (Identificador)</TableHead>
+                                    <TableHead>Ícone</TableHead>
+                                    <TableHead>Ordem</TableHead>
+                                    <TableHead className="text-right">Ações</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {categoriesQuery.isLoading ? (
+                                    <TableRow>
+                                        <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+                                            <Loader2 className="h-6 w-6 animate-spin mx-auto mb-2" />
+                                            Carregando categorias...
+                                        </TableCell>
+                                    </TableRow>
+                                ) : (categoriesQuery.data || []).length === 0 ? (
+                                    <TableRow>
+                                        <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">Nenhuma categoria encontrada.</TableCell>
+                                    </TableRow>
+                                ) : (
+                                    categoriesQuery.data?.map((cat: any) => (
+                                        <TableRow key={cat.id}>
+                                            <TableCell className="font-medium">{cat.name}</TableCell>
+                                            <TableCell className="text-xs text-muted-foreground font-mono">{cat.slug}</TableCell>
+                                            <TableCell>
+                                                <Badge variant="outline" className="gap-2">
+                                                    <span className="text-[10px] text-muted-foreground uppercase">{cat.icon}</span>
+                                                </Badge>
+                                            </TableCell>
+                                            <TableCell>{cat.sort_order}</TableCell>
+                                            <TableCell className="text-right">
+                                                <div className="flex justify-end gap-2">
+                                                    <Button variant="ghost" size="icon" onClick={() => handleOpenEditCategory(cat)}>
+                                                        <Pencil className="h-4 w-4" />
+                                                    </Button>
+                                                    <Button 
+                                                        variant="ghost" 
+                                                        size="icon" 
+                                                        className="text-destructive" 
+                                                        onClick={() => confirm("Deseja realmente excluir esta categoria? Isso pode afetar estabelecimentos vinculados a ela.") && categoryDeleteMutation.mutate(cat.id)}
+                                                    >
+                                                        <Trash2 className="h-4 w-4" />
+                                                    </Button>
+                                                </div>
+                                            </TableCell>
+                                        </TableRow>
+                                    ))
+                                )}
+                            </TableBody>
+                        </Table>
+                    </div>
+                </TabsContent>
+            </Tabs>
 
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                 <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
@@ -532,6 +710,70 @@ export default function AdminCityGuide() {
                             </Button>
                             <Button type="submit" disabled={saveMutation.isPending}>
                                 {saveMutation.isPending ? "Salvando..." : "Salvar Estabelecimento"}
+                            </Button>
+                        </DialogFooter>
+                    </form>
+                </DialogContent>
+            </Dialog>
+            <Dialog open={isCategoryDialogOpen} onOpenChange={setIsCategoryDialogOpen}>
+                <DialogContent className="sm:max-w-[500px]">
+                    <DialogHeader>
+                        <DialogTitle>{editingCategory ? "Editar Categoria" : "Nova Categoria"}</DialogTitle>
+                        <DialogDescription>
+                            Configure as categorias de estabelecimentos do guia.
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    <form onSubmit={handleCategorySubmit} className="space-y-4 py-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="cat_name">Nome da Categoria</Label>
+                            <Input
+                                id="cat_name"
+                                value={categoryFormData.name}
+                                onChange={handleCategoryNameChange}
+                                placeholder="Ex: Gastronomia"
+                                required
+                            />
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label htmlFor="cat_slug">Identificador (URL Slug)</Label>
+                            <Input
+                                id="cat_slug"
+                                value={categoryFormData.slug}
+                                onChange={(e) => setCategoryFormData({ ...categoryFormData, slug: e.target.value })}
+                            />
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label htmlFor="cat_icon">Ícone (Chave Lucide)</Label>
+                            <Input
+                                id="cat_icon"
+                                value={categoryFormData.icon}
+                                onChange={(e) => setCategoryFormData({ ...categoryFormData, icon: e.target.value })}
+                                placeholder="Ex: storefront, local_hospital, etc."
+                            />
+                            <p className="text-[10px] text-muted-foreground">
+                                Use chaves como: school, Directions_bus, clinical_notes, bolt, cloud.
+                            </p>
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label htmlFor="cat_sort">Ordem de Exibição</Label>
+                            <Input
+                                id="cat_sort"
+                                type="number"
+                                value={categoryFormData.sort_order}
+                                onChange={(e) => setCategoryFormData({ ...categoryFormData, sort_order: parseInt(e.target.value) || 0 })}
+                            />
+                        </div>
+
+                        <DialogFooter className="pt-4">
+                            <Button type="button" variant="outline" onClick={() => setIsCategoryDialogOpen(false)}>
+                                Cancelar
+                            </Button>
+                            <Button type="submit" disabled={categorySaveMutation.isPending}>
+                                {categorySaveMutation.isPending ? "Salvando..." : "Salvar Categoria"}
                             </Button>
                         </DialogFooter>
                     </form>
