@@ -2,6 +2,7 @@ import * as React from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
     Plus,
+    Copy,
     Search,
     MoreVertical,
     Pencil,
@@ -135,6 +136,15 @@ export default function AdminCityGuide() {
         is_featured: false,
         sort_order: 0,
         rating: 5,
+        business_hours: [
+            { day: "Segunda-feira", open: "08:00", close: "18:00", closed: false },
+            { day: "Terça-feira", open: "08:00", close: "18:00", closed: false },
+            { day: "Quarta-feira", open: "08:00", close: "18:00", closed: false },
+            { day: "Quinta-feira", open: "08:00", close: "18:00", closed: false },
+            { day: "Sexta-feira", open: "08:00", close: "18:00", closed: false },
+            { day: "Sábado", open: "08:00", close: "12:00", closed: false },
+            { day: "Domingo", open: "00:00", close: "23:59", closed: true },
+        ],
     });
 
     // Categories State
@@ -335,6 +345,15 @@ export default function AdminCityGuide() {
             is_featured: false,
             sort_order: (servicesQuery.data?.length || 0),
             rating: 5,
+            business_hours: [
+                { day: "Segunda-feira", open: "08:00", close: "18:00", closed: false },
+                { day: "Terça-feira", open: "08:00", close: "18:00", closed: false },
+                { day: "Quarta-feira", open: "08:00", close: "18:00", closed: false },
+                { day: "Quinta-feira", open: "08:00", close: "18:00", closed: false },
+                { day: "Sexta-feira", open: "08:00", close: "18:00", closed: false },
+                { day: "Sábado", open: "08:00", close: "12:00", closed: false },
+                { day: "Domingo", open: "00:00", close: "00:00", closed: true },
+            ],
         });
         setIsDialogOpen(true);
     };
@@ -356,6 +375,15 @@ export default function AdminCityGuide() {
             is_featured: item.is_featured || false,
             sort_order: item.sort_order || 0,
             rating: item.rating || 5,
+            business_hours: item.business_hours || [
+                { day: "Segunda-feira", open: "08:00", close: "18:00", closed: false },
+                { day: "Terça-feira", open: "08:00", close: "18:00", closed: false },
+                { day: "Quarta-feira", open: "08:00", close: "18:00", closed: false },
+                { day: "Quinta-feira", open: "08:00", close: "18:00", closed: false },
+                { day: "Sexta-feira", open: "08:00", close: "18:00", closed: false },
+                { day: "Sábado", open: "08:00", close: "12:00", closed: false },
+                { day: "Domingo", open: "00:00", close: "00:00", closed: true },
+            ],
         });
         setIsDialogOpen(true);
     };
@@ -392,6 +420,52 @@ export default function AdminCityGuide() {
             .replace(/\s+/g, "-");
 
         setFormData((prev) => ({ ...prev, title, slug }));
+    };
+
+    const updateStatusFromHours = (hours: any[]) => {
+        const now = new Date();
+        const dayIdx = now.getDay(); // 0 is Sunday, 1 is Monday...
+        const currentMapping = [6, 0, 1, 2, 3, 4, 5]; // Map Day-of-week index to our Monday-start array
+        const todayHours = hours[currentMapping[dayIdx]];
+
+        if (todayHours.closed) {
+            return "Fechado";
+        }
+
+        const currentTime = now.getHours() * 60 + now.getMinutes();
+        const [openH, openM] = todayHours.open.split(":").map(Number);
+        const [closeH, closeM] = todayHours.close.split(":").map(Number);
+        
+        const openTime = openH * 60 + openM;
+        const closeTime = closeH * 60 + closeM;
+
+        if (currentTime >= openTime && currentTime < closeTime) {
+            return "Aberto Agora";
+        } else {
+            return "Fechado";
+        }
+    };
+
+    const handleHoursChange = (index: number, field: string, value: any) => {
+        const newHours = [...formData.business_hours];
+        newHours[index] = { ...newHours[index], [field]: value };
+        
+        const newStatus = updateStatusFromHours(newHours);
+        setFormData(prev => ({ ...prev, business_hours: newHours, status_badge: newStatus }));
+    };
+
+    const copyHoursToAll = (index: number) => {
+        const source = formData.business_hours[index];
+        const newHours = formData.business_hours.map(h => ({
+            ...h,
+            open: source.open,
+            close: source.close,
+            closed: source.closed
+        }));
+        
+        const newStatus = updateStatusFromHours(newHours);
+        setFormData(prev => ({ ...prev, business_hours: newHours, status_badge: newStatus }));
+        toast.success("Horário copiado para todos os dias!");
     };
 
     const handleCategoryNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -753,8 +827,70 @@ export default function AdminCityGuide() {
                                 />
                             </div>
 
+                            <div className="space-y-4 col-span-2 border rounded-xl p-4 bg-muted/30">
+                                <div className="flex items-center justify-between mb-2">
+                                    <Label className="text-base font-bold flex items-center gap-2">
+                                        <CalendarDays className="h-5 w-5 text-primary" />
+                                        Horário de Funcionamento (Semanal)
+                                    </Label>
+                                </div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
+                                    {formData.business_hours.map((day, idx) => (
+                                        <div key={idx} className="flex items-center gap-3 bg-background p-3 rounded-lg border shadow-sm">
+                                            <div className="w-24 font-semibold text-sm">{day.day}</div>
+                                            <div className="flex items-center gap-2 flex-1">
+                                                {!day.closed ? (
+                                                    <div className="flex items-center gap-1">
+                                                        <Input 
+                                                            type="time" 
+                                                            value={day.open} 
+                                                            onChange={(e) => handleHoursChange(idx, "open", e.target.value)}
+                                                            className="h-8 w-24 p-1 text-xs"
+                                                        />
+                                                        <span className="text-muted-foreground">-</span>
+                                                        <Input 
+                                                            type="time" 
+                                                            value={day.close} 
+                                                            onChange={(e) => handleHoursChange(idx, "close", e.target.value)}
+                                                            className="h-8 w-24 p-1 text-xs"
+                                                        />
+                                                    </div>
+                                                ) : (
+                                                    <div className="text-xs text-destructive font-medium italic flex-1">Fechado o dia todo</div>
+                                                )}
+                                            </div>
+                                            <div className="flex items-center gap-1">
+                                                <Button 
+                                                    type="button" 
+                                                    variant="ghost" 
+                                                    size="icon" 
+                                                    className={cn("h-7 w-7", day.closed && "text-destructive bg-destructive/10")}
+                                                    onClick={() => handleHoursChange(idx, "closed", !day.closed)}
+                                                    title={day.closed ? "Reabrir" : "Marcar como Fechado"}
+                                                >
+                                                    {day.closed ? <X className="h-4 w-4" /> : <Check className="h-4 w-4" />}
+                                                </Button>
+                                                <Button 
+                                                    type="button" 
+                                                    variant="ghost" 
+                                                    size="icon" 
+                                                    className="h-7 w-7"
+                                                    onClick={() => copyHoursToAll(idx)}
+                                                    title="Copiar para todos"
+                                                >
+                                                    <Copy className="h-4 w-4" />
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                                <p className="text-[10px] text-muted-foreground mt-2">
+                                    * O status será atualizado automaticamente com base no horário configurado.
+                                </p>
+                            </div>
+
                             <div className="space-y-2">
-                                <Label htmlFor="hours">Horário de Funcionamento</Label>
+                                <Label htmlFor="hours">Rótulo de Horário (Opcional)</Label>
                                 <Input
                                     id="hours"
                                     value={formData.hours_label}
@@ -764,7 +900,7 @@ export default function AdminCityGuide() {
                             </div>
 
                             <div className="space-y-2">
-                                <Label htmlFor="status_badge">Status (Badge)</Label>
+                                <Label htmlFor="status_badge">Status Atual</Label>
                                 <Input
                                     id="status_badge"
                                     value={formData.status_badge}
