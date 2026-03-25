@@ -59,6 +59,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { cn } from "@/lib/utils";
 
 async function fetchCategories() {
     const { data, error } = await supabase
@@ -687,21 +688,28 @@ export default function AdminCityGuide() {
                                 />
                             </div>
 
-                            <div className="space-y-2">
-                                <Label htmlFor="category">Categoria</Label>
-                                <Select
-                                    value={formData.category_slug}
-                                    onValueChange={(v) => setFormData({ ...formData, category_slug: v })}
-                                >
-                                    <SelectTrigger id="category">
-                                        <SelectValue placeholder="Selecione" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {categoriesQuery.data?.map((cat: any) => (
-                                            <SelectItem key={cat.slug} value={cat.slug}>{cat.name}</SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
+                            <div className="space-y-3 col-span-2">
+                                <Label>Categoria</Label>
+                                <div className="flex gap-2 overflow-x-auto pb-4 scrollbar-hide -mx-1 px-1">
+                                    {categoriesQuery.data?.map((cat: any) => (
+                                        <button
+                                            key={cat.slug}
+                                            type="button"
+                                            onClick={() => setFormData({ ...formData, category_slug: cat.slug })}
+                                            className={cn(
+                                                "flex-none px-4 py-2 rounded-full border text-sm font-medium transition-all whitespace-nowrap",
+                                                formData.category_slug === cat.slug
+                                                    ? "bg-primary text-primary-foreground border-primary shadow-md"
+                                                    : "bg-background hover:bg-muted border-input"
+                                            )}
+                                        >
+                                            {cat.name}
+                                        </button>
+                                    ))}
+                                    {(!categoriesQuery.data || categoriesQuery.data.length === 0) && (
+                                        <p className="text-xs text-muted-foreground italic">Nenhuma categoria encontrada.</p>
+                                    )}
+                                </div>
                             </div>
 
                             <div className="space-y-2 col-span-2">
