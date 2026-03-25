@@ -690,14 +690,14 @@ export default function AdminCityGuide() {
 
                             <div className="space-y-3 col-span-2">
                                 <Label>Categoria</Label>
-                                <div className="flex gap-2 overflow-x-auto pb-4 scrollbar-hide -mx-1 px-1">
+                                <div className="flex flex-wrap gap-2 py-1">
                                     {categoriesQuery.data?.map((cat: any) => (
                                         <button
                                             key={cat.slug}
                                             type="button"
                                             onClick={() => setFormData({ ...formData, category_slug: cat.slug })}
                                             className={cn(
-                                                "flex-none px-4 py-2 rounded-full border text-sm font-medium transition-all whitespace-nowrap",
+                                                "px-4 py-2 rounded-full border text-sm font-medium transition-all whitespace-nowrap",
                                                 formData.category_slug === cat.slug
                                                     ? "bg-primary text-primary-foreground border-primary shadow-md"
                                                     : "bg-background hover:bg-muted border-input"
