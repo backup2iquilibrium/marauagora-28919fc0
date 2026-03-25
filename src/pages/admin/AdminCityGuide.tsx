@@ -328,7 +328,43 @@ export default function AdminCityGuide() {
         },
     });
 
+    const updateStatusFromHours = (hours: any[]) => {
+        if (!hours || hours.length < 7) return "Fechado";
+        
+        const now = new Date();
+        const dayIdx = now.getDay(); // 0 is Sunday, 1 is Monday...
+        const currentMapping = [6, 0, 1, 2, 3, 4, 5]; // Map Day-of-week index to our Monday-start array
+        const todayHours = hours[currentMapping[dayIdx]];
+
+        if (!todayHours || todayHours.closed) {
+            return "Fechado";
+        }
+
+        const currentTime = now.getHours() * 60 + now.getMinutes();
+        const [openH, openM] = todayHours.open.split(":").map(Number);
+        const [closeH, closeM] = todayHours.close.split(":").map(Number);
+        
+        const openTime = openH * 60 + openM;
+        const closeTime = closeH * 60 + closeM;
+
+        if (currentTime >= openTime && currentTime < closeTime) {
+            return "Aberto Agora";
+        } else {
+            return "Fechado";
+        }
+    };
+
     const handleOpenAdd = () => {
+        const defaultHours = [
+            { day: "Segunda-feira", open: "08:00", close: "18:00", closed: false },
+            { day: "Terça-feira", open: "08:00", close: "18:00", closed: false },
+            { day: "Quarta-feira", open: "08:00", close: "18:00", closed: false },
+            { day: "Quinta-feira", open: "08:00", close: "18:00", closed: false },
+            { day: "Sexta-feira", open: "08:00", close: "18:00", closed: false },
+            { day: "Sábado", open: "08:00", close: "12:00", closed: false },
+            { day: "Domingo", open: "00:00", close: "00:00", closed: true },
+        ];
+
         setEditingItem(null);
         setFormData({
             title: "",
@@ -339,26 +375,28 @@ export default function AdminCityGuide() {
             address: "",
             phone: "",
             hours_label: "",
-            status_badge: "",
+            status_badge: updateStatusFromHours(defaultHours),
             image_url: "",
             is_published: true,
             is_featured: false,
             sort_order: (servicesQuery.data?.length || 0),
             rating: 5,
-            business_hours: [
-                { day: "Segunda-feira", open: "08:00", close: "18:00", closed: false },
-                { day: "Terça-feira", open: "08:00", close: "18:00", closed: false },
-                { day: "Quarta-feira", open: "08:00", close: "18:00", closed: false },
-                { day: "Quinta-feira", open: "08:00", close: "18:00", closed: false },
-                { day: "Sexta-feira", open: "08:00", close: "18:00", closed: false },
-                { day: "Sábado", open: "08:00", close: "12:00", closed: false },
-                { day: "Domingo", open: "00:00", close: "00:00", closed: true },
-            ],
+            business_hours: defaultHours,
         });
         setIsDialogOpen(true);
     };
 
     const handleOpenEdit = (item: any) => {
+        const itemHours = item.business_hours || [
+            { day: "Segunda-feira", open: "08:00", close: "18:00", closed: false },
+            { day: "Terça-feira", open: "08:00", close: "18:00", closed: false },
+            { day: "Quarta-feira", open: "08:00", close: "18:00", closed: false },
+            { day: "Quinta-feira", open: "08:00", close: "18:00", closed: false },
+            { day: "Sexta-feira", open: "08:00", close: "18:00", closed: false },
+            { day: "Sábado", open: "08:00", close: "12:00", closed: false },
+            { day: "Domingo", open: "00:00", close: "00:00", closed: true },
+        ];
+
         setEditingItem(item);
         setFormData({
             title: item.title || "",
@@ -369,21 +407,13 @@ export default function AdminCityGuide() {
             address: item.address || "",
             phone: item.phone || "",
             hours_label: item.hours_label || "",
-            status_badge: item.status_badge || "",
+            status_badge: updateStatusFromHours(itemHours),
             image_url: item.image_url || "",
             is_published: item.is_published ?? true,
             is_featured: item.is_featured || false,
             sort_order: item.sort_order || 0,
             rating: item.rating || 5,
-            business_hours: item.business_hours || [
-                { day: "Segunda-feira", open: "08:00", close: "18:00", closed: false },
-                { day: "Terça-feira", open: "08:00", close: "18:00", closed: false },
-                { day: "Quarta-feira", open: "08:00", close: "18:00", closed: false },
-                { day: "Quinta-feira", open: "08:00", close: "18:00", closed: false },
-                { day: "Sexta-feira", open: "08:00", close: "18:00", closed: false },
-                { day: "Sábado", open: "08:00", close: "12:00", closed: false },
-                { day: "Domingo", open: "00:00", close: "00:00", closed: true },
-            ],
+            business_hours: itemHours,
         });
         setIsDialogOpen(true);
     };
@@ -420,30 +450,6 @@ export default function AdminCityGuide() {
             .replace(/\s+/g, "-");
 
         setFormData((prev) => ({ ...prev, title, slug }));
-    };
-
-    const updateStatusFromHours = (hours: any[]) => {
-        const now = new Date();
-        const dayIdx = now.getDay(); // 0 is Sunday, 1 is Monday...
-        const currentMapping = [6, 0, 1, 2, 3, 4, 5]; // Map Day-of-week index to our Monday-start array
-        const todayHours = hours[currentMapping[dayIdx]];
-
-        if (todayHours.closed) {
-            return "Fechado";
-        }
-
-        const currentTime = now.getHours() * 60 + now.getMinutes();
-        const [openH, openM] = todayHours.open.split(":").map(Number);
-        const [closeH, closeM] = todayHours.close.split(":").map(Number);
-        
-        const openTime = openH * 60 + openM;
-        const closeTime = closeH * 60 + closeM;
-
-        if (currentTime >= openTime && currentTime < closeTime) {
-            return "Aberto Agora";
-        } else {
-            return "Fechado";
-        }
     };
 
     const handleHoursChange = (index: number, field: string, value: any) => {
