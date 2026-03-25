@@ -137,13 +137,13 @@ export default function AdminCityGuide() {
         sort_order: 0,
         rating: 5,
         business_hours: [
-            { day: "Segunda-feira", open: "08:00", close: "18:00", closed: false },
-            { day: "Terça-feira", open: "08:00", close: "18:00", closed: false },
-            { day: "Quarta-feira", open: "08:00", close: "18:00", closed: false },
-            { day: "Quinta-feira", open: "08:00", close: "18:00", closed: false },
-            { day: "Sexta-feira", open: "08:00", close: "18:00", closed: false },
-            { day: "Sábado", open: "08:00", close: "12:00", closed: false },
-            { day: "Domingo", open: "00:00", close: "23:59", closed: true },
+            { day: "Seg", open: "08:00", close: "18:00", closed: false },
+            { day: "Ter", open: "08:00", close: "18:00", closed: false },
+            { day: "Qua", open: "08:00", close: "18:00", closed: false },
+            { day: "Qui", open: "08:00", close: "18:00", closed: false },
+            { day: "Sex", open: "08:00", close: "18:00", closed: false },
+            { day: "Sáb", open: "08:00", close: "12:00", closed: false },
+            { day: "Dom", open: "00:00", close: "23:59", closed: true },
         ],
     });
 
@@ -346,13 +346,13 @@ export default function AdminCityGuide() {
             sort_order: (servicesQuery.data?.length || 0),
             rating: 5,
             business_hours: [
-                { day: "Segunda-feira", open: "08:00", close: "18:00", closed: false },
-                { day: "Terça-feira", open: "08:00", close: "18:00", closed: false },
-                { day: "Quarta-feira", open: "08:00", close: "18:00", closed: false },
-                { day: "Quinta-feira", open: "08:00", close: "18:00", closed: false },
-                { day: "Sexta-feira", open: "08:00", close: "18:00", closed: false },
-                { day: "Sábado", open: "08:00", close: "12:00", closed: false },
-                { day: "Domingo", open: "00:00", close: "00:00", closed: true },
+                { day: "Seg", open: "08:00", close: "18:00", closed: false },
+                { day: "Ter", open: "08:00", close: "18:00", closed: false },
+                { day: "Qua", open: "08:00", close: "18:00", closed: false },
+                { day: "Qui", open: "08:00", close: "18:00", closed: false },
+                { day: "Sex", open: "08:00", close: "18:00", closed: false },
+                { day: "Sáb", open: "08:00", close: "12:00", closed: false },
+                { day: "Dom", open: "00:00", close: "00:00", closed: true },
             ],
         });
         setIsDialogOpen(true);
@@ -376,13 +376,13 @@ export default function AdminCityGuide() {
             sort_order: item.sort_order || 0,
             rating: item.rating || 5,
             business_hours: item.business_hours || [
-                { day: "Segunda-feira", open: "08:00", close: "18:00", closed: false },
-                { day: "Terça-feira", open: "08:00", close: "18:00", closed: false },
-                { day: "Quarta-feira", open: "08:00", close: "18:00", closed: false },
-                { day: "Quinta-feira", open: "08:00", close: "18:00", closed: false },
-                { day: "Sexta-feira", open: "08:00", close: "18:00", closed: false },
-                { day: "Sábado", open: "08:00", close: "12:00", closed: false },
-                { day: "Domingo", open: "00:00", close: "00:00", closed: true },
+                { day: "Seg", open: "08:00", close: "18:00", closed: false },
+                { day: "Ter", open: "08:00", close: "18:00", closed: false },
+                { day: "Qua", open: "08:00", close: "18:00", closed: false },
+                { day: "Qui", open: "08:00", close: "18:00", closed: false },
+                { day: "Sex", open: "08:00", close: "18:00", closed: false },
+                { day: "Sáb", open: "08:00", close: "12:00", closed: false },
+                { day: "Dom", open: "00:00", close: "00:00", closed: true },
             ],
         });
         setIsDialogOpen(true);
@@ -834,52 +834,57 @@ export default function AdminCityGuide() {
                                         Horário de Funcionamento (Semanal)
                                     </Label>
                                 </div>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
                                     {formData.business_hours.map((day, idx) => (
-                                        <div key={idx} className="flex items-center gap-3 bg-background p-3 rounded-lg border shadow-sm">
-                                            <div className="w-24 font-semibold text-sm">{day.day}</div>
-                                            <div className="flex items-center gap-2 flex-1">
+                                        <div key={idx} className="flex flex-col gap-1.5 p-2 bg-background rounded-lg border shadow-sm">
+                                            <div className="flex items-center justify-between gap-1">
+                                                <span className="font-bold text-[11px] uppercase text-primary">{day.day}</span>
+                                                <div className="flex items-center gap-0.5">
+                                                    <Button 
+                                                        type="button" 
+                                                        variant="ghost" 
+                                                        size="icon" 
+                                                        className={cn("h-6 w-6 rounded-md", day.closed && "text-destructive bg-destructive/10")}
+                                                        onClick={() => handleHoursChange(idx, "closed", !day.closed)}
+                                                        title={day.closed ? "Reabrir" : "Marcar como Fechado"}
+                                                    >
+                                                        {day.closed ? <X className="h-3 w-3" /> : <Check className="h-3 w-3" />}
+                                                    </Button>
+                                                    <Button 
+                                                        type="button" 
+                                                        variant="ghost" 
+                                                        size="icon" 
+                                                        className="h-6 w-6 rounded-md"
+                                                        onClick={() => copyHoursToAll(idx)}
+                                                        title="Copiar para todos"
+                                                    >
+                                                        <Copy className="h-3 w-3" />
+                                                    </Button>
+                                                </div>
+                                            </div>
+
+                                            <div className="flex-1">
                                                 {!day.closed ? (
                                                     <div className="flex items-center gap-1">
                                                         <Input 
                                                             type="time" 
                                                             value={day.open} 
                                                             onChange={(e) => handleHoursChange(idx, "open", e.target.value)}
-                                                            className="h-8 w-24 p-1 text-xs"
+                                                            className="h-7 w-full p-1 text-[10px] bg-muted/50 focus:bg-background"
                                                         />
-                                                        <span className="text-muted-foreground">-</span>
+                                                        <span className="text-muted-foreground text-[10px]">—</span>
                                                         <Input 
                                                             type="time" 
                                                             value={day.close} 
                                                             onChange={(e) => handleHoursChange(idx, "close", e.target.value)}
-                                                            className="h-8 w-24 p-1 text-xs"
+                                                            className="h-7 w-full p-1 text-[10px] bg-muted/50 focus:bg-background"
                                                         />
                                                     </div>
                                                 ) : (
-                                                    <div className="text-xs text-destructive font-medium italic flex-1">Fechado o dia todo</div>
+                                                    <div className="h-7 flex items-center justify-center text-[10px] text-destructive/70 font-medium italic border border-dashed rounded bg-destructive/5 leading-none">
+                                                        Fechado
+                                                    </div>
                                                 )}
-                                            </div>
-                                            <div className="flex items-center gap-1">
-                                                <Button 
-                                                    type="button" 
-                                                    variant="ghost" 
-                                                    size="icon" 
-                                                    className={cn("h-7 w-7", day.closed && "text-destructive bg-destructive/10")}
-                                                    onClick={() => handleHoursChange(idx, "closed", !day.closed)}
-                                                    title={day.closed ? "Reabrir" : "Marcar como Fechado"}
-                                                >
-                                                    {day.closed ? <X className="h-4 w-4" /> : <Check className="h-4 w-4" />}
-                                                </Button>
-                                                <Button 
-                                                    type="button" 
-                                                    variant="ghost" 
-                                                    size="icon" 
-                                                    className="h-7 w-7"
-                                                    onClick={() => copyHoursToAll(idx)}
-                                                    title="Copiar para todos"
-                                                >
-                                                    <Copy className="h-4 w-4" />
-                                                </Button>
                                             </div>
                                         </div>
                                     ))}
