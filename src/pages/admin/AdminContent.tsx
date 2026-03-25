@@ -315,8 +315,6 @@ export default function AdminContent() {
                         </Button>
                     </Card>
                 </TabsContent>
-
-                </TabsContent>
             </Tabs>
         </div>
     );
