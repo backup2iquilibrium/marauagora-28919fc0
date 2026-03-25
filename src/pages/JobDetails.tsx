@@ -12,12 +12,19 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Briefcase, Building, Calendar, MapPin } from "lucide-react";
 
-async function fetchJobById(id: string) {
-  const { data, error } = await supabase
-    .from("jobs")
-    .select("*")
-    .eq("id", id)
-    .single();
+async function fetchJob(identifier: string) {
+  // Try UUID first
+  const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(identifier);
+  
+  let query = supabase.from("jobs").select("*");
+  
+  if (isUuid) {
+    query = query.eq("id", identifier);
+  } else {
+    query = query.eq("slug", identifier);
+  }
+
+  const { data, error } = await query.maybeSingle();
   if (error) throw error;
   return data;
 }
@@ -27,7 +34,7 @@ export default function JobDetails() {
 
   const { data: job, isLoading, isError } = useQuery({
     queryKey: ["job-detail", id],
-    queryFn: () => fetchJobById(id || ""),
+    queryFn: () => fetchJob(id || ""),
     enabled: !!id,
   });
 
@@ -83,9 +90,27 @@ export default function JobDetails() {
               <CardContent>
                 <div className="prose prose-sm max-w-none dark:prose-invert">
                   <h3 className="text-lg font-bold mb-3">Descrição da Vaga</h3>
-                  <div className="whitespace-pre-wrap text-foreground/80 leading-relaxed">
+                  <div className="whitespace-pre-wrap text-foreground/80 leading-relaxed mb-6">
                     {job.description || "Nenhuma descrição fornecida."}
                   </div>
+
+                  {job.requirements && (
+                    <>
+                      <h3 className="text-lg font-bold mb-3">Requisitos</h3>
+                      <div className="whitespace-pre-wrap text-foreground/80 leading-relaxed mb-6">
+                        {job.requirements}
+                      </div>
+                    </>
+                  )}
+
+                  {job.benefits && (
+                    <>
+                      <h3 className="text-lg font-bold mb-3">Benefícios</h3>
+                      <div className="whitespace-pre-wrap text-foreground/80 leading-relaxed mb-6">
+                        {job.benefits}
+                      </div>
+                    </>
+                  )}
                 </div>
 
                 <div className="mt-8 pt-6 border-t flex flex-col sm:flex-row gap-4">

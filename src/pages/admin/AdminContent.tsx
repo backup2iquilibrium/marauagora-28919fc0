@@ -151,10 +151,6 @@ export default function AdminContent() {
                         <Calendar className="h-4 w-4" />
                         Agenda
                     </TabsTrigger>
-                    <TabsTrigger value="jobs" className="gap-2 px-4 h-full data-[state=active]:bg-muted">
-                        <Briefcase className="h-4 w-4" />
-                        Vagas
-                    </TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="news" className="space-y-6 outline-none">
@@ -320,21 +316,6 @@ export default function AdminContent() {
                     </Card>
                 </TabsContent>
 
-                <TabsContent value="jobs" className="space-y-6 outline-none">
-                    <Card className="p-12 text-center space-y-4">
-                        <div className="mx-auto w-12 h-12 rounded-full bg-muted grid place-items-center">
-                            <Briefcase className="h-6 w-6 text-muted-foreground" />
-                        </div>
-                        <div className="space-y-2">
-                            <h3 className="font-semibold text-lg">Vagas de Emprego</h3>
-                            <p className="text-sm text-muted-foreground max-w-sm mx-auto">
-                                Administre as oportunidades de trabalho listadas no portal.
-                            </p>
-                        </div>
-                        <Button onClick={() => toast.info("Módulo de Vagas em breve")}>
-                            Gerenciar Vagas
-                        </Button>
-                    </Card>
                 </TabsContent>
             </Tabs>
         </div>

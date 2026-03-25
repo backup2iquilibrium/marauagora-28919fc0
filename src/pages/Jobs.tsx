@@ -39,7 +39,9 @@ const LOGO_URL = "/logo.png";
 
 type Job = {
   id: string;
+  slug: string;
   featuredLabel?: "Nova" | "Anúncio";
+  is_featured: boolean;
   icon: "factory" | "store" | "medical" | "computer";
   title: string;
   company: string;
@@ -119,7 +121,7 @@ function JobCard({ job }: { job: Job }) {
           </div>
 
           <Button asChild variant="secondary" className="shrink-0 gap-2">
-            <Link to={`/vagas/${job.id}`}>
+            <Link to={`/vagas/${job.slug || job.id}`}>
               Ver Detalhes
               <ArrowRight className="h-4 w-4" />
             </Link>
@@ -129,11 +131,11 @@ function JobCard({ job }: { job: Job }) {
     </Card>
   );
 }
-
 async function fetchJobs() {
   const { data, error } = await supabase
     .from("jobs")
     .select("*")
+    .order("is_featured", { ascending: false })
     .order("posted_at", { ascending: false });
   if (error) throw error;
   return data || [];
@@ -141,20 +143,17 @@ async function fetchJobs() {
 
 export default function Jobs() {
   const [searchParams, setSearchParams] = useSearchParams();
-  const q = (searchParams.get("q") || "").trim();
-  const [localQ, setLocalQ] = useState(q);
+  const q = (searchParams.get("q") || "").trim().toLowerCase();
+  const [localQ, setLocalQ] = useState(searchParams.get("q") || "");
   const [city, setCity] = useState<string>("Marau - RS");
   const [sort, setSort] = useState<string>("recentes");
 
-  const [selectedSector, setSelectedSector] = useState<string | null>(() => searchParams.get("setor"));
-  const [selectedRegion, setSelectedRegion] = useState<string | null>(() => searchParams.get("bairro"));
-  const [selectedType, setSelectedType] = useState<string | null>(() => searchParams.get("tipo"));
+  const selectedSector = searchParams.get("setor");
+  const selectedRegion = searchParams.get("bairro");
+  const selectedType = searchParams.get("tipo");
 
   // Mantém estado sincronizado se o usuário editar a URL manualmente.
   useEffect(() => {
-    setSelectedSector(searchParams.get("setor"));
-    setSelectedRegion(searchParams.get("bairro"));
-    setSelectedType(searchParams.get("tipo"));
     setLocalQ((searchParams.get("q") || "").trim());
   }, [searchParams]);
 
@@ -168,14 +167,7 @@ export default function Jobs() {
   };
 
   const clearFilters = () => {
-    setSearchParams((prev) => {
-      const next = new URLSearchParams(prev);
-      next.delete("setor");
-      next.delete("bairro");
-      next.delete("tipo");
-      next.delete("q");
-      return next;
-    });
+    setSearchParams(new URLSearchParams());
   };
 
   const jobsQuery = useQuery({
@@ -183,62 +175,69 @@ export default function Jobs() {
     queryFn: fetchJobs,
   });
 
-  const jobs = useMemo<Job[]>(() => {
-    return (jobsQuery.data || []).map((j) => ({
-      id: j.id,
-      icon: "factory", // Padronizado por enquanto
-      title: j.title,
-      company: j.company || "Empresa não informada",
-      posted: formatDistanceToNow(new Date(j.posted_at), { addSuffix: true, locale: ptBR }),
-      bullets: [
-        { icon: "location", label: j.location || "Marau - RS" },
-        { icon: "work", label: j.employment_type || "Efetivo" },
-      ],
-      tags: [],
-    }));
+  const allJobs = useMemo<Job[]>(() => {
+    return (jobsQuery.data || []).map((j) => {
+      let icon: Job["icon"] = "factory";
+      if (j.category?.includes("Comércio")) icon = "store";
+      if (j.category?.includes("Saúde")) icon = "medical";
+      if (j.category?.includes("Tecnologia") || j.category?.includes("TI")) icon = "computer";
+
+      return {
+        id: j.id,
+        slug: j.slug,
+        is_featured: j.is_featured,
+        featuredLabel: j.is_featured ? "Anúncio" : undefined,
+        icon,
+        title: j.title,
+        company: j.company || "Empresa não informada",
+        posted: formatDistanceToNow(new Date(j.posted_at), { addSuffix: true, locale: ptBR }),
+        bullets: [
+          { icon: "location", label: j.location || "Marau - RS" },
+          { icon: "work", label: j.employment_type || "Efetivo" },
+        ],
+        tags: j.tags || [],
+        category: j.category,
+        location: j.location,
+        type: j.employment_type
+      };
+    });
   }, [jobsQuery.data]);
 
-  const cities = useMemo(() => ["Marau - RS", "Passo Fundo - RS", "Vila Maria - RS"], []);
-  const sectors = useMemo(
-    () => [
-      { label: "Indústria", count: jobs.length },
-      { label: "Comércio / Varejo", count: 8 },
-      { label: "Serviços", count: 5 },
-      { label: "Tecnologia / TI", count: 3 },
-    ],
-    [jobs.length],
-  );
-  const regions = useMemo(() => ["Centro", "Distrito Industrial", "Borghetti"], []);
-  const types = useMemo(() => ["Qualquer tipo", "Efetivo (CLT)", "Estágio"], []);
+  const cities = useMemo(() => {
+    const set = new Set(["Marau - RS"]);
+    allJobs.forEach(j => j.location && set.add(j.location));
+    return Array.from(set);
+  }, [allJobs]);
+
+  const sectors = useMemo(() => {
+    const baseSectors = ["Indústria", "Comércio / Varejo", "Serviços", "Tecnologia / TI"];
+    return baseSectors.map(s => ({
+      label: s,
+      count: allJobs.filter(j => j.category === s).length
+    }));
+  }, [allJobs]);
+
+  const regions = useMemo(() => {
+    // Basic regions or extract from address if possible
+    return ["Centro", "Distrito Industrial", "Borghetti"];
+  }, []);
+
+  const types = useMemo(() => ["Qualquer tipo", "Efetivo", "Estágio", "Temporário"], []);
 
   const filteredJobs = useMemo(() => {
-    const normalize = (s: string) => s.toLowerCase().normalize("NFD").replace(/\p{Diacritic}/gu, "");
+    return allJobs.filter((job) => {
+      const matchesQ = !q || 
+        job.title.toLowerCase().includes(q) || 
+        job.company.toLowerCase().includes(q) ||
+        (job.category && job.category.toLowerCase().includes(q));
+      
+      const matchesSector = !selectedSector || job.category === selectedSector;
+      const matchesType = !selectedType || job.type === selectedType;
+      const matchesCity = city === "Todas as Cidades" || job.location === city;
 
-    return jobs.filter((job) => {
-      // mantém os cards de anúncio sempre visíveis
-      if (job.featuredLabel === "Anúncio") return true;
-
-      const tags = job.tags.map(normalize);
-      const location = job.bullets.find((b) => b.icon === "location")?.label ?? "";
-      const locationNorm = normalize(location);
-
-      const sectorOk =
-        !selectedSector ||
-        tags.some((t) => t.includes(normalize(selectedSector))) ||
-        // compatibilidade com "Comércio / Varejo" -> tag "Comércio"
-        (normalize(selectedSector).includes("comercio") && tags.some((t) => t.includes("comercio")));
-
-      const regionOk = !selectedRegion || locationNorm.includes(normalize(selectedRegion));
-
-      // mock: ainda não temos o tipo no dataset, então só filtramos quando houver match explícito
-      const typeOk =
-        !selectedType ||
-        selectedType === "Qualquer tipo" ||
-        job.bullets.some((b) => normalize(b.label).includes(normalize(selectedType)));
-
-      return sectorOk && regionOk && typeOk;
+      return matchesQ && matchesSector && matchesType && matchesCity;
     });
-  }, [jobs, selectedSector, selectedRegion, selectedType]);
+  }, [allJobs, q, selectedSector, selectedType, city]);
 
   return (
     <div className="min-h-screen bg-background text-foreground font-manrope">
@@ -258,7 +257,13 @@ export default function Jobs() {
             <div className="grid w-full gap-3 sm:grid-cols-5 lg:max-w-2xl">
               <div className="relative sm:col-span-3">
                 <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                <Input placeholder="Buscar" className="pl-9" />
+                <Input 
+                  placeholder="Buscar" 
+                  className="pl-9" 
+                  value={localQ}
+                  onChange={(e) => setLocalQ(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && updateParam("q", localQ)}
+                />
               </div>
 
               <div className="sm:col-span-2">
@@ -279,7 +284,12 @@ export default function Jobs() {
               </div>
 
               <div className="sm:col-span-5">
-                <Button type="button" variant="secondary" className="w-full gap-2">
+                <Button 
+                  type="button" 
+                  variant="secondary" 
+                  className="w-full gap-2"
+                  onClick={() => updateParam("q", localQ)}
+                >
                   Buscar
                   <ArrowRight className="h-4 w-4" />
                 </Button>
@@ -405,7 +415,7 @@ export default function Jobs() {
           <section className="lg:col-span-3">
             <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">32 Vagas Encontradas</p>
+                <p className="text-sm text-muted-foreground">{jobsQuery.isLoading ? "..." : jobs.length} Vagas Encontradas</p>
               </div>
 
               <div className="flex items-center gap-3">
