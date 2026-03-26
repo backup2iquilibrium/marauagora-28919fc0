@@ -30,7 +30,7 @@ const defaultNav: NavItem[] = [
     href: "/categoria/policia",
     children: [
       { label: "Notícias de Polícia", href: "/categoria/policia" },
-      { label: "Telefones Úteis", href: "/guia-da-cidade" },
+      { label: "Telefones Úteis", href: "/telefones-uteis" },
       { label: "Ocorrências", href: "/categoria/policial" },
     ]
   },
