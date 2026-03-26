@@ -49,6 +49,7 @@ serve(async (req: Request) => {
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const admin = createClient(supabaseUrl, supabaseServiceKey);
 
+    const now = new Date();
     // Use America/Sao_Paulo timezone for consistency (Brazil -3h)
     const brazilDate = new Intl.DateTimeFormat('pt-BR', {
       timeZone: 'America/Sao_Paulo',
