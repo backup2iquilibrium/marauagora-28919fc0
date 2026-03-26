@@ -32,14 +32,7 @@ const defaultNav: NavItem[] = [
       { label: "Telefones Úteis", href: "/telefones-uteis" },
     ]
   },
-  { 
-    label: "Polícia", 
-    href: "/categoria/policia",
-    children: [
-      { label: "Notícias de Polícia", href: "/categoria/policia" },
-      { label: "Ocorrências", href: "/categoria/policial" },
-    ]
-  },
+  { label: "Polícia", href: "/categoria/policia" },
   { 
     label: "Política", 
     href: "/categoria/politica",
