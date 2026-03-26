@@ -725,9 +725,6 @@ export default function AdminCityGuide() {
                         </Table>
                     </div>
                 </TabsContent>
-
-                    </div>
-                </TabsContent>
             </Tabs>
 
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
@@ -1126,8 +1123,6 @@ export default function AdminCityGuide() {
                         </DialogFooter>
                     </form>
                 </DialogContent>
-            </Dialog>
-
             </Dialog>
         </div>
     );
