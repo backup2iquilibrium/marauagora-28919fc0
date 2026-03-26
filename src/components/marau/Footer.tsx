@@ -66,11 +66,7 @@ export function Footer({ logoUrl }: { logoUrl: string }) {
                   Esporte
                 </Link>
               </li>
-              <li>
-                <Link className="hover:text-primary-foreground transition-colors" to="/horoscopo">
-                  Horóscopo
-                </Link>
-              </li>
+
               <li>
                 <Link className="hover:text-primary-foreground transition-colors" to="/categoria/politica">
                   Política

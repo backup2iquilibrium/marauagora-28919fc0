@@ -45,7 +45,7 @@ const defaultNav: NavItem[] = [
   },
   { label: "Esportes", href: "/categoria/esportes" },
   { label: "Serviços Públicos", href: "/servicos" },
-  { label: "Horóscopo", href: "/horoscopo" },
+
   { label: "Agronegócio", href: "/categoria/agronegocio" },
   { label: "Agenda", href: "/agenda" },
   { label: "Classificados", href: "/categoria/classificados" },
