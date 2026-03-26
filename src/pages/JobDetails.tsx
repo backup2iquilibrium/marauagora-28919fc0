@@ -114,7 +114,30 @@ export default function JobDetails() {
                 </div>
 
                 <div className="mt-8 pt-6 border-t flex flex-col sm:flex-row gap-4">
-                  <Button className="flex-1 rounded-full text-lg h-12">Enviar Currículo</Button>
+                  {job.application_link ? (
+                    <Button 
+                      className="flex-1 rounded-full text-lg h-12"
+                      onClick={() => {
+                        let url = job.application_link;
+                        if (job.application_type === 'whatsapp') {
+                          // Clean number and build wa.me link
+                          const cleanNumber = job.application_link.replace(/\D/g, "");
+                          url = `https://wa.me/${cleanNumber}?text=Olá! Encontrei sua vaga de ${job.title} no portal Maraú Agora e gostaria de me candidatar.`;
+                        } else if (job.application_type === 'email') {
+                          url = `mailto:${job.application_link}?subject=Candidatura: ${job.title}`;
+                        }
+                        window.open(url, "_blank");
+                      }}
+                    >
+                      {job.application_type === 'whatsapp' ? "Candidatar-se via WhatsApp" : 
+                       job.application_type === 'email' ? "Enviar Currículo por E-mail" : 
+                       "Candidatar-se no Site"}
+                    </Button>
+                  ) : (
+                    <Button className="flex-1 rounded-full text-lg h-12" disabled>
+                      Informação de candidatura não disponível
+                    </Button>
+                  )}
                   <Button variant="outline" className="flex-1 rounded-full h-12">Salvar Vaga</Button>
                 </div>
               </CardContent>

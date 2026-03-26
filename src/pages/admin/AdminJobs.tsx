@@ -57,7 +57,23 @@ export default function AdminJobs() {
     // Jobs State
     const [isJobDialogOpen, setIsJobDialogOpen] = React.useState(false);
     const [editingJob, setEditingJob] = React.useState<any>(null);
-    const [jobFormData, setJobFormData] = React.useState({
+    interface JobFormData {
+        title: string;
+        company: string;
+        employment_type: string;
+        description: string;
+        location: string;
+        category: string;
+        is_featured: boolean;
+        requirements: string;
+        benefits: string;
+        salary_range: string;
+        tags: string[];
+        application_link: string;
+        application_type: string;
+    }
+
+    const [jobFormData, setJobFormData] = React.useState<JobFormData>({
         title: "",
         company: "",
         employment_type: "Efetivo",
@@ -68,7 +84,9 @@ export default function AdminJobs() {
         requirements: "",
         benefits: "",
         salary_range: "",
-        tags: [] as string[],
+        tags: [],
+        application_link: "",
+        application_type: "external",
     });
 
     const jobsQuery = useQuery({
@@ -85,7 +103,7 @@ export default function AdminJobs() {
     });
 
     const jobSaveMutation = useMutation({
-        mutationFn: async (data: typeof jobFormData) => {
+        mutationFn: async (data: JobFormData) => {
             const slug = data.title
                 .toLowerCase()
                 .normalize("NFD")
@@ -147,6 +165,8 @@ export default function AdminJobs() {
             benefits: "",
             salary_range: "",
             tags: [],
+            application_link: "",
+            application_type: "external",
         });
         setIsJobDialogOpen(true);
     };
@@ -165,6 +185,8 @@ export default function AdminJobs() {
             benefits: job.benefits || "",
             salary_range: job.salary_range || "",
             tags: job.tags || [],
+            application_link: job.application_link || "",
+            application_type: job.application_type || "external",
         });
         setIsJobDialogOpen(true);
     };
@@ -336,8 +358,51 @@ export default function AdminJobs() {
                                         <SelectItem value="Comércio / Varejo">Comércio / Varejo</SelectItem>
                                         <SelectItem value="Serviços">Serviços</SelectItem>
                                         <SelectItem value="Tecnologia / TI">Tecnologia / TI</SelectItem>
+                                        <SelectItem value="Educação">Educação</SelectItem>
+                                        <SelectItem value="Saúde">Saúde</SelectItem>
+                                        <SelectItem value="Gastronomia / Alimentos">Gastronomia / Alimentos</SelectItem>
+                                        <SelectItem value="Transporte / Logística">Transporte / Logística</SelectItem>
+                                        <SelectItem value="Construção Civil">Construção Civil</SelectItem>
+                                        <SelectItem value="Administrativo">Administrativo</SelectItem>
+                                        <SelectItem value="Vendas / Marketing">Vendas / Marketing</SelectItem>
+                                        <SelectItem value="Rural / Agronegócio">Rural / Agronegócio</SelectItem>
+                                        <SelectItem value="Recursos Humanos">Recursos Humanos</SelectItem>
+                                        <SelectItem value="Financeiro / Jurídico">Financeiro / Jurídico</SelectItem>
+                                        <SelectItem value="Artes / Design">Artes / Design</SelectItem>
+                                        <SelectItem value="Outros">Outros</SelectItem>
                                     </SelectContent>
                                 </Select>
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label htmlFor="application_type">Tipo de Candidatura</Label>
+                                <Select 
+                                    value={jobFormData.application_type} 
+                                    onValueChange={(v) => setJobFormData({ ...jobFormData, application_type: v })}
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="whatsapp">WhatsApp</SelectItem>
+                                        <SelectItem value="email">E-mail</SelectItem>
+                                        <SelectItem value="external">Site / Link Externo</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+
+                            <div className="space-y-2 col-span-2">
+                                <Label htmlFor="application_link">Link / Contato para Candidatura</Label>
+                                <Input
+                                    id="application_link"
+                                    value={jobFormData.application_link}
+                                    onChange={(e) => setJobFormData({ ...jobFormData, application_link: e.target.value })}
+                                    placeholder={
+                                        jobFormData.application_type === 'whatsapp' ? "DDD + número (ex: 5499999999)" :
+                                        jobFormData.application_type === 'email' ? "email@empresa.com" :
+                                        "https://..."
+                                    }
+                                />
                             </div>
 
                             <div className="space-y-2 col-span-2">
