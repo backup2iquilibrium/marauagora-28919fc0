@@ -33,15 +33,7 @@ const defaultNav: NavItem[] = [
     ]
   },
   { label: "Polícia", href: "/categoria/policia" },
-  { 
-    label: "Política", 
-    href: "/categoria/politica",
-    children: [
-      { label: "Notícias de Política", href: "/categoria/politica" },
-      { label: "Câmara de Vereadores", href: "/categoria/politica?q=Camara" },
-      { label: "Prefeitura", href: "/categoria/politica?q=Prefeitura" },
-    ]
-  },
+  { label: "Política", href: "/categoria/politica" },
   { label: "Esportes", href: "/categoria/esportes" },
   { label: "Serviços Públicos", href: "/servicos" },
 
