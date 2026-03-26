@@ -1,4 +1,4 @@
-import { Newspaper, Tag, Users, Megaphone, FileText, Settings, MapPin, Briefcase, CalendarDays } from "lucide-react";
+import { Newspaper, Tag, Users, Megaphone, FileText, Settings, MapPin, Briefcase, CalendarDays, Info } from "lucide-react";
 import { Outlet } from "react-router-dom";
 
 import { supabase } from "@/integrations/supabase/client";
@@ -13,6 +13,7 @@ const navItems: DashboardNavItem[] = [
   { to: "/admin/vagas", label: "Vagas de Emprego", icon: Briefcase },
   { to: "/admin/agenda", label: "Agenda de Eventos", icon: CalendarDays },
   { to: "/admin/classificados", label: "Classificados", icon: Tag },
+  { to: "/admin/quem-somos", label: "Quem Somos", icon: Info },
   { to: "/admin/usuarios", label: "Usuários", icon: Users },
   { to: "/admin/configuracoes", label: "Configurações", icon: Settings },
 ];

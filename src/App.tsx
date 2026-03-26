@@ -42,6 +42,7 @@ const AdminNewsEditor = lazy(() => import("./pages/admin/AdminNewsEditor"));
 const AdminCityGuide = lazy(() => import("./pages/admin/AdminCityGuide"));
 const AdminJobs = lazy(() => import("./pages/admin/AdminJobs"));
 const AdminAgenda = lazy(() => import("./pages/admin/AdminAgenda"));
+const AdminAbout = lazy(() => import("./pages/admin/AdminAbout"));
 const AdvertiserClassifiedsDashboard = lazy(() => import("./pages/advertiser/AdvertiserClassifiedsDashboard"));
 const AdvertiserLayout = lazy(() => import("./pages/advertiser/AdvertiserLayout"));
 const AdvertiserAdDashboard = lazy(() => import("./pages/advertiser/AdvertiserAdDashboard"));
@@ -109,6 +110,7 @@ const App = () => (
                   <Route path="guia-da-cidade" element={<AdminCityGuide />} />
                   <Route path="vagas" element={<AdminJobs />} />
                   <Route path="agenda" element={<AdminAgenda />} />
+                  <Route path="quem-somos" element={<AdminAbout />} />
                   <Route path="usuarios" element={<AdminUsers />} />
                   <Route path="configuracoes" element={<AdminSettings />} />
                 </Route>
