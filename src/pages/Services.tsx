@@ -1,6 +1,6 @@
 import * as React from "react";
 import { Link } from "react-router-dom";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useDeferredValue } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
   ArrowRight,
@@ -81,6 +81,7 @@ function statusPillClass(status?: string | null) {
 export default function Services() {
   const city = "Marau";
   const [q, setQ] = useState("");
+  const deferredQ = useDeferredValue(q);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
   const categoriesQuery = useQuery({
@@ -113,7 +114,7 @@ export default function Services() {
   });
 
   const servicesQuery = useQuery({
-    queryKey: ["services", "list", { q: q.trim(), selectedCategory }],
+    queryKey: ["services", "list", { q: deferredQ.trim(), selectedCategory }],
     queryFn: async () => {
       let query: any = supabase
         .from("public_services")
@@ -121,11 +122,11 @@ export default function Services() {
         .eq("is_published", true)
         .order("views_count", { ascending: false })
         .order("sort_order", { ascending: true })
-        .limit(12);
+        .limit(100);
 
       if (selectedCategory) query = query.eq("category_slug", selectedCategory);
 
-      const trimmed = q.trim();
+      const trimmed = deferredQ.trim();
       if (trimmed) {
         const like = `%${trimmed}%`;
         query = query.or(`title.ilike.${like},summary.ilike.${like},details.ilike.${like},address.ilike.${like}`);
@@ -183,7 +184,7 @@ export default function Services() {
   });
 
   const categories = categoriesQuery.data ?? [];
-  const quickFilters = useMemo(() => categories.slice(0, 5), [categories]);
+  const quickFilters = useMemo(() => categories, [categories]);
 
   const actionsByService = useMemo(() => {
     const map = new Map<string, ActionRow[]>();
