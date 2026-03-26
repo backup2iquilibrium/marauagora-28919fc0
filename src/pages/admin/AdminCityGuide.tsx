@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import AdminPolice from "./AdminPolice"; // imported to be used as a tab
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -523,9 +524,11 @@ export default function AdminCityGuide() {
                         <MapPin className="h-4 w-4" />
                         Estabelecimentos
                     </TabsTrigger>
-                    <TabsTrigger value="categories" className="gap-2 px-4 h-full data-[state=active]:bg-muted">
-                        <LayoutGrid className="h-4 w-4" />
-                        Categorias
+                    <TabsTrigger value="categories" className="gap-2">
+                        <LayoutGrid className="h-4 w-4" /> Categorias de Serviço
+                    </TabsTrigger>
+                    <TabsTrigger value="telefones" className="gap-2">
+                        <Phone className="h-4 w-4" /> Telefones Úteis
                     </TabsTrigger>
                 </TabsList>
 
@@ -724,6 +727,15 @@ export default function AdminCityGuide() {
                             </TableBody>
                         </Table>
                     </div>
+                </TabsContent>
+
+                {/* ABA: TELEFONES ÚTEIS */}
+                <TabsContent value="telefones" className="mt-6">
+                    <Card>
+                        <CardContent className="pt-6">
+                            <AdminPolice />
+                        </CardContent>
+                    </Card>
                 </TabsContent>
             </Tabs>
 

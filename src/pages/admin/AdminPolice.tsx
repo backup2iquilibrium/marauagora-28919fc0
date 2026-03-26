@@ -153,17 +153,17 @@ export default function AdminPolice() {
     const phones = phonesQuery.data || [];
 
     return (
-        <div className="p-6 space-y-6">
+        <div className="space-y-6">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
-                    <h1 className="text-2xl font-semibold">Polícia &amp; Telefones Úteis</h1>
+                    <h2 className="text-xl font-semibold">Telefones Úteis</h2>
                     <p className="text-sm text-muted-foreground">
-                        Gerencie os contatos de emergência, segurança pública e serviços que aparecem na aba Polícia / Utilidade Pública.
+                        Gerencie os contatos de emergência, segurança pública e serviços de utilidade pública.
                     </p>
                 </div>
                 <Button className="gap-2" onClick={openAdd}>
                     <Plus className="h-4 w-4" />
-                    Novo Telefone
+                    Novo Contato
                 </Button>
             </div>
 

@@ -13,7 +13,14 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 const defaultNav: NavItem[] = [
-  { label: "Início", href: "/" },
+  { 
+    label: "Início", 
+    href: "/",
+    children: [
+      { label: "Página Inicial", href: "/" },
+      { label: "Quem Somos", href: "/quem-somos" },
+    ]
+  },
   { 
     label: "Cidade", 
     href: "/categoria/cidade",
@@ -22,7 +29,7 @@ const defaultNav: NavItem[] = [
       { label: "Guia da Cidade", href: "/guia-da-cidade" },
       { label: "Vagas de Emprego", href: "/vagas" },
       { label: "Agenda de Eventos", href: "/agenda" },
-      { label: "Quem Somos", href: "/quem-somos" },
+      { label: "Telefones Úteis", href: "/telefones-uteis" },
     ]
   },
   { 
@@ -30,7 +37,6 @@ const defaultNav: NavItem[] = [
     href: "/categoria/policia",
     children: [
       { label: "Notícias de Polícia", href: "/categoria/policia" },
-      { label: "Telefones Úteis", href: "/telefones-uteis" },
       { label: "Ocorrências", href: "/categoria/policial" },
     ]
   },
