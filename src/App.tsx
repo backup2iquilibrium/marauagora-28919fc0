@@ -15,6 +15,7 @@ const CategoryNews = lazy(() => import("./pages/CategoryNews"));
 const Jobs = lazy(() => import("./pages/Jobs"));
 const JobDetails = lazy(() => import("./pages/JobDetails"));
 const CityPoints = lazy(() => import("./pages/CityPoints"));
+const CityGuide = lazy(() => import("./pages/CityGuide")); // Added
 const Contact = lazy(() => import("./pages/Contact"));
 const QuemSomos = lazy(() => import("./pages/QuemSomos"));
 const SearchResults = lazy(() => import("./pages/SearchResults"));
@@ -24,6 +25,7 @@ const Agenda = lazy(() => import("./pages/Agenda"));
 const Galleries = lazy(() => import("./pages/Galleries"));
 const GalleryDetails = lazy(() => import("./pages/GalleryDetails"));
 const Services = lazy(() => import("./pages/Services"));
+const TelefonesUteis = lazy(() => import("./pages/TelefonesUteis")); // Added
 
 const Live = lazy(() => import("./pages/Live"));
 const NotFound = lazy(() => import("./pages/NotFound"));
@@ -43,6 +45,7 @@ const AdminCityGuide = lazy(() => import("./pages/admin/AdminCityGuide"));
 const AdminJobs = lazy(() => import("./pages/admin/AdminJobs"));
 const AdminAgenda = lazy(() => import("./pages/admin/AdminAgenda"));
 const AdminAbout = lazy(() => import("./pages/admin/AdminAbout"));
+const AdminPolice = lazy(() => import("./pages/admin/AdminPolice"));
 const AdvertiserClassifiedsDashboard = lazy(() => import("./pages/advertiser/AdvertiserClassifiedsDashboard"));
 const AdvertiserLayout = lazy(() => import("./pages/advertiser/AdvertiserLayout"));
 const AdvertiserAdDashboard = lazy(() => import("./pages/advertiser/AdvertiserAdDashboard"));
@@ -71,11 +74,11 @@ const App = () => (
                 <Route path="/" element={<Index />} />
                 <Route path="/noticia/:slug" element={<NewsDetails />} />
                 <Route path="/categoria/:slug" element={<CategoryNews />} />
-                <Route path="/vagas" element={<Jobs />} />
+                <Route path="/vagas" element={<JobBoard />} /> {/* Changed from Jobs to JobBoard */}
                 <Route path="/vagas/:id" element={<JobDetails />} />
                 <Route path="/pontos" element={<CityPoints />} />
                 <Route path="/points" element={<CityPoints />} />
-                <Route path="/guia-da-cidade" element={<CityPoints />} />
+                <Route path="/guia-da-cidade" element={<CityGuide />} /> {/* Changed from CityPoints to CityGuide */}
                 <Route path="/guia-da-cidade/:id" element={<CityPoints />} />
                 <Route path="/contato" element={<Contact />} />
                 <Route path="/quem-somos" element={<QuemSomos />} />
@@ -111,6 +114,7 @@ const App = () => (
                   <Route path="vagas" element={<AdminJobs />} />
                   <Route path="agenda" element={<AdminAgenda />} />
                   <Route path="quem-somos" element={<AdminAbout />} />
+                  <Route path="policia" element={<AdminPolice />} />
                   <Route path="usuarios" element={<AdminUsers />} />
                   <Route path="configuracoes" element={<AdminSettings />} />
                 </Route>
