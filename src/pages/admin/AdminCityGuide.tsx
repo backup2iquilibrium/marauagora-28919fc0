@@ -504,15 +504,22 @@ export default function AdminCityGuide() {
                         <Loader2 className={`h-4 w-4 ${seedCategoriesMutation.isPending ? "animate-spin" : ""}`} />
                         Carregar Padrões
                     </Button>
-                    {activeTab === "services" ? (
+                    {activeTab === "services" && (
                         <Button className="gap-2" onClick={handleOpenAdd}>
                             <Plus className="h-4 w-4" />
                             Novo Estabelecimento
                         </Button>
-                    ) : (
+                    )}
+                    {activeTab === "categories" && (
                         <Button className="gap-2" onClick={handleOpenAddCategory}>
                             <Plus className="h-4 w-4" />
                             Nova Categoria
+                        </Button>
+                    )}
+                    {activeTab === "telefones" && (
+                        <Button className="gap-2" onClick={() => window.dispatchEvent(new Event("openAddPolice"))}>
+                            <Plus className="h-4 w-4" />
+                            Novo Contato
                         </Button>
                     )}
                 </div>

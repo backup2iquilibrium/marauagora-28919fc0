@@ -149,23 +149,17 @@ export default function AdminPolice() {
 
     const openAdd = () => { setEditing(EMPTY_PHONE); setDialog(true); };
     const openEdit = (p: EmergencyNumber) => { setEditing({ ...p }); setDialog(true); };
+    // Listen for events from parent components to open modal
+    React.useEffect(() => {
+        const handler = () => openAdd();
+        window.addEventListener("openAddPolice", handler);
+        return () => window.removeEventListener("openAddPolice", handler);
+    }, []);
 
     const phones = phonesQuery.data || [];
 
     return (
         <div className="space-y-6">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div>
-                    <h2 className="text-xl font-semibold">Telefones Úteis</h2>
-                    <p className="text-sm text-muted-foreground">
-                        Gerencie os contatos de emergência, segurança pública e serviços de utilidade pública.
-                    </p>
-                </div>
-                <Button className="gap-2" onClick={openAdd}>
-                    <Plus className="h-4 w-4" />
-                    Novo Contato
-                </Button>
-            </div>
 
             <Card className="p-4 bg-card">
                 <div className="flex flex-col md:flex-row gap-3">
