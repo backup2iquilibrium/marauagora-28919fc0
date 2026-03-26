@@ -19,10 +19,7 @@ import {
     Settings,
     LayoutGrid,
     Link,
-    Upload as UploadIcon,
-    Briefcase,
-    Building,
-    AlignLeft
+    Upload as UploadIcon
 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -106,7 +103,6 @@ export default function AdminCityGuide() {
     const [activeTab, setActiveTab] = React.useState("services");
     const [q, setQ] = React.useState("");
     const [catQ, setCatQ] = React.useState("");
-    const [jobsQ, setJobsQ] = React.useState("");
     const [categoryFilter, setCategoryFilter] = React.useState("all");
 
     const DEFAULT_CATEGORIES = [
@@ -161,23 +157,6 @@ export default function AdminCityGuide() {
         sort_order: 0,
     });
 
-    // Jobs State
-    const [isJobDialogOpen, setIsJobDialogOpen] = React.useState(false);
-    const [editingJob, setEditingJob] = React.useState<any>(null);
-    const [jobFormData, setJobFormData] = React.useState({
-        title: "",
-        company: "",
-        employment_type: "Efetivo",
-        description: "",
-        location: "Marau - RS",
-        category: "Serviços",
-        is_featured: false,
-        requirements: "",
-        benefits: "",
-        salary_range: "",
-        tags: [] as string[],
-    });
-
     const [uploading, setUploading] = React.useState(false);
     const fileInputRef = React.useRef<HTMLInputElement>(null);
 
@@ -226,19 +205,6 @@ export default function AdminCityGuide() {
     const servicesQuery = useQuery({
         queryKey: ["admin_services", { q, categoryFilter }],
         queryFn: () => fetchPublicServices({ q, category: categoryFilter }),
-    });
-
-    const jobsQuery = useQuery({
-        queryKey: ["admin_jobs", { jobsQ }],
-        queryFn: async () => {
-            let query = supabase.from("jobs").select("*").order("posted_at", { ascending: false });
-            if (jobsQ.trim()) {
-                query = query.or(`title.ilike.%${jobsQ.trim()}%,company.ilike.%${jobsQ.trim()}%`);
-            }
-            const { data, error } = await query;
-            if (error) throw error;
-            return data || [];
-        },
     });
 
     const saveMutation = useMutation({
@@ -334,54 +300,6 @@ export default function AdminCityGuide() {
         },
     });
 
-    const jobSaveMutation = useMutation({
-        mutationFn: async (data: typeof jobFormData) => {
-            const slug = data.title
-                .toLowerCase()
-                .normalize("NFD")
-                .replace(/[\u0300-\u036f]/g, "")
-                .replace(/[^\w\s-]/g, "")
-                .replace(/\s+/g, "-") + "-" + Math.random().toString(36).substring(2, 6);
-
-            if (editingJob) {
-                const { error } = await supabase
-                    .from("jobs")
-                    .update(data)
-                    .eq("id", editingJob.id);
-                if (error) throw error;
-            } else {
-                const { error } = await supabase
-                    .from("jobs")
-                    .insert([{ ...data, slug }]);
-                if (error) throw error;
-            }
-        },
-        onSuccess: () => {
-            toast.success(editingJob ? "Vaga atualizada!" : "Vaga criada!");
-            setIsJobDialogOpen(false);
-            setEditingJob(null);
-            queryClient.invalidateQueries({ queryKey: ["admin_jobs"] });
-            queryClient.invalidateQueries({ queryKey: ["jobs-list"] });
-        },
-        onError: (error: any) => {
-            console.error(error);
-            toast.error("Erro ao salvar vaga", { description: error.message });
-        },
-    });
-
-    const jobDeleteMutation = useMutation({
-        mutationFn: async (id: string) => {
-            const { error } = await supabase.from("jobs").delete().eq("id", id);
-            if (error) throw error;
-        },
-        onSuccess: () => {
-            toast.success("Vaga excluída com sucesso!");
-            queryClient.invalidateQueries({ queryKey: ["admin_jobs"] });
-        },
-        onError: (error: any) => {
-            toast.error("Erro ao excluir vaga", { description: error.message });
-        },
-    });
 
     const deleteMutation = useMutation({
         mutationFn: async (id: string) => {
@@ -507,56 +425,9 @@ export default function AdminCityGuide() {
             name: "",
             slug: "",
             icon: "storefront",
-            sort_order: (categoriesQuery.data?.length || 0) * 10,
+            sort_order: 0,
         });
         setIsCategoryDialogOpen(true);
-    };
-
-    const handleOpenEditCategory = (cat: any) => {
-        setEditingCategory(cat);
-        setCategoryFormData({
-            name: cat.name || "",
-            slug: cat.slug || "",
-            icon: cat.icon || "storefront",
-            sort_order: cat.sort_order || 0,
-        });
-        setIsCategoryDialogOpen(true);
-    };
-
-    const handleOpenAddJob = () => {
-        setEditingJob(null);
-        setJobFormData({
-            title: "",
-            company: "",
-            employment_type: "Efetivo",
-            description: "",
-            location: "Marau - RS",
-            category: "Serviços",
-            is_featured: false,
-            requirements: "",
-            benefits: "",
-            salary_range: "",
-            tags: [],
-        });
-        setIsJobDialogOpen(true);
-    };
-
-    const handleOpenEditJob = (job: any) => {
-        setEditingJob(job);
-        setJobFormData({
-            title: job.title || "",
-            company: job.company || "",
-            employment_type: job.employment_type || "Efetivo",
-            description: job.description || "",
-            location: job.location || "Marau - RS",
-            category: job.category || "Serviços",
-            is_featured: job.is_featured || false,
-            requirements: job.requirements || "",
-            benefits: job.benefits || "",
-            salary_range: job.salary_range || "",
-            tags: job.tags || [],
-        });
-        setIsJobDialogOpen(true);
     };
 
     const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -637,15 +508,10 @@ export default function AdminCityGuide() {
                             <Plus className="h-4 w-4" />
                             Novo Estabelecimento
                         </Button>
-                    ) : activeTab === "categories" ? (
+                    ) : (
                         <Button className="gap-2" onClick={handleOpenAddCategory}>
                             <Plus className="h-4 w-4" />
                             Nova Categoria
-                        </Button>
-                    ) : (
-                        <Button className="gap-2" onClick={handleOpenAddJob}>
-                            <Plus className="h-4 w-4" />
-                            Nova Vaga
                         </Button>
                     )}
                 </div>
@@ -660,10 +526,6 @@ export default function AdminCityGuide() {
                     <TabsTrigger value="categories" className="gap-2 px-4 h-full data-[state=active]:bg-muted">
                         <LayoutGrid className="h-4 w-4" />
                         Categorias
-                    </TabsTrigger>
-                    <TabsTrigger value="jobs" className="gap-2 px-4 h-full data-[state=active]:bg-muted">
-                        <Briefcase className="h-4 w-4" />
-                        Vagas de Emprego
                     </TabsTrigger>
                 </TabsList>
 
@@ -864,91 +726,6 @@ export default function AdminCityGuide() {
                     </div>
                 </TabsContent>
 
-                <TabsContent value="jobs" className="space-y-6 outline-none">
-                    <Card className="p-4 bg-card">
-                        <div className="relative">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                            <Input
-                                placeholder="Buscar por cargo ou empresa..."
-                                className="pl-9"
-                                value={jobsQ}
-                                onChange={(e) => setJobsQ(e.target.value)}
-                            />
-                        </div>
-                    </Card>
-
-                    <div className="border rounded-lg bg-card overflow-hidden">
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead>Vaga / Empresa</TableHead>
-                                    <TableHead>Tipo / Local</TableHead>
-                                    <TableHead>Categoria</TableHead>
-                                    <TableHead>Data</TableHead>
-                                    <TableHead className="text-right">Ações</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {jobsQuery.isLoading ? (
-                                    <TableRow>
-                                        <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
-                                            <Loader2 className="h-6 w-6 animate-spin mx-auto mb-2" />
-                                            Carregando vagas...
-                                        </TableCell>
-                                    </TableRow>
-                                ) : (jobsQuery.data || []).length === 0 ? (
-                                    <TableRow>
-                                        <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">Nenhuma vaga encontrada.</TableCell>
-                                    </TableRow>
-                                ) : (
-                                    jobsQuery.data?.map((job: any) => (
-                                        <TableRow key={job.id} className="group">
-                                            <TableCell>
-                                                <div className="font-semibold flex items-center gap-2">
-                                                    {job.title}
-                                                    {job.is_featured && <Badge variant="secondary" className="text-[8px] h-3 px-1 uppercase">Destaque</Badge>}
-                                                </div>
-                                                <div className="text-xs text-muted-foreground flex items-center gap-1">
-                                                    <Building className="h-3 w-3" /> {job.company}
-                                                </div>
-                                            </TableCell>
-                                            <TableCell>
-                                                <div className="text-sm">{job.employment_type}</div>
-                                                <div className="text-xs text-muted-foreground flex items-center gap-1">
-                                                    <MapPin className="h-3 w-3" /> {job.location}
-                                                </div>
-                                            </TableCell>
-                                            <TableCell>
-                                                <Badge variant="outline">{job.category}</Badge>
-                                            </TableCell>
-                                            <TableCell className="text-xs text-muted-foreground">
-                                                {new Date(job.posted_at).toLocaleDateString("pt-BR")}
-                                            </TableCell>
-                                            <TableCell className="text-right">
-                                                <DropdownMenu>
-                                                    <DropdownMenuTrigger asChild>
-                                                        <Button variant="ghost" size="icon">
-                                                            <MoreVertical className="h-4 w-4" />
-                                                        </Button>
-                                                    </DropdownMenuTrigger>
-                                                    <DropdownMenuContent align="end" className="w-[160px]">
-                                                        <DropdownMenuItem className="gap-2" onClick={() => handleOpenEditJob(job)}>
-                                                            <Pencil className="h-4 w-4" /> Editar
-                                                        </DropdownMenuItem>
-                                                        <DropdownMenuItem
-                                                            className="gap-2 text-destructive"
-                                                            onClick={() => confirm("Excluir vaga?") && jobDeleteMutation.mutate(job.id)}
-                                                        >
-                                                            <Trash2 className="h-4 w-4" /> Excluir
-                                                        </DropdownMenuItem>
-                                                    </DropdownMenuContent>
-                                                </DropdownMenu>
-                                            </TableCell>
-                                        </TableRow>
-                                    ))
-                                )}
-                            </TableBody>
-                        </Table>
                     </div>
                 </TabsContent>
             </Tabs>
