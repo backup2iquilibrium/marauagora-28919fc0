@@ -15,7 +15,6 @@ const CategoryNews = lazy(() => import("./pages/CategoryNews"));
 const Jobs = lazy(() => import("./pages/Jobs"));
 const JobDetails = lazy(() => import("./pages/JobDetails"));
 const CityPoints = lazy(() => import("./pages/CityPoints"));
-const CityGuide = lazy(() => import("./pages/CityGuide")); // Added
 const Contact = lazy(() => import("./pages/Contact"));
 const QuemSomos = lazy(() => import("./pages/QuemSomos"));
 const SearchResults = lazy(() => import("./pages/SearchResults"));
@@ -74,11 +73,11 @@ const App = () => (
                 <Route path="/" element={<Index />} />
                 <Route path="/noticia/:slug" element={<NewsDetails />} />
                 <Route path="/categoria/:slug" element={<CategoryNews />} />
-                <Route path="/vagas" element={<JobBoard />} /> {/* Changed from Jobs to JobBoard */}
+                <Route path="/vagas" element={<Jobs />} />
                 <Route path="/vagas/:id" element={<JobDetails />} />
                 <Route path="/pontos" element={<CityPoints />} />
                 <Route path="/points" element={<CityPoints />} />
-                <Route path="/guia-da-cidade" element={<CityGuide />} /> {/* Changed from CityPoints to CityGuide */}
+                <Route path="/guia-da-cidade" element={<CityPoints />} />
                 <Route path="/guia-da-cidade/:id" element={<CityPoints />} />
                 <Route path="/contato" element={<Contact />} />
                 <Route path="/quem-somos" element={<QuemSomos />} />
