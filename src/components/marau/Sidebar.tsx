@@ -1,4 +1,4 @@
-import { Mail, Phone, Sparkles } from "lucide-react";
+import { Mail, Phone } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -41,31 +41,6 @@ export function Sidebar() {
           <Phone className="h-4 w-4 text-primary" aria-hidden="true" />
           <span className="font-medium text-sm group-hover:text-primary transition-colors">Telefones Úteis</span>
         </div>
-      </Link>
-
-      <Link
-        to="/horoscopo"
-        className="block relative overflow-hidden bg-gradient-to-br from-indigo-900 via-purple-900 to-indigo-950 rounded-xl p-6 shadow-xl border border-white/10 group transition-all hover:scale-[1.02] hover:shadow-indigo-500/20"
-      >
-        <div className="relative z-10">
-          <div className="flex items-center gap-2 mb-2">
-            <Sparkles className="h-4 w-4 text-amber-400 animate-pulse" />
-            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-amber-400">Mensagem dos Astros</span>
-          </div>
-          <h3 className="font-serif text-xl font-bold text-white mb-2 leading-tight">
-            Descubra o que o <span className="text-amber-400">universo</span> reservou para você hoje
-          </h3>
-          <p className="text-indigo-200 text-xs leading-relaxed mb-4 opacity-80">
-            Previsões diárias personalizadas para o seu signo. Sintonize sua energia.
-          </p>
-          <div className="inline-flex items-center gap-2 text-xs font-bold text-white bg-white/10 px-4 py-2 rounded-full border border-white/20 group-hover:bg-white/20 transition-all">
-            Ver meu signo agora
-          </div>
-        </div>
-        
-        {/* Decorative elements */}
-        <div className="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-amber-400/10 rounded-full blur-3xl" />
-        <div className="absolute bottom-0 left-0 -mb-4 -ml-4 w-24 h-24 bg-purple-500/20 rounded-full blur-3xl" />
       </Link>
 
       <div className="bg-card rounded-lg p-6 shadow-sm border">
