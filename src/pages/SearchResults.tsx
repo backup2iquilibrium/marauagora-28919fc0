@@ -15,7 +15,7 @@ import { ChevronLeft, ChevronRight, Search } from "lucide-react";
 
 const LOGO_URL = "/logo.png";
 
-type CategoryKey = "all" | "news" | "jobs" | "points" | "events";
+type CategoryKey = "all" | "news" | "jobs" | "points" | "events" | "classifieds";
 type SortKey = "relevance" | "newest" | "oldest";
 
 type PortalSearchResult = {
@@ -39,6 +39,7 @@ const categoryLabels: Record<CategoryKey, string> = {
   jobs: "Vagas",
   points: "Pontos da Cidade",
   events: "Eventos",
+  classifieds: "Classificados",
 };
 
 const sortLabels: Record<SortKey, string> = {
@@ -111,6 +112,7 @@ export default function SearchResults() {
       { key: "jobs" as const, label: `${categoryLabels.jobs}${c ? ` (${c.jobs})` : ""}` },
       { key: "points" as const, label: `${categoryLabels.points}${c ? ` (${c.points})` : ""}` },
       { key: "events" as const, label: `${categoryLabels.events}${c ? ` (${c.events})` : ""}` },
+      { key: "classifieds" as const, label: `${categoryLabels.classifieds}${c ? ` (${c.classifieds || 0})` : ""}` },
     ];
   }, [counts]);
 

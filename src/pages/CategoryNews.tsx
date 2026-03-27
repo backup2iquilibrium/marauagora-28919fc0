@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState, useEffect, useDeferredValue } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
@@ -24,7 +24,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 
-import { ArrowDown, ArrowRight, ChevronRight, Search, TrendingUp } from "lucide-react";
+import { ArrowDown, ArrowRight, ChevronRight, Search, TrendingUp, X } from "lucide-react";
 
 const LOGO_URL = "/logo.png";
 
@@ -98,6 +98,7 @@ export default function CategoryNews() {
   const sanitizedSlug = (slug || "").trim().toLowerCase();
   const [searchParams, setSearchParams] = useSearchParams();
   const [searchTerm, setSearchTerm] = useState(searchParams.get("q") || "");
+  const deferredTerm = useDeferredValue(searchTerm);
   const [activeFilter, setActiveFilter] = useState("Todos");
 
   // Sync state with URL search params
@@ -189,8 +190,8 @@ export default function CategoryNews() {
         filteredAds = filteredAds.filter(ad => ad.category_slug === activeFilter);
       }
 
-      if (searchTerm.trim()) {
-        const q = searchTerm.toLowerCase();
+      if (deferredTerm.trim()) {
+        const q = deferredTerm.toLowerCase();
         filteredAds = filteredAds.filter(ad => 
           ad.title.toLowerCase().includes(q) || 
           (ad.description || "").toLowerCase().includes(q) ||
@@ -229,8 +230,8 @@ export default function CategoryNews() {
       );
     }
 
-    if (searchTerm.trim()) {
-      const q = searchTerm.toLowerCase();
+    if (deferredTerm.trim()) {
+      const q = deferredTerm.toLowerCase();
       filtered = filtered.filter(item => 
         item.title.toLowerCase().includes(q) || 
         item.excerpt.toLowerCase().includes(q)
@@ -238,7 +239,7 @@ export default function CategoryNews() {
     }
 
     return filtered;
-  }, [sanitizedSlug, adsQuery.data, newsQuery.data, categoryLabel, activeFilter, searchTerm]);
+  }, [sanitizedSlug, adsQuery.data, newsQuery.data, categoryLabel, activeFilter, deferredTerm, filterLabels]);
 
   const mostRead = useMemo(
     () => [
@@ -291,25 +292,28 @@ export default function CategoryNews() {
               </div>
 
               <div className="flex items-center gap-2 md:max-w-sm md:w-full">
-                <form 
-                  onSubmit={(e) => {
-                    e.preventDefault();
-                    setSearchParams({ q: searchTerm });
-                  }}
-                  className="relative w-full"
-                >
+                <div className="relative w-full">
                   <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                   <Input 
                     placeholder="Buscar nesta categoria" 
-                    className="pl-9" 
+                    className="pl-9 pr-10" 
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                   />
-                </form>
+                  {searchTerm && (
+                    <button
+                      onClick={() => setSearchTerm("")}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground p-1"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  )}
+                </div>
                 <Button 
                   size="icon" 
                   variant="secondary" 
                   aria-label="Buscar"
+                  className="shrink-0"
                   onClick={() => setSearchParams({ q: searchTerm })}
                 >
                   <ArrowRight className="h-4 w-4" />
@@ -335,10 +339,19 @@ export default function CategoryNews() {
 
             <section className="mt-8">
               {sanitizedSlug === "classificados" ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                  {items.map((item, idx) => (
-                    <ClassifiedCard key={idx} item={item} />
-                  ))}
+                <div className="space-y-6">
+                  {items.length === 0 && !adsQuery.isLoading && (
+                    <div className="py-20 text-center border-2 border-dashed rounded-xl col-span-2">
+                        <Search className="h-10 w-10 text-muted-foreground mx-auto mb-4 opacity-20" />
+                        <p className="text-muted-foreground font-medium">Nenhum anúncio encontrado em "{activeFilter}".</p>
+                        <Button variant="link" onClick={() => { setSearchTerm(""); setActiveFilter("Todos"); }} className="mt-2">Limpar todos os filtros</Button>
+                    </div>
+                  )}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    {items.map((item, idx) => (
+                      <ClassifiedCard key={idx} item={item} />
+                    ))}
+                  </div>
                 </div>
               ) : (
                 <div className="space-y-8">
