@@ -1,3 +1,6 @@
+import * as React from "react";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import { TopBar } from "@/components/marau/TopBar";
 import { SiteHeader } from "@/components/marau/SiteHeader";
 import { Footer } from "@/components/marau/Footer";
@@ -9,8 +12,32 @@ import { Radio, Video, Youtube, Facebook, Instagram, Clock, AlertCircle } from "
 export default function Live() {
   const LOGO_URL = "/logo.png";
   
-  // Esse estado simularia se temos uma live ativa ou não
-  const hasActiveLive = false; 
+  const { data: schedule } = useQuery({
+    queryKey: ["live_schedule"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("live_programs")
+        .select("*")
+        .order("sort_order", { ascending: true });
+      if (error) throw error;
+      return data;
+    }
+  });
+
+  const { data: settings } = useQuery({
+    queryKey: ["live_settings"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("site_settings")
+        .select("*")
+        .eq("key", "live_config")
+        .single();
+      if (error && error.code !== "PGRST116") throw error;
+      return (data?.value || {}) as any;
+    }
+  });
+
+  const hasActiveLive = Boolean(settings?.active_live_id);
 
   return (
     <div className="min-h-screen bg-background text-foreground font-manrope">
@@ -22,8 +49,8 @@ export default function Live() {
           
           {/* Header Section */}
           <header className="text-center space-y-4">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-destructive/10 text-destructive text-sm font-bold animate-pulse">
-              <div className="h-2 w-2 rounded-full bg-destructive"></div>
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-destructive/10 text-destructive text-sm font-bold">
+              <div className="h-2 w-2 rounded-full bg-destructive animate-pulse"></div>
               AO VIVO
             </div>
             <h1 className="text-4xl md:text-6xl font-black tracking-tight font-serif">
@@ -38,10 +65,9 @@ export default function Live() {
           <section className="relative group">
             {hasActiveLive ? (
               <div className="aspect-video w-full rounded-2xl overflow-hidden bg-black shadow-2xl border border-primary/20">
-                {/* Aqui entrará o Iframe da Live (YouTube, Facebook, etc) */}
                 <iframe 
                   className="w-full h-full"
-                  src="https://www.youtube.com/embed/live_stream?channel=YOUR_CHANNEL_ID" 
+                  src={`https://www.youtube.com/embed/${settings.active_live_id}?autoplay=1`} 
                   title="Marau Agora Live"
                   frameBorder="0"
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
@@ -83,21 +109,29 @@ export default function Live() {
                   Além do nosso portal, você pode acompanhar as transmissões em nossas redes sociais. Inscreva-se para receber notificações assim que entrarmos no ar.
                 </p>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                  <Button variant="outline" className="flex flex-col h-auto py-4 gap-2 border-primary/10 hover:bg-primary/5">
-                    <Youtube className="h-6 w-6 text-[#FF0000]" />
-                    <span className="text-xs font-bold uppercase tracking-wider">YouTube</span>
+                  <Button variant="outline" className="flex flex-col h-auto py-4 gap-2 border-primary/10 hover:bg-primary/5" asChild>
+                    <a href={settings?.youtube_url || "#"} target="_blank" rel="noreferrer">
+                      <Youtube className="h-6 w-6 text-[#FF0000]" />
+                      <span className="text-xs font-bold uppercase tracking-wider">YouTube</span>
+                    </a>
                   </Button>
-                  <Button variant="outline" className="flex flex-col h-auto py-4 gap-2 border-primary/10 hover:bg-primary/5">
-                    <Facebook className="h-6 w-6 text-[#1877F2]" />
-                    <span className="text-xs font-bold uppercase tracking-wider">Facebook</span>
+                  <Button variant="outline" className="flex flex-col h-auto py-4 gap-2 border-primary/10 hover:bg-primary/5" asChild>
+                    <a href={settings?.facebook_url || "#"} target="_blank" rel="noreferrer">
+                      <Facebook className="h-6 w-6 text-[#1877F2]" />
+                      <span className="text-xs font-bold uppercase tracking-wider">Facebook</span>
+                    </a>
                   </Button>
-                  <Button variant="outline" className="flex flex-col h-auto py-4 gap-2 border-primary/10 hover:bg-primary/5">
-                    <Instagram className="h-6 w-6 text-[#E4405F]" />
-                    <span className="text-xs font-bold uppercase tracking-wider">Instagram</span>
+                  <Button variant="outline" className="flex flex-col h-auto py-4 gap-2 border-primary/10 hover:bg-primary/5" asChild>
+                    <a href={settings?.instagram_url || "#"} target="_blank" rel="noreferrer">
+                      <Instagram className="h-6 w-6 text-[#E4405F]" />
+                      <span className="text-xs font-bold uppercase tracking-wider">Instagram</span>
+                    </a>
                   </Button>
-                  <Button variant="outline" className="flex flex-col h-auto py-4 gap-2 border-primary/10 hover:bg-primary/5">
-                    <Radio className="h-6 w-6 text-primary" />
-                    <span className="text-xs font-bold uppercase tracking-wider"> Rádio</span>
+                  <Button variant="outline" className="flex flex-col h-auto py-4 gap-2 border-primary/10 hover:bg-primary/5" asChild>
+                    <a href={settings?.radio_url || "#"} target="_blank" rel="noreferrer">
+                      <Radio className="h-6 w-6 text-primary" />
+                      <span className="text-xs font-bold uppercase tracking-wider"> Rádio</span>
+                    </a>
                   </Button>
                 </div>
               </CardContent>
@@ -112,27 +146,19 @@ export default function Live() {
                   <h3 className="font-bold text-lg">Programação</h3>
                 </div>
                 <ul className="space-y-4">
-                  <li className="flex justify-between items-start gap-4">
-                    <div className="space-y-1">
-                      <p className="text-xs font-bold text-primary uppercase">Seg à Sex</p>
-                      <p className="text-sm font-medium">Jornal Marau Agora</p>
-                    </div>
-                    <Badge variant="secondary" className="text-[10px]">08:00</Badge>
-                  </li>
-                  <li className="flex justify-between items-start gap-4">
-                    <div className="space-y-1">
-                      <p className="text-xs font-bold text-primary uppercase">Quarta-feira</p>
-                      <p className="text-sm font-medium">Entrevista da Semana</p>
-                    </div>
-                    <Badge variant="secondary" className="text-[10px]">19:30</Badge>
-                  </li>
-                  <li className="flex justify-between items-start gap-4">
-                    <div className="space-y-1">
-                      <p className="text-xs font-bold text-primary uppercase">Sexta-feira</p>
-                      <p className="text-sm font-medium">Resumo do Esporte</p>
-                    </div>
-                    <Badge variant="secondary" className="text-[10px]">18:00</Badge>
-                  </li>
+                  {schedule?.length === 0 ? (
+                    <p className="text-sm text-muted-foreground italic">Confira em breve nossa programação.</p>
+                  ) : (
+                    schedule?.map((p: any) => (
+                      <li key={p.id} className="flex justify-between items-start gap-4">
+                        <div className="space-y-1">
+                          <p className="text-xs font-bold text-primary uppercase">{p.day_info}</p>
+                          <p className="text-sm font-medium">{p.title}</p>
+                        </div>
+                        <Badge variant="secondary" className="text-[10px]">{p.time_info}</Badge>
+                      </li>
+                    ))
+                  )}
                 </ul>
               </CardContent>
             </Card>
