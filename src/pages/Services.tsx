@@ -186,6 +186,26 @@ export default function Services() {
   const categories = categoriesQuery.data ?? [];
   const quickFilters = useMemo(() => categories, [categories]);
 
+  const filteredCategories = useMemo(() => {
+    if (!deferredQ.trim()) return categories;
+    const low = deferredQ.toLowerCase();
+    return categories.filter(c => c.name.toLowerCase().includes(low));
+  }, [categories, deferredQ]);
+
+  const filteredEmergency = useMemo(() => {
+    const data = emergencyQuery.data ?? [];
+    if (!deferredQ.trim()) return data;
+    const low = deferredQ.toLowerCase();
+    return data.filter(e => e.label.toLowerCase().includes(low) || e.number.toLowerCase().includes(low));
+  }, [emergencyQuery.data, deferredQ]);
+
+  const filteredLinks = useMemo(() => {
+    const data = linksQuery.data ?? [];
+    if (!deferredQ.trim()) return data;
+    const low = deferredQ.toLowerCase();
+    return data.filter(l => l.label.toLowerCase().includes(low));
+  }, [linksQuery.data, deferredQ]);
+
   const actionsByService = useMemo(() => {
     const map = new Map<string, ActionRow[]>();
     for (const a of actionsQuery.data ?? []) {
@@ -284,8 +304,12 @@ export default function Services() {
                   <Card>
                     <CardContent className="p-6 text-sm text-muted-foreground">Nenhuma categoria cadastrada.</CardContent>
                   </Card>
+                ) : filteredCategories.length === 0 ? (
+                  <Card>
+                    <CardContent className="p-6 text-sm text-muted-foreground">Nenhuma categoria encontrada para "{deferredQ}".</CardContent>
+                  </Card>
                 ) : (
-                  categories.map((c) => {
+                  filteredCategories.map((c) => {
                     const Icon = iconFromKey(c.icon);
                     return (
                       <button
@@ -428,7 +452,7 @@ export default function Services() {
                 </CardHeader>
                 <CardContent>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    {(emergencyQuery.data ?? []).map((e) => (
+                    {filteredEmergency.map((e) => (
                       <div key={e.id} className="rounded-lg border bg-card p-4">
                         <div className="flex items-center justify-between gap-3">
                           <span className="text-sm font-semibold">{e.label}</span>
@@ -436,6 +460,9 @@ export default function Services() {
                         </div>
                       </div>
                     ))}
+                    {filteredEmergency.length === 0 && !emergencyQuery.isLoading && (
+                      <p className="text-sm text-muted-foreground italic col-span-2">Nenhum número encontrado.</p>
+                    )}
                     {emergencyQuery.isLoading ? (
                       <p className="text-sm text-muted-foreground">Carregando…</p>
                     ) : null}
@@ -450,7 +477,7 @@ export default function Services() {
                 </CardHeader>
                 <CardContent>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    {(linksQuery.data ?? []).map((l) => {
+                    {filteredLinks.map((l) => {
                       const Icon = iconFromKey(l.icon);
                       return (
                         <a
@@ -467,6 +494,9 @@ export default function Services() {
                         </a>
                       );
                     })}
+                    {filteredLinks.length === 0 && !linksQuery.isLoading && (
+                      <p className="text-sm text-muted-foreground italic col-span-2">Nenhum link encontrado.</p>
+                    )}
                   </div>
 
                   <div className="mt-6 rounded-xl border bg-card p-6">
