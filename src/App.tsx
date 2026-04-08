@@ -26,6 +26,7 @@ const GalleryDetails = lazy(() => import("./pages/GalleryDetails"));
 const Services = lazy(() => import("./pages/Services"));
 const TelefonesUteis = lazy(() => import("./pages/TelefonesUteis")); 
 const AnuncieConosco = lazy(() => import("./pages/AnuncieConosco"));
+const Expediente = lazy(() => import("./pages/Expediente"));
 
 const Live = lazy(() => import("./pages/Live"));
 const NotFound = lazy(() => import("./pages/NotFound"));
@@ -46,6 +47,7 @@ const AdminJobs = lazy(() => import("./pages/admin/AdminJobs"));
 const AdminAgenda = lazy(() => import("./pages/admin/AdminAgenda"));
 const AdminAbout = lazy(() => import("./pages/admin/AdminAbout"));
 const AdminAdvertise = lazy(() => import("./pages/admin/AdminAdvertise"));
+const AdminExpediente = lazy(() => import("./pages/admin/AdminExpediente"));
 const AdminLive = lazy(() => import("./pages/admin/AdminLive"));
 const AdvertiserClassifiedsDashboard = lazy(() => import("./pages/advertiser/AdvertiserClassifiedsDashboard"));
 const AdvertiserLayout = lazy(() => import("./pages/advertiser/AdvertiserLayout"));
@@ -92,6 +94,7 @@ const App = () => (
                 <Route path="/servicos" element={<Services />} />
                 <Route path="/telefones-uteis" element={<TelefonesUteis />} />
                 <Route path="/anuncie-conosco" element={<AnuncieConosco />} />
+                <Route path="/expediente" element={<Expediente />} />
 
                 <Route path="/ao-vivo" element={<Live />} />
 
@@ -119,6 +122,7 @@ const App = () => (
                   <Route path="ao-vivo" element={<AdminLive />} />
                   <Route path="quem-somos" element={<AdminAbout />} />
                   <Route path="anuncie-conosco" element={<AdminAdvertise />} />
+                  <Route path="expediente" element={<AdminExpediente />} />
                   <Route path="usuarios" element={<AdminUsers />} />
                   <Route path="configuracoes" element={<AdminSettings />} />
                 </Route>

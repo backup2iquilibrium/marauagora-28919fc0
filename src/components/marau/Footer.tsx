@@ -94,9 +94,9 @@ export function Footer({ logoUrl }: { logoUrl: string }) {
                 </Link>
               </li>
               <li>
-                <a className="hover:text-primary-foreground transition-colors" href="#">
+                <Link className="hover:text-primary-foreground transition-colors" to="/expediente">
                   Expediente
-                </a>
+                </Link>
               </li>
               <li>
                 <a className="hover:text-primary-foreground transition-colors" href="#">
