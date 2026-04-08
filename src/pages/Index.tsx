@@ -31,7 +31,7 @@ const Index = () => {
             <CityGuide />
           </div>
 
-          <Sidebar />
+          <Sidebar hideNewsletter={true} />
         </div>
       </main>
 

@@ -18,7 +18,11 @@ async function fetchTopReadNews() {
   return data || [];
 }
 
-export function Sidebar() {
+interface SidebarProps {
+  hideNewsletter?: boolean;
+}
+
+export function Sidebar({ hideNewsletter = false }: SidebarProps) {
   const { data: topNews = [], isLoading } = useQuery({
     queryKey: ["sidebar-top-news"],
     queryFn: fetchTopReadNews,
@@ -66,45 +70,47 @@ export function Sidebar() {
         </ul>
       </div>
 
-      <div className="bg-secondary/10 rounded-lg p-6 text-center border border-secondary/20">
-        <Mail className="h-10 w-10 text-secondary mx-auto mb-2" aria-hidden="true" />
-        <h3 className="font-bold text-lg text-primary mb-2">Receba as notícias</h3>
-        <p className="text-xs text-muted-foreground mb-4">Cadastre-se e receba os destaques de Marau no seu e-mail.</p>
-        <form 
-          className="space-y-2" 
-          onSubmit={async (e) => {
-            e.preventDefault();
-            const email = (e.currentTarget.elements.namedItem("email") as HTMLInputElement).value;
-            if (!email || !email.includes("@")) {
-              toast.error("E-mail inválido");
-              return;
-            }
-            try {
-              const { error } = await supabase.from("newsletter_subscribers").insert([{ email }]);
-              if (error) {
-                if (error.code === "23505") toast.info("Já cadastrado!");
-                else throw error;
-              } else {
-                toast.success("Inscrito com sucesso!");
-                (e.target as HTMLFormElement).reset();
+      {!hideNewsletter && (
+        <div className="bg-secondary/10 rounded-lg p-6 text-center border border-secondary/20">
+          <Mail className="h-10 w-10 text-secondary mx-auto mb-2" aria-hidden="true" />
+          <h3 className="font-bold text-lg text-primary mb-2">Receba as notícias</h3>
+          <p className="text-xs text-muted-foreground mb-4">Cadastre-se e receba os destaques de Marau no seu e-mail.</p>
+          <form 
+            className="space-y-2" 
+            onSubmit={async (e) => {
+              e.preventDefault();
+              const email = (e.currentTarget.elements.namedItem("email") as HTMLInputElement).value;
+              if (!email || !email.includes("@")) {
+                toast.error("E-mail inválido");
+                return;
               }
-            } catch (err) {
-              toast.error("Erro ao cadastrar");
-            }
-          }}
-        >
-          <Input
-            name="email"
-            type="email"
-            required
-            placeholder="Seu melhor e-mail"
-            className="bg-card"
-            inputMode="email"
-            autoComplete="email"
-          />
-          <Button type="submit" className="w-full">Inscrever-se</Button>
-        </form>
-      </div>
+              try {
+                const { error } = await supabase.from("newsletter_subscribers").insert([{ email }]);
+                if (error) {
+                  if (error.code === "23505") toast.info("Já cadastrado!");
+                  else throw error;
+                } else {
+                  toast.success("Inscrito com sucesso!");
+                  (e.target as HTMLFormElement).reset();
+                }
+              } catch (err) {
+                toast.error("Erro ao cadastrar");
+              }
+            }}
+          >
+            <Input
+              name="email"
+              type="email"
+              required
+              placeholder="Seu melhor e-mail"
+              className="bg-card"
+              inputMode="email"
+              autoComplete="email"
+            />
+            <Button type="submit" className="w-full">Inscrever-se</Button>
+          </form>
+        </div>
+      )}
     </aside>
   );
 }
