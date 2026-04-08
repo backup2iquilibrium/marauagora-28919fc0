@@ -15,6 +15,7 @@ const navItems: DashboardNavItem[] = [
   { to: "/admin/classificados", label: "Classificados", icon: Tag },
   { to: "/admin/ao-vivo", label: "Ao Vivo", icon: Video },
   { to: "/admin/quem-somos", label: "Quem Somos", icon: Info },
+  { to: "/admin/anuncie-conosco", label: "Anuncie Conosco", icon: Megaphone },
   { to: "/admin/usuarios", label: "Usuários", icon: Users },
   { to: "/admin/configuracoes", label: "Configurações", icon: Settings },
 ];

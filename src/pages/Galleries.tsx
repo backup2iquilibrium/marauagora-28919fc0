@@ -352,8 +352,8 @@ export default function Galleries() {
                     <p className="mt-2 text-sm text-muted-foreground">
                       Conecte-se com a comunidade de Marau. Espaço reservado para o seu anúncio ou campanha publicitária.
                     </p>
-                    <Button className="mt-4" variant="secondary">
-                      Anuncie Conosco
+                    <Button className="mt-4" variant="secondary" asChild>
+                      <Link to="/anuncie-conosco">Anuncie Conosco</Link>
                     </Button>
                   </div>
                 </CardContent>

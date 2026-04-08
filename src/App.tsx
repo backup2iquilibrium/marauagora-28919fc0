@@ -24,7 +24,8 @@ const Agenda = lazy(() => import("./pages/Agenda"));
 const Galleries = lazy(() => import("./pages/Galleries"));
 const GalleryDetails = lazy(() => import("./pages/GalleryDetails"));
 const Services = lazy(() => import("./pages/Services"));
-const TelefonesUteis = lazy(() => import("./pages/TelefonesUteis")); // Added
+const TelefonesUteis = lazy(() => import("./pages/TelefonesUteis")); 
+const AnuncieConosco = lazy(() => import("./pages/AnuncieConosco"));
 
 const Live = lazy(() => import("./pages/Live"));
 const NotFound = lazy(() => import("./pages/NotFound"));
@@ -44,6 +45,7 @@ const AdminCityGuide = lazy(() => import("./pages/admin/AdminCityGuide"));
 const AdminJobs = lazy(() => import("./pages/admin/AdminJobs"));
 const AdminAgenda = lazy(() => import("./pages/admin/AdminAgenda"));
 const AdminAbout = lazy(() => import("./pages/admin/AdminAbout"));
+const AdminAdvertise = lazy(() => import("./pages/admin/AdminAdvertise"));
 const AdminLive = lazy(() => import("./pages/admin/AdminLive"));
 const AdvertiserClassifiedsDashboard = lazy(() => import("./pages/advertiser/AdvertiserClassifiedsDashboard"));
 const AdvertiserLayout = lazy(() => import("./pages/advertiser/AdvertiserLayout"));
@@ -89,6 +91,7 @@ const App = () => (
                 <Route path="/galerias/:slug" element={<GalleryDetails />} />
                 <Route path="/servicos" element={<Services />} />
                 <Route path="/telefones-uteis" element={<TelefonesUteis />} />
+                <Route path="/anuncie-conosco" element={<AnuncieConosco />} />
 
                 <Route path="/ao-vivo" element={<Live />} />
 
@@ -115,6 +118,7 @@ const App = () => (
                   <Route path="agenda" element={<AdminAgenda />} />
                   <Route path="ao-vivo" element={<AdminLive />} />
                   <Route path="quem-somos" element={<AdminAbout />} />
+                  <Route path="anuncie-conosco" element={<AdminAdvertise />} />
                   <Route path="usuarios" element={<AdminUsers />} />
                   <Route path="configuracoes" element={<AdminSettings />} />
                 </Route>

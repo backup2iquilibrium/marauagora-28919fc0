@@ -89,9 +89,9 @@ export function Footer({ logoUrl }: { logoUrl: string }) {
             <h4 className="font-bold text-lg mb-4 text-secondary">Institucional</h4>
             <ul className="space-y-2 text-sm text-primary-foreground/80">
               <li>
-                <a className="hover:text-primary-foreground transition-colors" href="#">
+                <Link className="hover:text-primary-foreground transition-colors" to="/anuncie-conosco">
                   Anuncie Conosco
-                </a>
+                </Link>
               </li>
               <li>
                 <a className="hover:text-primary-foreground transition-colors" href="#">
