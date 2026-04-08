@@ -499,16 +499,6 @@ export default function Services() {
                     )}
                   </div>
 
-                  <div className="mt-6 rounded-xl border bg-card p-6">
-                    <div className="flex items-center gap-2">
-                      <Phone className="h-4 w-4 text-primary" />
-                      <p className="font-semibold">App Marau Conectada</p>
-                    </div>
-                    <p className="mt-2 text-sm text-muted-foreground">
-                      Acesse todos os serviços da cidade direto do seu celular. Relate problemas, pague taxas e mais.
-                    </p>
-                    <Button className="mt-4" variant="secondary">Baixar Agora</Button>
-                  </div>
                 </CardContent>
               </Card>
             </section>
