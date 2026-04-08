@@ -41,9 +41,9 @@ const DEFAULT_CONFIG: AdvertiseConfig = {
     { title: "Resultados Mensuráveis", description: "Acompanhe o desempenho de suas campanhas com relatórios de impressões e cliques.", icon: "bar-chart" }
   ],
   mediakit_url: "",
-  contact_email: "comercial@marauagora.com.br",
-  contact_phone: "(54) 3342-0000",
-  contact_whatsapp: "(54) 99200-1320"
+  contact_email: "marauagorars@gmail.com",
+  contact_phone: "(54) 92000-1320",
+  contact_whatsapp: "(54) 92000-1320"
 };
 
 export default function AdminAdvertise() {
