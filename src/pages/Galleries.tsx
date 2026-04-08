@@ -402,7 +402,7 @@ export default function Galleries() {
           </section>
 
           <aside className="lg:col-span-1 space-y-6">
-            <Sidebar />
+            <Sidebar hideNewsletter={true} />
           </aside>
         </div>
       </main>

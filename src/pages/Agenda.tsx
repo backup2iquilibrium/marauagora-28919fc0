@@ -500,7 +500,7 @@ export default function Agenda() {
             </section>
 
             <Separator className="my-8" />
-            <Sidebar />
+            <Sidebar hideNewsletter={true} />
           </section>
         </div>
       </main>

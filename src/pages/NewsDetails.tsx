@@ -171,7 +171,7 @@ export default function NewsDetails() {
 
           <aside className="space-y-8">
             <AdSlot />
-            <Sidebar />
+            <Sidebar hideNewsletter={true} />
           </aside>
         </div>
       </main>

@@ -452,23 +452,10 @@ export default function CategoryNews() {
               </CardContent>
             </Card>
 
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-base">Boletim Diário</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <p className="text-sm text-muted-foreground">
-                  Receba as principais notícias de Marau no seu e-mail todas as manhãs.
-                </p>
-                <Button variant="secondary" className="w-full">
-                  Inscrever-se
-                </Button>
-              </CardContent>
-            </Card>
 
             <AdSlot slug="category-sidebar" />
             <Separator />
-            <Sidebar />
+            <Sidebar hideNewsletter={true} />
           </aside>
         </div>
       </main>
