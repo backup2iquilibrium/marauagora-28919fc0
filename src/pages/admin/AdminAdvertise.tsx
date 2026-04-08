@@ -48,6 +48,7 @@ const DEFAULT_CONFIG: AdvertiseConfig = {
 
 export default function AdminAdvertise() {
   const queryClient = useQueryClient();
+  const [recordId, setRecordId] = React.useState<string | null>(null);
   const [form, setForm] = React.useState<AdvertiseConfig>(DEFAULT_CONFIG);
   const [isBenefitOpen, setIsBenefitOpen] = React.useState(false);
   const [editingBenefitIndex, setEditingBenefitIndex] = React.useState<number | null>(null);
@@ -58,31 +59,43 @@ export default function AdminAdvertise() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("site_settings")
-        .select("value")
+        .select("*")
         .eq("key", "advertise_page")
         .maybeSingle();
       
       if (error && error.code !== "PGRST116") throw error;
-      const val = (data?.value as AdvertiseConfig) || DEFAULT_CONFIG;
-      setForm(val);
-      return val;
+      
+      if (data) {
+        setRecordId(data.id);
+        if (data.value) setForm(data.value as AdvertiseConfig);
+      }
+      return data;
     }
   });
 
   const saveMutation = useMutation({
     mutationFn: async (newConfig: AdvertiseConfig) => {
-      const { error } = await supabase.from("site_settings").upsert({ 
-        key: "advertise_page", 
-        value: newConfig,
-        updated_at: new Date().toISOString()
-      }, { onConflict: "key" });
+      const payload: any = {
+        key: "advertise_page",
+        value: newConfig
+      };
+      
+      if (recordId) payload.id = recordId;
+
+      const { error } = await supabase
+        .from("site_settings")
+        .upsert(payload, { onConflict: "key" });
+        
       if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["site_settings", "advertise_page"] });
       toast.success("Configurações de publicidade salvas!");
     },
-    onError: (e: any) => toast.error("Erro ao salvar", { description: e.message })
+    onError: (e: any) => {
+      console.error("Erro ao salvar publicidade:", e);
+      toast.error("Erro ao salvar", { description: e.message || "Verifique logs ou permissões." });
+    }
   });
 
   const handleAddBenefit = () => {

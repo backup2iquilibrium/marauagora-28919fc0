@@ -35,6 +35,7 @@ const DEFAULT_SETTINGS: ExpedienteSettings = {
 
 export default function AdminExpediente() {
   const queryClient = useQueryClient();
+  const [recordId, setRecordId] = React.useState<string | null>(null);
   const [form, setForm] = React.useState<ExpedienteSettings>(DEFAULT_SETTINGS);
 
   const { data: config, isLoading } = useQuery({
@@ -42,31 +43,43 @@ export default function AdminExpediente() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("site_settings")
-        .select("value")
+        .select("*")
         .eq("key", "expediente_info")
         .maybeSingle();
       
       if (error && error.code !== "PGRST116") throw error;
-      const val = (data?.value as ExpedienteSettings) || DEFAULT_SETTINGS;
-      setForm(val);
-      return val;
+      
+      if (data) {
+        setRecordId(data.id);
+        if (data.value) setForm(data.value as ExpedienteSettings);
+      }
+      return data;
     }
   });
 
   const saveMutation = useMutation({
     mutationFn: async (newConfig: ExpedienteSettings) => {
-      const { error } = await supabase.from("site_settings").upsert({ 
-        key: "expediente_info", 
-        value: newConfig,
-        updated_at: new Date().toISOString()
-      }, { onConflict: "key" });
+      const payload: any = {
+        key: "expediente_info",
+        value: newConfig
+      };
+      
+      if (recordId) payload.id = recordId;
+
+      const { error } = await supabase
+        .from("site_settings")
+        .upsert(payload, { onConflict: "key" });
+        
       if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["site_settings", "expediente_info"] });
       toast.success("Expediente salvo com sucesso!");
     },
-    onError: (e: any) => toast.error("Erro ao salvar", { description: e.message })
+    onError: (e: any) => {
+      console.error("Erro ao salvar expediente:", e);
+      toast.error("Erro ao salvar", { description: e.message || "Verifique os logs ou permissões." });
+    }
   });
 
   if (isLoading) return <div className="p-12 text-center text-muted-foreground"><Loader2 className="animate-spin mx-auto mb-4" /> Carregando expediente...</div>;
