@@ -55,7 +55,10 @@ export default function Contact() {
   const onSubmit = async (values: ContactValues) => {
     setIsSubmitting(true);
     try {
-      const { error } = await supabase.functions.invoke("contact-submit", { body: values });
+      const { error } = await supabase
+        .from("contact_messages")
+        .insert([values]);
+      
       if (error) throw error;
 
       toast.success("Mensagem enviada!", {
