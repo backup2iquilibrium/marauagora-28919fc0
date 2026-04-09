@@ -130,10 +130,10 @@ export default function PrivacyPolicy() {
                 </CardHeader>
                 <CardContent className="space-y-3">
                   <p className="text-sm text-muted-foreground">
-                    Fale com nosso Encarregado de Dados (DPO): <span className="font-medium">privacidade@marauagora.com.br</span>
+                    Fale com nosso Encarregado de Dados (DPO): <span className="font-medium">marauagorars@gmail.com</span>
                   </p>
-                  <Button asChild className="w-full">
-                    <a href="mailto:privacidade@marauagora.com.br">Enviar E-mail</a>
+                  <Button onClick={() => navigate("/contato")} className="w-full">
+                    Enviar Mensagem
                   </Button>
                 </CardContent>
               </Card>
@@ -318,15 +318,15 @@ export default function PrivacyPolicy() {
                     <div className="rounded-lg border bg-card p-4">
                       <div className="flex items-center gap-2">
                         <User className="h-5 w-5 text-primary" aria-hidden="true" />
-                        <p className="font-semibold">João Silva</p>
+                        <p className="font-semibold">Marau Agora</p>
                       </div>
                       <div className="mt-2 flex items-center gap-2 text-sm text-muted-foreground">
                         <Mail className="h-4 w-4" aria-hidden="true" />
-                        <span>privacidade@marauagora.com.br</span>
+                        <span>marauagorars@gmail.com</span>
                       </div>
                       <div className="mt-2 flex items-center gap-2 text-sm text-muted-foreground">
                         <MapPin className="h-4 w-4" aria-hidden="true" />
-                        <span>Av. Júlio Borella, 100, Centro, Marau - RS</span>
+                        <span>Av. Júlio Borella, 777 - 3 andar, Marau - RS - CEP 99150-000</span>
                       </div>
                     </div>
 
@@ -334,8 +334,8 @@ export default function PrivacyPolicy() {
                       <p className="text-sm text-muted-foreground">
                         Para exercer seus direitos, descreva sua solicitação com detalhes para agilizar o atendimento.
                       </p>
-                      <Button asChild className="w-full">
-                        <a href="mailto:privacidade@marauagora.com.br">Entrar em Contato</a>
+                      <Button onClick={() => navigate("/contato")} className="w-full">
+                        Entrar em Contato
                       </Button>
                     </div>
                   </div>

@@ -197,17 +197,20 @@ export default function Contact() {
                   <div className="rounded-lg border bg-card p-4">
                     <div className="flex items-center gap-2">
                       <Mail className="h-4 w-4 text-primary" />
-                      <p className="text-sm font-medium">E-mail Geral</p>
+                      <p className="text-sm font-medium">E-mail</p>
                     </div>
-                    <p className="mt-1 text-sm text-muted-foreground">contato@marauagora.com.br</p>
+                    <p className="mt-1 text-sm text-muted-foreground">marauagorars@gmail.com</p>
                   </div>
 
                   <div className="rounded-lg border bg-card p-4">
                     <div className="flex items-center gap-2">
-                      <Mail className="h-4 w-4 text-primary" />
-                      <p className="text-sm font-medium">Comercial</p>
+                      <MapPin className="h-4 w-4 text-primary" />
+                      <p className="text-sm font-medium">Endereço</p>
                     </div>
-                    <p className="mt-1 text-sm text-muted-foreground">anuncios@marauagora.com.br</p>
+                    <p className="mt-1 text-sm text-muted-foreground leading-relaxed text-xs">
+                      Av. Júlio Borella, 777 - 3 andar<br />
+                      Marau - RS - CEP 99150-000
+                    </p>
                   </div>
                 </div>
               </CardContent>

@@ -25,7 +25,7 @@ interface ExpedienteSettings {
 const DEFAULT_SETTINGS: ExpedienteSettings = {
   company_name: "Marau Agora Comunicações LTDA",
   cnpj: "00.000.000/0000-00",
-  address: "Av. Júlio Borella, 777 - 3 andar - Marau - RS",
+  address: "Av. Júlio Borella, 777 - 3 andar, Marau - RS - CEP 99150-000",
   phone: "(54) 92000-1320",
   email: "marauagorars@gmail.com",
   director: "Direção Geral",
