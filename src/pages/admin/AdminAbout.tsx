@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
     Plus, Pencil, Trash2, Loader2, GripVertical,
     Flag, Eye, BadgeCheck, User, Clock, FileText, Image as ImageIcon,
-    MoreVertical, Instagram, Mail as MailIcon, Save
+    MoreVertical, Instagram, Mail as MailIcon, Save, PencilLine, Globe, Users, Newspaper
 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -160,6 +160,17 @@ function HeroSection() {
 
 const EMPTY_VALUE: Partial<AboutValue> = { title: "", description: "", icon: "flag", sort_order: 0 };
 
+const AVAILABLE_ICONS = [
+    { id: "flag", icon: Flag, label: "Bandeira" },
+    { id: "eye", icon: Eye, label: "Olho/Visão" },
+    { id: "badge-check", icon: BadgeCheck, label: "Selo/Valor" },
+    { id: "pencil", icon: PencilLine, label: "Lápis" },
+    { id: "globe", icon: Globe, label: "Globo" },
+    { id: "users", icon: Users, label: "Equipe" },
+    { id: "newspaper", icon: Newspaper, label: "Jornal" },
+    { id: "user", icon: User, label: "Usuário" },
+];
+
 function ValuesSection() {
     const { query, upsert, remove } = useAboutCrud<AboutValue>("about_values", "about_values");
     const [dialog, setDialog] = React.useState(false);
@@ -232,15 +243,35 @@ function ValuesSection() {
                             <Label>Descrição</Label>
                             <Textarea rows={4} value={editing.description || ""} onChange={(e) => setEditing({ ...editing, description: e.target.value })} />
                         </div>
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                                <Label>Ícone (nome lucide-react)</Label>
-                                <Input value={editing.icon || ""} onChange={(e) => setEditing({ ...editing, icon: e.target.value })} placeholder="flag, eye, badge-check..." />
+                        <div className="space-y-3">
+                            <Label>Selecione um Ícone</Label>
+                            <div className="grid grid-cols-4 gap-2">
+                                {AVAILABLE_ICONS.map((item) => {
+                                    const Icon = item.icon;
+                                    const isSelected = editing.icon === item.id;
+                                    return (
+                                        <button
+                                            key={item.id}
+                                            type="button"
+                                            onClick={() => setEditing({ ...editing, icon: item.id })}
+                                            className={cn(
+                                                "flex flex-col items-center justify-center p-2 rounded-lg border-2 transition-all",
+                                                isSelected 
+                                                    ? "border-primary bg-primary/5 text-primary" 
+                                                    : "border-transparent hover:bg-muted"
+                                            )}
+                                            title={item.label}
+                                        >
+                                            <Icon className="h-6 w-6 mb-1" />
+                                            <span className="text-[10px] truncate w-full text-center">{item.label}</span>
+                                        </button>
+                                    );
+                                })}
                             </div>
-                            <div className="space-y-2">
-                                <Label>Ordem</Label>
-                                <Input type="number" value={editing.sort_order ?? 0} onChange={(e) => setEditing({ ...editing, sort_order: parseInt(e.target.value) || 0 })} />
-                            </div>
+                        </div>
+                        <div className="space-y-2">
+                            <Label>Ordem de Exibição</Label>
+                            <Input type="number" value={editing.sort_order ?? 0} onChange={(e) => setEditing({ ...editing, sort_order: parseInt(e.target.value) || 0 })} />
                         </div>
                     </div>
                     <DialogFooter>
