@@ -41,7 +41,7 @@ export default function QuemSomos() {
       if (error) throw error;
       return data;
     },
-    staleTime: 1000 * 60 * 10,
+    staleTime: 1000 * 5,
   });
 
   const valuesQ = useQuery({
@@ -51,7 +51,7 @@ export default function QuemSomos() {
       if (error) throw error;
       return data || [];
     },
-    staleTime: 1000 * 60 * 10,
+    staleTime: 1000 * 5,
   });
 
   const timelineQ = useQuery({
@@ -61,7 +61,7 @@ export default function QuemSomos() {
       if (error) throw error;
       return data || [];
     },
-    staleTime: 1000 * 60 * 10,
+    staleTime: 1000 * 5,
   });
 
   const teamQ = useQuery({
@@ -71,7 +71,7 @@ export default function QuemSomos() {
       if (error) throw error;
       return data || [];
     },
-    staleTime: 1000 * 60 * 10,
+    staleTime: 1000 * 5,
   });
 
   const hero = heroQ.data;

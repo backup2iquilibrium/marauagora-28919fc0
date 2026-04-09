@@ -100,12 +100,14 @@ function HeroSection() {
 
     const saveMutation = useMutation({
         mutationFn: async () => {
-            const { error } = await supabase.from("about_page").update({
+            const { error } = await supabase.from("about_page").upsert({
+                id: "00000000-0000-0000-0000-000000000001",
                 hero_title: form.hero_title,
                 hero_subtitle: form.hero_subtitle,
                 hero_image_url: form.hero_image_url,
                 intro_text: form.intro_text,
-            }).eq("id", "00000000-0000-0000-0000-000000000001");
+                updated_at: new Date().toISOString()
+            });
             if (error) throw error;
         },
         onSuccess: () => { qc.invalidateQueries({ queryKey: ["about_page"] }); toast.success("Configurações salvas!"); },
