@@ -37,7 +37,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
 async function fetchStats() {
-  const [news, pendingAds, activeAds, users, spaces, activeAdCampaigns, guideItems] = await Promise.all([
+  const [news, pendingAds, activeAds, users, spaces, activeAdCampaigns, guideItems, messages] = await Promise.all([
     supabase.from("news").select("*", { count: "exact", head: true }),
     supabase.from("classified_ads").select("*", { count: "exact", head: true }).eq("status", "pending"),
     supabase.from("classified_ads").select("*", { count: "exact", head: true }).eq("status", "active"),

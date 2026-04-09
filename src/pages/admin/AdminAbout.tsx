@@ -497,6 +497,9 @@ function TeamSection() {
 // ─────────────────────────────────────────────────────────────────────────────
 
 export default function AdminAbout() {
+    const [searchParams] = React.useState(new URLSearchParams(window.location.search));
+    const defaultTab = searchParams.get("tab") || "hero";
+
     return (
         <div className="p-6 space-y-6">
             <div>
@@ -506,7 +509,7 @@ export default function AdminAbout() {
                 </p>
             </div>
 
-            <Tabs defaultValue="hero">
+            <Tabs defaultValue={defaultTab}>
                 <TabsList className="flex flex-wrap gap-1 h-auto">
                     <TabsTrigger value="hero" className="gap-2"><ImageIcon className="h-4 w-4" />Hero / Capa</TabsTrigger>
                     <TabsTrigger value="values" className="gap-2"><Flag className="h-4 w-4" />Missão &amp; Valores</TabsTrigger>

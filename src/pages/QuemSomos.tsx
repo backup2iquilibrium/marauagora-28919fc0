@@ -159,25 +159,76 @@ export default function QuemSomos() {
 
         {/* Timeline */}
         {timeline.length > 0 && (
-          <section id="historia" aria-label="Nossa Jornada" className="space-y-6 scroll-mt-20">
+          <section id="historia" aria-label="Nossa Jornada" className="space-y-10 scroll-mt-20 py-10 overflow-hidden">
             <SectionTitle title="Nossa Jornada" />
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {timeline.map((step: any) => (
-                <Card key={step.id} className="shadow-sm">
-                  <CardHeader className="pb-3">
-                    <div className="flex items-center justify-between gap-3">
-                      <div className="flex items-center gap-2">
-                        <Newspaper className="h-5 w-5 text-primary" />
-                        <span className="text-sm font-bold text-primary">{step.year}</span>
+            
+            <div className="relative mt-20">
+              {/* Barra Central (Desktop) */}
+              <div className="hidden md:block absolute top-1/2 left-0 w-full h-1 bg-muted -translate-y-1/2 z-0" />
+              
+              <div className="flex flex-col md:flex-row gap-8 md:gap-0 relative z-10 md:overflow-x-auto md:pb-10 no-scrollbar">
+                {timeline.map((step: any, index: number) => {
+                  const colors = [
+                    'border-orange-500 text-orange-600 bg-orange-500', 
+                    'border-pink-500 text-pink-600 bg-pink-500', 
+                    'border-purple-500 text-purple-600 bg-purple-500', 
+                    'border-blue-500 text-blue-600 bg-blue-500', 
+                    'border-indigo-500 text-indigo-600 bg-indigo-500',
+                    'border-emerald-500 text-emerald-600 bg-emerald-500'
+                  ];
+                  const colorClass = colors[index % colors.length];
+                  const [borderColor, textColor, bgColor] = colorClass.split(' ');
+                  
+                  return (
+                    <div 
+                      key={step.id} 
+                      className={cn(
+                        "relative flex-1 md:min-w-[300px] px-4",
+                        "md:flex md:flex-col",
+                        index % 2 === 0 ? "md:justify-start" : "md:justify-end md:mt-[240px]"
+                      )}
+                    >
+                      {/* Card de Conteúdo */}
+                      <div className={cn(
+                        "bg-card border-l-4 p-5 shadow-lg rounded-r-xl transition-transform hover:scale-105",
+                        borderColor
+                      )}>
+                        <div className="flex items-center gap-2 mb-2 font-black uppercase text-xs tracking-widest opacity-70">
+                          <Newspaper className="h-4 w-4" />
+                          Linha do Tempo
+                        </div>
+                        <h4 className="text-lg font-black leading-tight mb-2">{step.title}</h4>
+                        <p className="text-sm text-muted-foreground leading-relaxed line-clamp-4">
+                          {step.description}
+                        </p>
+                      </div>
+
+                      {/* Marcador de Ano (Conector) */}
+                      <div className={cn(
+                        "absolute left-1/2 -translate-x-1/2 z-20",
+                        "hidden md:flex flex-col items-center",
+                        index % 2 === 0 ? "top-[100%] pt-4" : "bottom-[100%] pb-4"
+                      )}>
+                        {/* Linha vertical conectora */}
+                        <div className={cn("w-1 h-12", bgColor, "opacity-40")} />
+                        
+                        {/* Círculo do Ano na Barra */}
+                        <div className={cn(
+                          "w-12 h-12 rounded-full border-4 border-background flex items-center justify-center text-white font-black text-sm shadow-xl",
+                          bgColor
+                        )}>
+                          {step.year}
+                        </div>
+                      </div>
+
+                      {/* Marcador de Ano (Mobile) */}
+                      <div className="md:hidden absolute -left-2 top-4 w-10 h-10 rounded-full border-4 border-background bg-primary flex items-center justify-center text-white font-bold text-xs ring-2 ring-primary/20">
+                        {step.year}
                       </div>
                     </div>
-                    <CardTitle className="text-lg">{step.title}</CardTitle>
-                  </CardHeader>
-                  <CardContent className="text-sm text-muted-foreground leading-relaxed">
-                    {step.description}
-                  </CardContent>
-                </Card>
-              ))}
+                  );
+                })}
+              </div>
             </div>
           </section>
         )}
