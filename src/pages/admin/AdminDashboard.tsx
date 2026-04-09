@@ -44,6 +44,7 @@ async function fetchStats() {
     supabase.from("ad_spaces").select("*").order("sort_order", { ascending: true }),
     supabase.from("ad_campaigns").select("*").eq("status", "active"),
     supabase.from("public_services").select("*", { count: "exact", head: true }),
+    supabase.from("contact_messages").select("*", { count: "exact", head: true }).eq("status", "new"),
   ]);
 
   return {
@@ -52,6 +53,7 @@ async function fetchStats() {
     activeAdsCount: activeAds.count || 0,
     usersCount: users.count || 0,
     guideCount: guideItems.count || 0,
+    messagesCount: messages.count || 0,
     spaces: spaces.data || [],
     activeCampaigns: activeAdCampaigns.data || [],
   };
@@ -130,6 +132,13 @@ export default function AdminDashboard() {
       helper: "Estabelecimentos",
       icon: <MapPin className="h-4 w-4 text-primary" aria-hidden="true" />,
       iconBg: "bg-muted",
+    },
+    {
+      title: "Novas Mensagens",
+      value: statsQuery.data?.messagesCount.toString() || "0",
+      helper: "Fale Conosco",
+      icon: <Mail className="h-4 w-4 text-primary" aria-hidden="true" />,
+      iconBg: statsQuery.data?.messagesCount ? "bg-blue-100" : "bg-muted",
     },
   ];
 

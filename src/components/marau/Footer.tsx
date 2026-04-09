@@ -99,9 +99,9 @@ export function Footer({ logoUrl }: { logoUrl: string }) {
                 </Link>
               </li>
               <li>
-                <a className="hover:text-primary-foreground transition-colors" href="#">
+                <Link className="hover:text-primary-foreground transition-colors" to="/contato">
                   Fale Conosco
-                </a>
+                </Link>
               </li>
               <li>
                 <Link className="hover:text-primary-foreground transition-colors" to="/politica-de-privacidade">
