@@ -236,12 +236,10 @@ export default function AdminMessages() {
               </div>
 
               <DialogFooter className="mt-6 flex flex-col sm:flex-row gap-2">
-                <Button 
-                  variant="outline" 
-                  className="gap-2" 
-                  onClick={() => window.open(`mailto:${selectedMessage.email}?subject=RE: ${selectedMessage.subject}`)}
-                >
-                  <MessageSquare className="h-4 w-4" /> Responder por E-mail
+                <Button variant="outline" className="gap-2" asChild>
+                  <a href={`mailto:${selectedMessage.email}?subject=RE: ${selectedMessage.subject}&body=${encodeURIComponent(`\n\n\n--- Mensagem Original ---\nDe: ${selectedMessage.name}\nEm: ${format(new Date(selectedMessage.created_at), "dd/MM/yyyy HH:mm")}\n\n${selectedMessage.message}`)}`}>
+                    <Mail className="h-4 w-4" /> Responder por E-mail
+                  </a>
                 </Button>
                 {selectedMessage.status !== "replied" && (
                    <Button 
