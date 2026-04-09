@@ -236,12 +236,26 @@ export default function AdminMessages() {
               </div>
 
               <DialogFooter className="mt-6 flex flex-col sm:flex-row gap-2">
-                <Button variant="outline" className="gap-2" asChild>
-                  <a 
-                    href={`mailto:${selectedMessage.email}?subject=${encodeURIComponent(`RE: ${selectedMessage.subject}`)}&body=${encodeURIComponent(`\r\n\r\n\r\n--- Mensagem Original ---\r\nDe: ${selectedMessage.name}\r\nEm: ${format(new Date(selectedMessage.created_at), "dd/MM/yyyy HH:mm")}\r\n\r\n${selectedMessage.message}`)}`}
-                  >
-                    <Mail className="h-4 w-4" /> Responder por E-mail
-                  </a>
+                <Button 
+                  variant="outline" 
+                  className="gap-2" 
+                  onClick={() => {
+                    if (!selectedMessage) return;
+                    
+                    const subject = encodeURIComponent(`RE: ${selectedMessage.subject}`);
+                    // Limitar o corpo da mensagem para evitar URLs excessivamente longas que o navegador pode bloquear
+                    const messageBody = selectedMessage.message.length > 1000 
+                      ? selectedMessage.message.substring(0, 1000) + "..." 
+                      : selectedMessage.message;
+                      
+                    const body = encodeURIComponent(`\r\n\r\n\r\n--- Mensagem Original ---\r\nDe: ${selectedMessage.name}\r\nEm: ${format(new Date(selectedMessage.created_at), "dd/MM/yyyy HH:mm")}\r\n\r\n${messageBody}`);
+                    const mailtoUrl = `mailto:${selectedMessage.email}?subject=${subject}&body=${body}`;
+                    
+                    window.open(mailtoUrl, '_self');
+                    toast.info("Abrindo seu cliente de e-mail...");
+                  }}
+                >
+                  <Mail className="h-4 w-4" /> Responder por E-mail
                 </Button>
                 {selectedMessage.status !== "replied" && (
                    <Button 
