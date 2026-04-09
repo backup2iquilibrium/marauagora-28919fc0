@@ -1,5 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Mail, MessageCircle, Newspaper, Search, Send } from "lucide-react";
+import { Mail, MapPin, MessageCircle, Newspaper, Search, Send } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { Link } from "react-router-dom";
