@@ -10,8 +10,9 @@ import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import {
   Flag, Eye, BadgeCheck, PencilLine, Globe, Users, Newspaper,
-  Instagram, Mail, Loader2, User,
+  Instagram, Mail, Loader2, User, Megaphone,
 } from "lucide-react";
+import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 
 const LOGO_URL = "/logo.png";
@@ -226,21 +227,23 @@ export default function QuemSomos() {
           </section>
         )}
 
-        {/* Newsletter */}
-        <section aria-label="Newsletter" className="rounded-xl border bg-card p-6 md:p-8 shadow-sm">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-center">
-            <div className="lg:col-span-2">
-              <h3 className="text-2xl font-black tracking-tight">Faça parte da nossa história</h3>
-              <p className="mt-2 text-muted-foreground leading-relaxed">
-                Assine nossa newsletter gratuita e receba as principais notícias de Marau diretamente no seu e-mail toda manhã.
+        {/* Anuncie Conosco CTA */}
+        <section aria-label="Anuncie Conosco" className="rounded-xl bg-primary p-8 md:p-12 text-primary-foreground shadow-lg overflow-hidden relative">
+          <div className="absolute top-0 right-0 -mt-8 -mr-8 opacity-10">
+            <Megaphone className="h-48 w-48 rotate-12" />
+          </div>
+          
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-center relative z-10">
+            <div className="lg:col-span-2 space-y-4">
+              <h3 className="text-3xl md:text-4xl font-black tracking-tight">Anuncie no Marau Agora</h3>
+              <p className="text-lg opacity-90 leading-relaxed max-w-2xl">
+                Sua marca vista por milhares de pessoas todos os dias. Conheça nossas soluções de publicidade e conecte-se com Marau e região.
               </p>
             </div>
-            <div className="space-y-3">
-              <div className="flex gap-2">
-                <Input type="email" placeholder="Seu e-mail" aria-label="E-mail para newsletter" className="h-11" />
-                <Button className="h-11">Inscrever-se</Button>
-              </div>
-              <p className="text-xs text-muted-foreground">Respeitamos sua privacidade. Cancele quando quiser.</p>
+            <div className="flex justify-center lg:justify-end">
+              <Button asChild size="lg" variant="secondary" className="font-bold text-lg px-8 h-14">
+                <Link to="/anuncie-conosco">Conhecer Soluções</Link>
+              </Button>
             </div>
           </div>
         </section>
