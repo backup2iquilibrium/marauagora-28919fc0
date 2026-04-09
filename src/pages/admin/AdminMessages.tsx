@@ -236,27 +236,38 @@ export default function AdminMessages() {
               </div>
 
               <DialogFooter className="mt-6 flex flex-col sm:flex-row gap-2">
-                <Button 
-                  variant="outline" 
-                  className="gap-2" 
-                  onClick={() => {
-                    if (!selectedMessage) return;
-                    
-                    const subject = encodeURIComponent(`RE: ${selectedMessage.subject}`);
-                    // Limitar o corpo da mensagem para evitar URLs excessivamente longas que o navegador pode bloquear
-                    const messageBody = selectedMessage.message.length > 1000 
-                      ? selectedMessage.message.substring(0, 1000) + "..." 
-                      : selectedMessage.message;
+                <div className="flex flex-col sm:flex-row gap-2 mr-auto">
+                  <Button 
+                    variant="outline" 
+                    className="gap-2 bg-red-50 hover:bg-red-100 text-red-700 border-red-200" 
+                    onClick={() => {
+                      if (!selectedMessage) return;
+                      const subject = encodeURIComponent(`RE: ${selectedMessage.subject}`);
+                      const messageBody = selectedMessage.message.length > 800 
+                        ? selectedMessage.message.substring(0, 800) + "..." 
+                        : selectedMessage.message;
+                      const body = encodeURIComponent(`\r\n\r\n\r\n--- Mensagem Original ---\r\nDe: ${selectedMessage.name}\r\nEm: ${format(new Date(selectedMessage.created_at), "dd/MM/yyyy HH:mm")}\r\n\r\n${messageBody}`);
                       
-                    const body = encodeURIComponent(`\r\n\r\n\r\n--- Mensagem Original ---\r\nDe: ${selectedMessage.name}\r\nEm: ${format(new Date(selectedMessage.created_at), "dd/MM/yyyy HH:mm")}\r\n\r\n${messageBody}`);
-                    const mailtoUrl = `mailto:${selectedMessage.email}?subject=${subject}&body=${body}`;
-                    
-                    window.open(mailtoUrl, '_self');
-                    toast.info("Abrindo seu cliente de e-mail...");
-                  }}
-                >
-                  <Mail className="h-4 w-4" /> Responder por E-mail
-                </Button>
+                      // Abrir Gmail diretamente no navegador
+                      const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${selectedMessage.email}&su=${subject}&body=${body}`;
+                      window.open(gmailUrl, '_blank');
+                      
+                      toast.info("Abrindo Gmail...");
+                    }}
+                  >
+                    <Mail className="h-4 w-4" /> Responder via Gmail
+                  </Button>
+                  <Button 
+                    variant="ghost" 
+                    className="gap-2 text-muted-foreground"
+                    onClick={() => {
+                      navigator.clipboard.writeText(selectedMessage.email);
+                      toast.success("E-mail copiado!");
+                    }}
+                  >
+                    <User className="h-4 w-4" /> Copiar E-mail
+                  </Button>
+                </div>
                 {selectedMessage.status !== "replied" && (
                    <Button 
                     variant="secondary" 
