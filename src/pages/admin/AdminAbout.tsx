@@ -88,7 +88,11 @@ function HeroSection() {
     const { data, isLoading } = useQuery<AboutPage>({
         queryKey: ["about_page"],
         queryFn: async () => {
-            const { data, error } = await supabase.from("about_page").select("*").limit(1).maybeSingle();
+            const { data, error } = await supabase
+                .from("about_page")
+                .select("*")
+                .eq("id", "00000000-0000-0000-0000-000000000001")
+                .maybeSingle();
             if (error) throw error;
             return data as AboutPage;
         },
