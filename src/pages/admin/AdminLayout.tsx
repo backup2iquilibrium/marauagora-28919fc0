@@ -1,4 +1,4 @@
-import { Newspaper, Tag, Users, Megaphone, FileText, Settings, MapPin, Briefcase, CalendarDays, Info, Shield, Video } from "lucide-react";
+import { Newspaper, Tag, Users, Megaphone, FileText, Settings, MapPin, Briefcase, CalendarDays, Info, Shield, Video, Mail } from "lucide-react";
 import { Outlet } from "react-router-dom";
 
 import { supabase } from "@/integrations/supabase/client";

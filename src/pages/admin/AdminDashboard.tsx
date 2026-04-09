@@ -11,6 +11,7 @@ import {
   Upload,
   UserPlus,
   MapPin,
+  Mail,
 } from "lucide-react";
 import {
   Pie,
