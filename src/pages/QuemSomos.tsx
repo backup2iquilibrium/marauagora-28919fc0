@@ -108,8 +108,10 @@ export default function QuemSomos() {
                 {hero?.hero_subtitle || "Seu portal confiável para notícias locais, cultura, esportes e eventos em Marau e região."}
               </p>
               <div className="mt-6 flex flex-col sm:flex-row gap-3 justify-center">
-                <Button size="lg" variant="secondary">Nossa História</Button>
-                <Button size="lg" variant="outline" className="bg-background/15 border-primary-foreground/30">
+                <Button size="lg" variant="secondary" onClick={() => document.getElementById('historia')?.scrollIntoView({ behavior: 'smooth' })}>
+                  Nossa História
+                </Button>
+                <Button size="lg" variant="outline" className="bg-white text-primary hover:bg-white/90 border-none" onClick={() => document.getElementById('missao')?.scrollIntoView({ behavior: 'smooth' })}>
                   Nossa Missão e Valores
                 </Button>
               </div>
@@ -128,7 +130,7 @@ export default function QuemSomos() {
 
         {/* Valores */}
         {values.length > 0 && (
-          <section className="grid grid-cols-1 lg:grid-cols-3 gap-6" aria-label="Missão, visão e valores">
+          <section id="missao" className="grid grid-cols-1 lg:grid-cols-3 gap-6 scroll-mt-20" aria-label="Missão, visão e valores">
             <div className="lg:col-span-1">
               <SectionTitle title="Nossa Missão e Valores" />
             </div>
@@ -157,7 +159,7 @@ export default function QuemSomos() {
 
         {/* Timeline */}
         {timeline.length > 0 && (
-          <section aria-label="Nossa Jornada" className="space-y-6">
+          <section id="historia" aria-label="Nossa Jornada" className="space-y-6 scroll-mt-20">
             <SectionTitle title="Nossa Jornada" />
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {timeline.map((step: any) => (
