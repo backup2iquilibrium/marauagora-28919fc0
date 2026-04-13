@@ -24,6 +24,7 @@ import {
   Store,
   Trash2,
   Zap,
+  Megaphone,
 } from "lucide-react";
 
 import { TopBar } from "@/components/marau/TopBar";
