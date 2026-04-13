@@ -11,6 +11,7 @@ import { cn } from "@/lib/utils";
 import {
   Flag, Eye, BadgeCheck, PencilLine, Globe, Users, Newspaper,
   Instagram, Mail, Loader2, User, Megaphone,
+  Store, Home, Factory, Building, PieChart, Mountain, Mic, Video
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -21,6 +22,8 @@ const LOGO_URL = "/logo.png";
 const ICON_MAP: Record<string, React.ComponentType<React.SVGProps<SVGSVGElement>>> = {
   flag: Flag, eye: Eye, "badge-check": BadgeCheck, pencil: PencilLine,
   globe: Globe, users: Users, newspaper: Newspaper, user: User,
+  store: Store, home: Home, factory: Factory, building: Building,
+  "pie-chart": PieChart, mountain: Mountain, mic: Mic, video: Video
 };
 
 function getIcon(name: string) { return ICON_MAP[name?.toLowerCase()] ?? Flag; }
@@ -155,7 +158,8 @@ export default function QuemSomos() {
               </div>
             </div>
           </section>
-          {/* Timeline */}
+        )}
+        {/* Timeline */}
         {timeline.length > 0 && (
           <section id="historia" aria-label="Nossa Jornada" className="space-y-16 scroll-mt-20 py-20 overflow-hidden bg-white/50 rounded-3xl border border-border/50">
             <div className="px-4">
