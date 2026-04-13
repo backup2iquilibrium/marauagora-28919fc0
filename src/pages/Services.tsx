@@ -38,6 +38,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
+import { AdSlot } from "@/components/marau/AdSlot";
 
 const LOGO_URL = "/logo.png";
 
@@ -315,7 +316,10 @@ export default function Services() {
                       <button
                         key={c.slug}
                         type="button"
-                        onClick={() => setSelectedCategory(c.slug)}
+                        onClick={() => {
+                          setSelectedCategory(c.slug);
+                          document.getElementById('servicos-lista')?.scrollIntoView({ behavior: 'smooth' });
+                        }}
                         className="text-left"
                       >
                         <Card className="h-full hover:shadow-md transition-shadow">
@@ -338,27 +342,15 @@ export default function Services() {
               </div>
             </section>
 
-            {/* Ad block */}
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-base">Publicidade</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="rounded-lg border bg-card p-6">
-                  <div className="flex items-center gap-2 font-semibold">
-                    <Store className="h-4 w-4 text-primary" />
-                    Comércio Local em Destaque
-                  </div>
-                  <p className="mt-2 text-sm text-muted-foreground">
-                    Conheça as ofertas especiais das lojas de Marau para esta semana. Valorize o comércio da nossa cidade.
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
+            <AdSlot slug="servicos-middle" className="my-8" />
 
             {/* Most accessed */}
-            <section className="space-y-4">
-              <h2 className="font-serif text-xl">Mais Acessados</h2>
+            <section id="servicos-lista" className="space-y-4 pt-4">
+              <h2 className="font-serif text-xl">
+                {selectedCategory 
+                  ? `Serviços em ${categories.find(c => c.slug === selectedCategory)?.name}` 
+                  : "Todos os Serviços"}
+              </h2>
 
               {servicesQuery.isLoading ? (
                 <Card>
@@ -424,7 +416,7 @@ export default function Services() {
                           ) : null}
 
                           <div className="flex flex-wrap gap-2">
-                            {actions.slice(0, 2).map((a) => (
+                            {actions.map((a) => (
                               <Button key={a.id} asChild variant="secondary" className="gap-2">
                                 <a href={a.href} target="_blank" rel="noreferrer">
                                   {a.label}
@@ -432,6 +424,14 @@ export default function Services() {
                                 </a>
                               </Button>
                             ))}
+                            {s.phone && (
+                              <Button variant="outline" className="gap-2 border-green-500/30 hover:bg-green-50 text-green-700" asChild>
+                                <a href={`https://wa.me/55${s.phone.replace(/\D/g, "")}`} target="_blank" rel="noreferrer">
+                                  <Phone className="h-4 w-4" />
+                                  WhatsApp
+                                </a>
+                              </Button>
+                            )}
                           </div>
                         </div>
                       </CardContent>
@@ -507,22 +507,26 @@ export default function Services() {
           {/* RIGHT */}
           <aside className="lg:col-span-1 space-y-6">
             <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-base">Publicidade</CardTitle>
+              <CardHeader className="pb-3 text-center">
+                <CardTitle className="text-base">Anuncie aqui</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="rounded-lg border bg-card p-6">
-                  <div className="flex items-center gap-2 font-semibold">
-                    <Store className="h-4 w-4 text-primary" />
-                    Anuncie no Marau Agora
+                <div className="rounded-xl bg-gradient-to-br from-primary/10 to-primary/5 p-6 border border-primary/20">
+                  <div className="flex flex-col items-center text-center space-y-3">
+                    <Megaphone className="h-8 w-8 text-primary animate-pulse" />
+                    <h4 className="font-bold text-lg">Sua marca aqui</h4>
+                    <p className="text-sm text-muted-foreground">
+                      Alcance milhares de moradores de Marau diariamente com anúncios estratégicos.
+                    </p>
+                    <Button asChild className="w-full shadow-lg">
+                      <Link to="/anuncie-conosco">Solicitar Mídia Kit</Link>
+                    </Button>
                   </div>
-                  <p className="mt-2 text-sm text-muted-foreground">
-                    Alcance milhares de moradores de Marau diariamente. Soluções ideais para o seu negócio.
-                  </p>
-                  <Button className="mt-4 w-full" variant="secondary">Solicitar Mídia Kit</Button>
                 </div>
               </CardContent>
             </Card>
+
+            <AdSlot slug="servicos-sidebar" />
 
             {/* Featured shortcuts */}
             <Card>
@@ -531,10 +535,12 @@ export default function Services() {
               </CardHeader>
               <CardContent className="space-y-3">
                 {(featuredQuery.data ?? []).slice(0, 4).map((s) => (
-                  <div key={s.id} className="rounded-lg border bg-card p-4">
-                    <p className="text-sm font-semibold">{s.title}</p>
-                    {s.summary ? <p className="mt-1 text-xs text-muted-foreground line-clamp-2">{s.summary}</p> : null}
-                  </div>
+                  <Link key={s.id} to={`/guia-da-cidade/${s.id}`} className="block group">
+                    <div className="rounded-lg border bg-card p-4 transition-all hover:border-primary/50 hover:shadow-sm">
+                      <p className="text-sm font-semibold group-hover:text-primary transition-colors">{s.title}</p>
+                      {s.summary ? <p className="mt-1 text-xs text-muted-foreground line-clamp-2">{s.summary}</p> : null}
+                    </div>
+                  </Link>
                 ))}
                 {featuredQuery.isLoading ? <p className="text-sm text-muted-foreground">Carregando…</p> : null}
               </CardContent>
