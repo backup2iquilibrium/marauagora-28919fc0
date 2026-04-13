@@ -3,7 +3,8 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
     Plus, Pencil, Trash2, Loader2, GripVertical,
     Flag, Eye, BadgeCheck, User, Clock, FileText, Image as ImageIcon,
-    MoreVertical, Instagram, Mail as MailIcon, Save, PencilLine, Globe, Users, Newspaper
+    MoreVertical, Instagram, Mail as MailIcon, Save, PencilLine, Globe, Users, Newspaper,
+    Store, Home, Factory, Building, PieChart, Mountain, Mic, Video
 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -33,7 +34,7 @@ import {
 
 interface AboutPage { id: string; hero_title: string; hero_subtitle: string; hero_image_url?: string; intro_text?: string; }
 interface AboutValue { id: string; title: string; description: string; icon: string; sort_order: number; }
-interface AboutTimeline { id: string; year: string; title: string; description: string; sort_order: number; }
+interface AboutTimeline { id: string; year: string; title: string; description: string; icon?: string; sort_order: number; }
 interface AboutTeam { id: string; name: string; role: string; bio?: string; photo_url?: string; social_instagram?: string; social_email?: string; sort_order: number; }
 
 // ─── Hook genérico de CRUD para tabelas about_* ────────────────────────────
@@ -170,6 +171,14 @@ const AVAILABLE_ICONS = [
     { id: "users", icon: Users, label: "Equipe" },
     { id: "newspaper", icon: Newspaper, label: "Jornal" },
     { id: "user", icon: User, label: "Usuário" },
+    { id: "store", icon: Store, label: "Loja" },
+    { id: "home", icon: Home, label: "Casa" },
+    { id: "factory", icon: Factory, label: "Fábrica" },
+    { id: "building", icon: Building, label: "Prédio" },
+    { id: "pie-chart", icon: PieChart, label: "Gráfico" },
+    { id: "mountain", icon: Mountain, label: "Montanha" },
+    { id: "mic", icon: Mic, label: "Microfone" },
+    { id: "video", icon: Video, label: "Vídeo" },
 ];
 
 function ValuesSection() {
@@ -291,7 +300,7 @@ function ValuesSection() {
 // ─── SEÇÃO: Timeline / Nossa Jornada ─────────────────────────────────────
 // ─────────────────────────────────────────────────────────────────────────────
 
-const EMPTY_TIMELINE: Partial<AboutTimeline> = { year: "", title: "", description: "", sort_order: 0 };
+const EMPTY_TIMELINE: Partial<AboutTimeline> = { year: "", title: "", description: "", icon: "clock", sort_order: 0 };
 
 function TimelineSection() {
     const { query, upsert, remove } = useAboutCrud<AboutTimeline>("about_timeline", "about_timeline");
@@ -313,6 +322,7 @@ function TimelineSection() {
                     <TableHeader>
                         <TableRow>
                             <TableHead>Ano</TableHead>
+                            <TableHead>Ícone</TableHead>
                             <TableHead>Título</TableHead>
                             <TableHead>Descrição</TableHead>
                             <TableHead>Ordem</TableHead>
@@ -321,10 +331,11 @@ function TimelineSection() {
                     </TableHeader>
                     <TableBody>
                         {query.isLoading
-                            ? <TableRow><TableCell colSpan={5} className="text-center py-8 text-muted-foreground"><Loader2 className="animate-spin h-5 w-5 mx-auto" /></TableCell></TableRow>
+                            ? <TableRow><TableCell colSpan={6} className="text-center py-8 text-muted-foreground"><Loader2 className="animate-spin h-5 w-5 mx-auto" /></TableCell></TableRow>
                             : (query.data || []).map((t) => (
                                 <TableRow key={t.id}>
                                     <TableCell><Badge className="font-bold">{t.year}</Badge></TableCell>
+                                    <TableCell><Badge variant="outline" className="text-[10px]">{t.icon || "clock"}</Badge></TableCell>
                                     <TableCell className="font-semibold">{t.title}</TableCell>
                                     <TableCell className="text-sm text-muted-foreground line-clamp-2 max-w-xs">{t.description}</TableCell>
                                     <TableCell>{t.sort_order}</TableCell>
@@ -363,6 +374,33 @@ function TimelineSection() {
                                 <Input type="number" value={editing.sort_order ?? 0} onChange={(e) => setEditing({ ...editing, sort_order: parseInt(e.target.value) || 0 })} />
                             </div>
                         </div>
+                        <div className="space-y-3">
+                            <Label>Selecione um Ícone</Label>
+                            <div className="grid grid-cols-4 md:grid-cols-6 gap-2 max-h-40 overflow-y-auto p-1 border rounded-md no-scrollbar">
+                                {AVAILABLE_ICONS.map((item) => {
+                                    const Icon = item.icon;
+                                    const isSelected = editing.icon === item.id;
+                                    return (
+                                        <button
+                                            key={item.id}
+                                            type="button"
+                                            onClick={() => setEditing({ ...editing, icon: item.id })}
+                                            className={cn(
+                                                "flex flex-col items-center justify-center p-2 rounded-lg border-2 transition-all",
+                                                isSelected 
+                                                    ? "border-primary bg-primary/5 text-primary" 
+                                                    : "border-transparent hover:bg-muted"
+                                            )}
+                                            title={item.label}
+                                        >
+                                            <Icon className="h-5 w-5 mb-1" />
+                                            <span className="text-[9px] truncate w-full text-center">{item.label}</span>
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        </div>
+
                         <div className="space-y-2">
                             <Label>Título do Marco</Label>
                             <Input value={editing.title || ""} onChange={(e) => setEditing({ ...editing, title: e.target.value })} />
