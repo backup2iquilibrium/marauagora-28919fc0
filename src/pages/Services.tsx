@@ -195,18 +195,25 @@ export default function Services() {
   }, [categories, deferredQ]);
 
   const filteredEmergency = useMemo(() => {
-    const data = emergencyQuery.data ?? [];
+    let data = emergencyQuery.data ?? [];
+    if (selectedCategory) {
+      data = data.filter(e => e.category?.toLowerCase() === selectedCategory.toLowerCase());
+    }
     if (!deferredQ.trim()) return data;
     const low = deferredQ.toLowerCase();
     return data.filter(e => e.label.toLowerCase().includes(low) || e.number.toLowerCase().includes(low));
-  }, [emergencyQuery.data, deferredQ]);
+  }, [emergencyQuery.data, deferredQ, selectedCategory]);
 
   const filteredLinks = useMemo(() => {
-    const data = linksQuery.data ?? [];
+    let data = linksQuery.data ?? [];
+    if (selectedCategory) {
+      // If links have category (check if your table has it, otherwise skip or filter by label)
+      // data = data.filter(l => l.category?.toLowerCase() === selectedCategory.toLowerCase());
+    }
     if (!deferredQ.trim()) return data;
     const low = deferredQ.toLowerCase();
     return data.filter(l => l.label.toLowerCase().includes(low));
-  }, [linksQuery.data, deferredQ]);
+  }, [linksQuery.data, deferredQ, selectedCategory]);
 
   const actionsByService = useMemo(() => {
     const map = new Map<string, ActionRow[]>();
@@ -443,35 +450,52 @@ export default function Services() {
 
               <Separator />
 
-              {/* Emergency */}
+              {/* Emergency / Useful Numbers */}
+              {(filteredEmergency.length > 0 || (selectedCategory && selectedCategory.toLowerCase() === 'emergencia')) && (
               <Card>
                 <CardHeader className="pb-3">
                   <CardTitle className="text-base flex items-center gap-2">
-                    <Siren className="h-4 w-4 text-primary" />
-                    Números de Emergência
+                    {selectedCategory?.toLowerCase() === 'emergencia' || !selectedCategory ? (
+                      <>
+                        <Siren className="h-4 w-4 text-primary" />
+                        Números de Emergência
+                      </>
+                    ) : (
+                      <>
+                        <Phone className="h-4 w-4 text-primary" />
+                        Contatos Úteis - {categories.find(c => c.slug === selectedCategory)?.name}
+                      </>
+                    )}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {filteredEmergency.map((e) => (
-                      <div key={e.id} className="rounded-lg border bg-card p-4">
+                      <div key={e.id} className="rounded-lg border bg-card p-4 transition-all hover:border-primary/50 group">
                         <div className="flex items-center justify-between gap-3">
-                          <span className="text-sm font-semibold">{e.label}</span>
-                          <span className="text-sm font-black text-primary">{e.number}</span>
+                          <div className="flex flex-col">
+                            <span className="text-sm font-semibold group-hover:text-primary transition-colors">{e.label}</span>
+                            {e.description && <span className="text-[10px] text-muted-foreground">{e.description}</span>}
+                          </div>
+                          <a 
+                            href={`tel:${e.number.replace(/\D/g, "")}`} 
+                            className="text-sm font-black text-primary hover:scale-105 transition-transform"
+                          >
+                            {e.number}
+                          </a>
                         </div>
                       </div>
                     ))}
-                    {filteredEmergency.length === 0 && !emergencyQuery.isLoading && (
-                      <p className="text-sm text-muted-foreground italic col-span-2">Nenhum número encontrado.</p>
+                    {filteredEmergency.length === 0 && !emergencyQuery.isLoading && selectedCategory && (
+                      <p className="text-sm text-muted-foreground italic col-span-2">Nenhum número encontrado para esta categoria.</p>
                     )}
-                    {emergencyQuery.isLoading ? (
-                      <p className="text-sm text-muted-foreground">Carregando…</p>
-                    ) : null}
                   </div>
                 </CardContent>
               </Card>
+              )}
 
               {/* Useful links */}
+              {(filteredLinks.length > 0) && (
               <Card>
                 <CardHeader className="pb-3">
                   <CardTitle className="text-base">Links Úteis</CardTitle>
@@ -486,22 +510,19 @@ export default function Services() {
                           href={l.href}
                           target="_blank"
                           rel="noreferrer"
-                          className="rounded-lg border bg-card p-4 hover:bg-accent/30 transition-colors"
+                          className="rounded-lg border bg-card p-4 hover:bg-accent/30 transition-colors group"
                         >
                           <div className="flex items-center gap-2">
-                            <Icon className="h-4 w-4 text-primary" />
+                            <Icon className="h-4 w-4 text-primary group-hover:scale-110 transition-transform" />
                             <span className="text-sm font-semibold">{l.label}</span>
                           </div>
                         </a>
                       );
                     })}
-                    {filteredLinks.length === 0 && !linksQuery.isLoading && (
-                      <p className="text-sm text-muted-foreground italic col-span-2">Nenhum link encontrado.</p>
-                    )}
                   </div>
-
                 </CardContent>
               </Card>
+              )}
             </section>
           </div>
 

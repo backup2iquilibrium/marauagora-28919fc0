@@ -87,7 +87,6 @@ export default function AdminPolice() {
             let q = supabase
                 .from("emergency_numbers")
                 .select("*")
-                .order("category", { ascending: true })
                 .order("sort_order", { ascending: true });
 
             if (categoryFilter !== "all") {
@@ -113,7 +112,10 @@ export default function AdminPolice() {
                 const { error } = await supabase.from("emergency_numbers").update(rest).eq("id", id);
                 if (error) throw error;
             } else {
-                const { error } = await supabase.from("emergency_numbers").insert([record]);
+                // Ensure record doesn't have undefined ID
+                const cleanRecord = { ...record };
+                delete cleanRecord.id;
+                const { error } = await supabase.from("emergency_numbers").insert([cleanRecord]);
                 if (error) throw error;
             }
         },
@@ -135,6 +137,25 @@ export default function AdminPolice() {
             toast.success("Excluído com sucesso!");
         },
         onError: (e: any) => toast.error("Erro ao excluir", { description: e.message }),
+    });
+
+    const seedMutation = useMutation({
+        mutationFn: async () => {
+            const defaults = [
+                { label: 'SAMU', number: '192', icon: 'phone', category: 'Emergência', sort_order: 10, is_published: true, city: 'Marau' },
+                { label: 'Bombeiros', number: '193', icon: 'phone', category: 'Emergência', sort_order: 20, is_published: true, city: 'Marau' },
+                { label: 'Polícia Militar', number: '190', icon: 'shield', category: 'Emergência', sort_order: 30, is_published: true, city: 'Marau' },
+                { label: 'Polícia Civil', number: '197', icon: 'shield', category: 'Segurança', sort_order: 40, is_published: true, city: 'Marau' },
+                { label: 'Defesa Civil', number: '199', icon: 'shield', category: 'Emergência', sort_order: 50, is_published: true, city: 'Marau' },
+            ];
+            const { error } = await supabase.from("emergency_numbers").upsert(defaults, { onConflict: 'label' });
+            if (error) throw error;
+        },
+        onSuccess: () => {
+            qc.invalidateQueries({ queryKey: ["admin_emergency_numbers"] });
+            toast.success("Dados iniciais carregados!");
+        },
+        onError: (e: any) => toast.error("Erro ao carregar padrões", { description: e.message }),
     });
 
     const togglePublishMutation = useMutation({
@@ -181,6 +202,9 @@ export default function AdminPolice() {
                             {CATEGORIES.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
                         </SelectContent>
                     </Select>
+                    <Button variant="outline" className="gap-2" onClick={() => seedMutation.mutate()} disabled={seedMutation.isPending}>
+                        <Save className="h-4 w-4" /> Carregar Padrões
+                    </Button>
                 </div>
             </Card>
 

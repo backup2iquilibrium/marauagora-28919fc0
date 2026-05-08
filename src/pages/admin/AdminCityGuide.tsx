@@ -78,10 +78,7 @@ async function fetchPublicServices({
 }) {
     let query = supabase
         .from("public_services")
-        .select(`
-            *,
-            category:public_service_categories(*)
-        `)
+        .select("*")
         .order("sort_order", { ascending: true })
         .order("title", { ascending: true });
 
